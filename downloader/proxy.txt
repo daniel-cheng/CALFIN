@@ -1,0 +1,3 @@
+Me Secret
+proxy-http1.cnes.fr
+8050
