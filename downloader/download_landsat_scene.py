@@ -135,7 +135,7 @@ def downloadChunks(url,rep,nom_fic):
 													 / total_size) * 100),
 										 '=' * done,
 										 ' ' * (50 - done),
-										 sizeof_fmt((downloaded // (time.clock() - start)) / 8)))
+										 sizeof_fmt(downloaded // (time.clock() - start))))
 				sys.stdout.flush()
 				if not chunk: break
 				fp.write(chunk)
