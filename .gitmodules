@@ -1,0 +1,3 @@
+[submodule "postprocessing/meshcut"]
+	path = postprocessing/meshcut
+	url = https://github.com/julienr/meshcut.git

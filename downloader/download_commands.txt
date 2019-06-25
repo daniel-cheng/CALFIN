@@ -1,33 +1,33 @@
-#python download_landsat_scene.py -o liste -l upernavik_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Upernavik
-#python download_landsat_scene.py -o liste -l upernavik_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Upernavik
-#python download_landsat_scene.py -o liste -l upernavik_L8_3.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Upernavik
-#python download_landsat_scene.py -o liste -l upernavik_L8_4.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Upernavik
+#python download_landsat_scene.py -o liste -l upernavik_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Upernavik
+#python download_landsat_scene.py -o liste -l upernavik_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Upernavik
+#python download_landsat_scene.py -o liste -l upernavik_L8_3.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Upernavik
+#python download_landsat_scene.py -o liste -l upernavik_L8_4.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Upernavik
 
-#python download_landsat_scene.py -o liste -l jakobshavn_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Jakobshavn
-#python download_landsat_scene.py -o liste -l jakobshavn_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Jakobshavn
-#python download_landsat_scene.py -o liste -l jakobshavn_L8_3.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Jakobshavn
-#python download_landsat_scene.py -o liste -l jakobshavn_L8_4.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Jakobshavn
+#python download_landsat_scene.py -o liste -l jakobshavn_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Jakobshavn
+#python download_landsat_scene.py -o liste -l jakobshavn_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Jakobshavn
+#python download_landsat_scene.py -o liste -l jakobshavn_L8_3.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Jakobshavn
+#python download_landsat_scene.py -o liste -l jakobshavn_L8_4.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Jakobshavn
 
-#python download_landsat_scene.py -o liste -l hayes_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Hayes
-#python download_landsat_scene.py -o liste -l hayes_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Hayes
-#python download_landsat_scene.py -o liste -l hayes_L8_3.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Hayes
-#python download_landsat_scene.py -o liste -l hayes_L8_4.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Hayes
+#python download_landsat_scene.py -o liste -l hayes_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Hayes
+#python download_landsat_scene.py -o liste -l hayes_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Hayes
+#python download_landsat_scene.py -o liste -l hayes_L8_3.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Hayes
+#python download_landsat_scene.py -o liste -l hayes_L8_4.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Hayes
 
-#python download_landsat_scene.py -o liste -l rink-isbrae_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Rink-Isbrae
-#python download_landsat_scene.py -o liste -l rink-isbrae_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Rink-Isbrae
-#python download_landsat_scene.py -o liste -l rink-isbrae_L8_3.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Rink-Isbrae
-#python download_landsat_scene.py -o liste -l rink-isbrae_L8_4.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Rink-Isbrae
+#python download_landsat_scene.py -o liste -l rink-isbrae_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Rink-Isbrae
+#python download_landsat_scene.py -o liste -l rink-isbrae_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Rink-Isbrae
+#python download_landsat_scene.py -o liste -l rink-isbrae_L8_3.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Rink-Isbrae
+#python download_landsat_scene.py -o liste -l rink-isbrae_L8_4.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Rink-Isbrae
 
-#python download_landsat_scene.py -o liste -l kong-oscar_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kong-Oscar
-#python download_landsat_scene.py -o liste -l kong-oscar_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kong-Oscar
-#python download_landsat_scene.py -o liste -l kong-oscar_L8_3.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kong-Oscar
-#python download_landsat_scene.py -o liste -l kong-oscar_L8_4.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kong-Oscar
+#python download_landsat_scene.py -o liste -l kong-oscar_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kong-Oscar
+#python download_landsat_scene.py -o liste -l kong-oscar_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kong-Oscar
+#python download_landsat_scene.py -o liste -l kong-oscar_L8_3.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kong-Oscar
+#python download_landsat_scene.py -o liste -l kong-oscar_L8_4.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kong-Oscar
 
-#python download_landsat_scene.py -o liste -l kangiata-nunata_L8_1.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kangiata-Nunata
-#python download_landsat_scene.py -o liste -l kangiata-nunata_L8_2.txt -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kangiata-Nunata
+#python download_landsat_scene.py -o liste -l kangiata-nunata_L8_1.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kangiata-Nunata
+#python download_landsat_scene.py -o liste -l kangiata-nunata_L8_2.txt -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kangiata-Nunata
 
-#python download_landsat_scene_cleanup.py -o liste -l scenes/upernavik* -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Upernavik
-#python download_landsat_scene_cleanup.py -o liste -l scenes/jakobshavn* -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Jakobshavn
-#python download_landsat_scene_cleanup.py -o liste -l scenes/hayes* -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Hayes
-#python download_landsat_scene_cleanup.py -o liste -l scenes/rink-isbrae* -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Rink-Isbrae
-python download_landsat_scene_cleanup.py -o liste -l scenes/kong-oscar* -u usgs.txt --output D:/Daniel/Pictures/CALFIN/Landsat/Greenland/Kong-Oscar
+#python download_landsat_scene_cleanup.py -o liste -l scenes/upernavik* -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Upernavik
+#python download_landsat_scene_cleanup.py -o liste -l scenes/jakobshavn* -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Jakobshavn
+#python download_landsat_scene_cleanup.py -o liste -l scenes/hayes* -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Hayes
+#python download_landsat_scene_cleanup.py -o liste -l scenes/rink-isbrae* -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Rink-Isbrae
+python download_landsat_scene_cleanup.py -o liste -l scenes/kong-oscar* -u usgs.txt --output D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/Kong-Oscar
