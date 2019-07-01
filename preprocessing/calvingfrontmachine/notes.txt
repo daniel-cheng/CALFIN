@@ -1,0 +1,14 @@
+import layers from project 
+
+reproject  shp files
+fix projections in qgis
+poster - more pics than text, 3 columns 3x4
+4 picutre very well explained captions
+make calving front VESL
+make a page in vesl for my stuff
+NASA AMES Pleiades cluster
+
+COnferences:
+EGU General Assembly 2019, 7–12 April 2019, Vienna, Austria.
+
+WAIS Workshop - Stony Point, New York, U.S.A. ~September 16-19, 2019

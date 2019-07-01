@@ -1,3 +1,6 @@
 [submodule "postprocessing/meshcut"]
 	path = postprocessing/meshcut
 	url = https://github.com/julienr/meshcut.git
+[submodule "processing/keras-deeplab-v3-plus"]
+	path = processing/keras-deeplab-v3-plus
+	url = https://github.com/bonlime/keras-deeplab-v3-plus.git

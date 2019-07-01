@@ -11,16 +11,15 @@ steps = ['1', '2']
 steps = ['1']
 
 if '1' in steps:
-    source = r"D:/Daniel/Pictures/CALFIN/Landsat/Greenland/zipped"
-    unzip_dest = r"D:/Daniel/Pictures/CALFIN/Landsat/Greenland/"
-    move_dest = r"F:/Daniel/Pictures/CALFIN/Landsat/Greenland/zipped"
+    source = r"D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped"
+    unzip_dest = r"D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/"
+    move_dest = r"F:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped"
     dry_run = False
-    domains_to_move = ['Hayes', 'Kangiata-Nunata', 'Kong-Oscar', 'Rink-Isbrae']
+    # domains_to_move = ['Hayes', 'Kangiata-Nunata', 'Kong-Oscar', 'Rink-Isbrae']
+	domains_to_move = ['Helheim']
     
     # Function to rename multiple files 
     for domain in os.listdir(source):
-        if domain != 'Rink-Isbrae':
-            continue
         #Make unzip domain folder if not existing already
         unzip_domain_path = os.path.join(unzip_dest, domain)
         if not os.path.exists(unzip_domain_path):

@@ -1,0 +1,9 @@
+pass all raw images through 1st stage UNet
+calculate confidencce images per domain
+repeat N times:
+	pass all raw + confidence images through 2nd stage UNet
+	calculate confidencce images per image 
+postprocess output masks
+vectorize
+smooth
+generate movie per domain

@@ -62,17 +62,23 @@ def ordered_line_from_unordered_points(x, y):
 	return xx, yy
 
 def is_outlier(data, m = 18.0):
-    d = np.abs(data - np.median(data))
-    mdev = np.median(d)
-    s = d / mdev if mdev else 0.0
-    return s >= m
+	diff = np.abs(data - np.median(data))
+	mdev = np.median(diff)
+	is_outlier = [False] * len(data)
+	for i in range(len(diff)):
+		if mdev != 0:
+			sigma = diff[i] / mdev 
+		else:
+			sigma = 0.0
+		is_outlier[i] = sigma >= m
+	return is_outlier
 
 #disallow edges between points on boundary
-def ordered_line_from_unordered_points_tree(points_tuple, dimensions):
+def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points):
 	x = points_tuple[0]
 	y = points_tuple[1]
 	points = np.c_[x, y]
-	k = int(np.floor(len(points) /25))
+	k = max(minimum_points - 1, int(np.floor(len(points) /25)))
 	distances = distance_matrix(points, points)
 	mean_cluster_distances = []
 	for row in range(len(distances)):
@@ -82,15 +88,14 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions):
 		
 	#Eliminate small seperated clusters (outliers/noise)
 	outlier_mask = is_outlier(mean_cluster_distances, 25)
-#	plt.figure()
-#	plt.plot(mean_cluster_distances)
-#	plt.show()
-	edge_limit = dimensions[0] / 4
 	for row in range(len(distances)):
-		if outlier_mask[row]:
-			for col in range(row, len(distances)):
-				distances[row, col] = 0
-				distances[col, row] = 0
+		try:
+			if outlier_mask[row]:
+				for col in range(row, len(distances)):
+					distances[row, col] = 0
+					distances[col, row] = 0
+		except TypeError as e:
+			print(e)
 	
 	mst = minimum_spanning_tree(distances)
 	#Symmetrize matrix to make undriected

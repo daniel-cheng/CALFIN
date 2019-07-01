@@ -1,53 +1,51 @@
 from qgis.core import *
-import os, re, glob
+import os, re, glob, time
+from PyQt5.QtGui import QAction
 
-root_group_name = 'CalvingFronts'
-source_path = 'D:/Daniel/Documents/issm/proj-group/qgis/GreenlandCF.qgz'
-dry_run = 0
+root_group_name = 'Rasters'
+source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland'
+dry_run = 1
+
+def landsat_sort(file_path):
+	"""Sorting key function derives date from landsat file path."""
+	return file_path.split(os.path.sep)[-1].split('_')[3]
 
 def findGroup(root:QgsLayerTreeGroup, name:str) -> QgsLayerTreeGroup:
 	"""Recursively finds first group that matches name."""
 	#Search immediate children
 	for child in root.children():
-        if isinstance(child, QgsLayerTreeGroup):
+		if isinstance(child, QgsLayerTreeGroup):
 			if name == child.name():
 				return child
 	#Search subchildren
 	for child in root.children():
-        if isinstance(child, QgsLayerTreeGroup):
+		if isinstance(child, QgsLayerTreeGroup):
 			result = findGroup(child, name)
 			# If we found something, return it.
 			if result is not None:
 				return result
 	#Found nothing
 	return None
-				
-def layersFromPath(line_file_path:str, poly_file_path:str, group:QgsLayerTreeGroup) -> (QgsVectorLayer, QgsVectorLayer):
-	lineLayer = QgsVectorLayer(line_file_path, line_file_path[0:-4], 'ogr')
-	polygonLayer = QgsVectorLayer(poly_file_path, poly_file_path[0:-4], 'ogr')
 
-	QgsProject.instance().addMapLayer(lineLayer, False)
-	QgsProject.instance().addMapLayer(polygonLayer, False)
+def layerFromPath(file_path:str, group:QgsLayerTreeGroup) -> (QgsRasterLayer):
+	name = file_path.split(os.path.sep)[-1][0:-4]
+	rasterLayer = QgsRasterLayer(file_path, name)
+	provider = rasterLayer.dataProvider()
+	provider.setNoDataValue(1, 0)
+	
+	QgsProject.instance().addMapLayer(rasterLayer, False)
 	# step 2: append layer to the root group node
-	group.insertLayer(0, lineLayer)
-	group.insertLayer(0, polygonLayer)
-	# step 3: Add transparency slider to polygon layers
-	# Alter fill style for vector layers
-	polygonSymbol = polygonLayer.renderer().symbol()
-	lineSymbol = lineLayer.renderer().symbol()
-	polygonSymbol.setColor(lineSymbol.color())
-	polygonSymbol.setOpacity(0.25)
-	# Redraw canvas and save variable to global context
-	self.iface.layerTreeView().refreshLayerSymbology(lineLayer.id())
-	self.iface.layerTreeView().refreshLayerSymbology(polygonLayer.id())
+	layerGroup = group.insertLayer(0, rasterLayer)
+	layerGroup.setItemVisibilityChecked(False)
+	layerGroup.setExpanded(False)
 
-def bulkAdd()
+def bulkAdd():
 	project = QgsProject.instance()
 	root = project.layerTreeRoot()
-	layers = [node.layer() for node in root.findLayers()]
-	groups = self.findGroups(root)
+#	layers = [node.layer() for node in root.findLayers()]
+#	groups = root.findGroups()
 	root_group = findGroup(root, root_group_name)
-
+	
 	domain_groups = []
 	# For each domain in CalvingFronts...
 	for domain in os.listdir(source_path):
@@ -55,22 +53,22 @@ def bulkAdd()
 		root_group.addGroup(domain)
 		domain_group = findGroup(root_group, domain)
 		domain_path = os.path.join(source_path, domain)
-		year_groups = []
 		# For each year group in CalvingFronts...
-		for year in os.listdir(domain_path)
-			year_groups.append(domain)
+		for year in sorted(os.listdir(domain_path)):
 			domain_group.addGroup(year)
 			year_group = findGroup(domain_group, year)
-			year_path = os.path.join(domain_path, year, 'shp')
+			year_path = os.path.join(domain_path, year)
 			# For each shapefile in the year group...
-			for file in glob.glob(os.path.join(year_path, '*_closed.shp'):
-				line_file_path = os.path.join(year_path, file)
-				poly_file_path = line_file_path[0:-4] + '_polygon.shp'
+			for file in sorted(glob.glob(os.path.join(year_path, '*_B[0-9].TIF')), key=landsat_sort, reverse=True):
+				file_path = os.path.join(year_path, file)
 				#Add the layers to the project
-				print(domain, year, line_file_path, poly_file_path)
+				print(domain, year, file_path)
 				if dry_run != 0:
-					layersFromPath(line_file_path, poly_file_path, year_group)
-	
+					layerFromPath(file_path, year_group)
+		domain_group.setExpanded(False)
+		iface.mainWindow().findChild( QAction, 'mActionSaveProject' ).trigger()
+
+bulkAdd()
 
 if __name__ == "__main__":
 	bulkAdd()

@@ -1,0 +1,734 @@
+ID;LAT;LON;New Greenlandic name;Old Greenlandic name;Foreign name;Official name;Alternative names;RGI_ID;GLIMS_ID;RGI_CEN_LON;RGI_CEN_LAT;Type
+GGN0001;60,1166;-43,37;Sermeq Kujalleq;Sermeq Kujatdleq; ;Sermeq Kujalleq; ;RGI40-05.04361;G316578E60159N;-43,4217;60,1593;LGIC
+GGN0002;60,1349;-43,5125;Sermeq Avannarleq;Sermeq Avangnardleq; ;Sermeq Avannarleq; ;RGI40-05.04363;G316482E60158N;-43,5182;60,1584;LGIC
+GGN0003;60,1627;-43,7278;Sermikasik Avannarleq;Sermikasik Avangnardleq; ;Sermikasik Avannarleq; ;RGI40-05.04356;G316285E60178N;-43,7154;60,1779;LGIC
+GGN0004;60,1639;-43,7038;Sermikasik Kujalleq;Sermikasik Kujatdleq; ;Sermikasik Kujalleq; ;RGI40-05.04356;G316285E60178N;-43,7154;60,1779;LGIC
+GGN0005;60,2171;-43,337;Sermeq Avannarleq;Sermeq Avangnardleq; ;Sermeq Avannarleq; ;RGI40-05.04332;G316577E60220N;-43,4229;60,2199;LGIC
+GGN0006;60,2352;-43,2644;Sermeq Qeqqarleq;Sermeq Qerqardleq; ;Sermeq Qeqqarleq; ;RGI40-05.04331;G316702E60261N;-43,2980;60,2613;LGIC
+GGN0007;60,2505;-43,2445;Sermeq Kujalleq;Sermeq Kujatdleq; ;Sermeq Kujalleq; ;RGI40-05.04331;G316702E60261N;-43,2980;60,2613;LGIC
+GGN0008;60,3098;-43,948;Paarliit Sermiat; ; ;Paarliit Sermiat;Paarliit Sermia;RGI40-05.04309;G316193E60315N;-43,8066;60,3151;LGIC
+GGN0009;60,3114;-45,2736; ; ;Napasorsuaq Gletsjer;Napasorsuaq Gletsjer; ;RGI40-05.03779;G314725E60307N;-45,2749;60,3074;LGIC
+GGN0010;60,3479;-44,1093;Sermikasik; ; ;Sermikasik; ;RGI40-05.03889;G315849E60344N;-44,1513;60,3436;LGIC
+GGN0011;60,4097;-44,1272;Qinngorliit Sermiat; ; ;Qinngorliit Sermiat;Qinngerliit Sermiat;RGI40-05.04288;G315830E60462N;-44,1699;60,4622;LGIC
+GGN0012;60,5319;-44,4256;Sermitsiaq;Sermitsiaq; ;Sermitsiaq; ;RGI40-05.04052;G315652E60546N;-44,3482;60,5455;LGIC
+GGN0013;60,5686;-44,4636;Sermersuasik; ; ;Sermersuasik; ;RGI40-05.04143;G315572E60586N;-44,4281;60,5864;LGIC
+GGN0014;60,7022;-45,2375;Sermitsiaq Killeq;Sermitsiaq Kitdleq; ;Sermitsiaq Killeq; ;RGI40-05.04402;G314767E60701N;-45,2333;60,7008;LGIC
+GGN0015;60,7165;-45,207;Sermitsiaq Kangilleq;Sermitsiaq Kangigdleq; ;Sermitsiaq Kangilleq; ;RGI40-05.04310;G314796E60715N;-45,2044;60,7145;LGIC
+GGN0016;60,7977;-44,4902;Sermeq;Sermeq; ;Sermeq; ;;;;;GrIS
+GGN0017;60,8598;-44,8764;Siorallip Sermia;Sioragdlip Sermia; ;Siorallip Sermia; ;;;;;GrIS
+GGN0018;60,9667;-44,9167;Sermeq Kangilleq;Sermeq Kangigdleq; ;Sermeq Kangilleq; ;;;;;GrIS
+GGN0019;60,9833;-45,0167; ; ;Jespersen Bræ;Jespersen Bræ; ;;;;;GrIS
+GGN0020;60,9845;-46,9863;Sermilik; ;Sermilik Bræ;Sermilik; ;;;;;GrIS
+GGN0021;60,9938;-45,9079; ; ;Narsaq Bræ;Narsaq Bræ; ;RGI40-05.04721;G314094E60995N;-45,9058;60,9954;LGIC
+GGN0022;61,0088;-46,686;Qalerallit Sermiat;Qaleragdlit Sermiat; ;Qalerallit Sermiat; ;;;;;GrIS
+GGN0023;61,0373;-46,5812;Naajat Sermiat;Naujat Sermiat; ;Naajat Sermiat; ;;;;;GrIS
+GGN0024;61,05;-47,6667; ; ;Nordre Qipisaqqu Bræ;Nordre Qipisaqqu Bræ; ;;;;;GrIS
+GGN0025;61,05;-47,5; ; ;Søndre Qipisaqqu Bræ;Søndre Qipisaqqu Bræ; ;;;;;GrIS
+GGN0026;61,09;-46,4184;Ilorliit;Ilordlît; ;Ilorliit; ;;;;;GrIS
+GGN0027;61,095;-46,3171;Serminnguaq;Sermínguaq; ;Serminnguaq; ;;;;;GrIS
+GGN0028;61,1452;-47,7424; ; ;Søndre Qoornoq Bræ;Søndre Qoornoq Bræ; ;;;;;GrIS
+GGN0029;61,1912;-47,7181; ; ;Nordre Qoornoq Bræ;Nordre Qoornoq Bræ; ;;;;;GrIS
+GGN0030;61,2149;-48,4512; ; ;Storebræ;Storebræ; ;RGI40-05.04997;G311549E61209N;-48,4511;61,2091;LGIC
+GGN0031;61,2157;-48,4309; ; ;Nordre Hængebræ;Nordre Hængebræ; ;RGI40-05.04989;G311571E61214N;-48,4286;61,2144;LGIC
+GGN0032;61,2667;-45,2667;Kiattuut Sermiat;Kiagtût Sermiat; ;Kiattuut Sermiat; ;;;;;GrIS
+GGN0033;61,2765;-46,1501;Eqalorutsit Killiit Sermiat;Eqalorutsit Kitdlît Sermiat; ;Eqalorutsit Killiit Sermiat; ;;;;;GrIS
+GGN0034;61,2966;-44,9608; ; ;Sydtunge;Sydtunge; ;;;;;GrIS
+GGN0035;61,2986;-44,7999; ; ;Tretungegletsjer;Tretungegletsjer; ;;;;;GrIS
+GGN0036;61,3107;-47,8693;Sermeq;Sermeq;Arsuk Bræ;Sermeq; ;;;;;GrIS
+GGN0037;61,3123;-44,9964; ; ;Nordtunge;Nordtunge; ;;;;;GrIS
+GGN0038;61,3457;-44,9839;Qooqqup Sermia;Qôrqup Sermia; ;Qooqqup Sermia; ;;;;;GrIS
+GGN0039;61,3517;-47,8065; ; ;Sortisen;Sortisen; ;;;;;GrIS
+GGN0040;61,3662;-45,1586; ; ;Sydgletsjer;Sydgletsjer; ;;;;;GrIS
+GGN0041;61,3753;-45,7318;Eqalorutsit Kangilliit Sermiat;Eqalorutsit Kangigdlît Sermiat; ;Eqalorutsit Kangilliit Sermiat; ;;;;;GrIS
+GGN0042;61,4333;-45,4; ; ;Nordbogletsjer;Nordbogletsjer; ;;;;;GrIS
+GGN0043;61,4558;-44,9518; ; ;Østgletsjer;Østgletsjer; ;;;;;GrIS
+GGN0044;61,478;-45,1564; ; ;Nordgletsjer;Nordgletsjer; ;;;;;GrIS
+GGN0045;61,5198;-47,9697; ; ;Sioralik Bræ;Sioralik Bræ; ;;;;;GrIS
+GGN0046;61,6377;-48,1399;Sermiligaarsuup Sermia; ;Sermiligaarsuk Bræ;Sermiligaarsuup Sermia; ;;;;;GrIS
+GGN0047;61,9667;-48,6333;Uukkaasorsuaq;Ùkâssorssuaq;Sermilik Bræ;Uukkaasorsuaq; ;;;;;GrIS
+GGN0048;62,0795;-48,7666; ; ;Nigerlikasik Bræ;Nigerlikasik Bræ; ;;;;;GrIS
+GGN0049;62,1954;-48,8274; ; ;Akulleq Bræ;Akulleq Bræ; ;;;;;GrIS
+GGN0050;62,2;-42,35;Sikuijivittip Apusiia;Sikuijivítip Apusîa; ;Sikuijivittip Apusiia; ;;;;;GrIS
+GGN0051;62,222;-48,9731; ; ;Avannarleq Bræ;Avannarleq Bræ; ;;;;;GrIS
+GGN0052;62,5571;-49,8911;Sioqqap Sermia; ;Frederikshåb Isblink;Sioqqap Sermia; ;;;;;GrIS
+GGN0053;62,9052;-42,6851; ; ;Heimdal Gletsjer;Heimdal Gletsjer; ;;;;;GrIS
+GGN0054;63,0556;-42,3807; ; ;Garm;Garm; ;RGI40-05.06021;G317519E63061N;-42,4809;63,0607;LGIC
+GGN0055;63,0659;-49,5848;Nakkaasorsuaq;Nákâssorssuaq; ;Nakkaasorsuaq;Allumersat Qinnguata Sermia;;;;;GrIS
+GGN0056;63,1833;-41,5833;Apusiigajik;Apusîkajik; ;Apusiigajik; ;RGI40-05.06236;G318388E63185N;-41,6125;63,1849;LGIC
+GGN0057;63,2216;-42,5455; ; ;Guldfaxe;Guldfaxe; ;;;;;GrIS
+GGN0058;63,2899;-41,4678; ; ;Bjarke Gletsjer;Bjarke Gletsjer; ;RGI40-05.06305;G318528E63295N;-41,4722;63,2953;LGIC
+GGN0059;63,2926;-41,9168;Apusiigajik;Apusîkajik;Skinfaxe;Apusiigajik;"Apusiikajik; Apusiigai";;;;;GrIS
+GGN0060;63,305;-42,3669; ; ;Rimfaxe;Rimfaxe; ;;;;;GrIS
+GGN0061;63,3056;-41,2961; ; ;Hjalte Gletsjer;Hjalte Gletsjer; ;RGI40-05.06324;G318697E63308N;-41,3032;63,3084;LGIC
+GGN0062;63,3086;-41,2467;Apusiigajik;Apusîkajik; ;Apusiigajik; ;RGI40-05.06320;G318744E63310N;-41,2560;63,3101;LGIC
+GGN0063;63,3255;-42,2718; ; ;Ygdrasil;Ygdrasil; ;RGI40-05.06267;G317703E63336N;-42,2975;63,3356;LGIC
+GGN0064;63,3304;-42,1594; ; ;Tjasse Gletsjer;Tjasse Gletsjer; ;;;;;GrIS
+GGN0065;63,3342;-40,7008;Apusiigajik;Apusîkajik; ;Apusiigajik; ;RGI40-05.06412;G318850E63397N;-41,1505;63,3966;LGIC
+GGN0066;63,3351;-41,5076; ; ;Vigge Gletsjer;Vigge Gletsjer; ;RGI40-05.06401;G318483E63335N;-41,5175;63,3349;LGIC
+GGN0067;63,3714;-41,5263;Qoornersaata Apuseertakajaa;Qôrnersâta Apusêrtakajâ;Njord Gletsjer;Qoornersaata Apuseertakajaa; ;RGI40-05.06394;G318464E63372N;-41,5364;63,3718;LGIC
+GGN0068;63,3833;-41,7167;Apuseerajik;Apusêrajik; ;Apuseerajik; ;RGI40-05.06423;G318284E63395N;-41,7162;63,3945;LGIC
+GGN0069;63,431;-41,9608;Kattilersarpik;Kagtilersarpik;Rumleren;Kattilersarpik;Apuseerngai;;;;;GrIS
+GGN0070;63,454;-41,9659;Singiiaaleqaaq;Singîâleqaoq; ;Singiiaaleqaaq;Tingiaaleraar;RGI40-05.06466;G318031E63454N;-41,9687;63,4536;LGIC
+GGN0071;63,4589;-41,815;Miialeqaaq;Mîaleqaoq; ;Miialeqaaq; ;RGI40-05.06485;G318182E63459N;-41,8182;63,4586;LGIC
+GGN0072;63,4596;-41,7496;Apusiigajik;Apusîkajik;Skjoldmøen;Apusiigajik;"Apusiikajik; Apusiigai";RGI40-05.06486;G318253E63432N;-41,7475;63,4320;LGIC
+GGN0073;63,5429;-41,9912; ; ;Thrym Gletsjer;Thrym Gletsjer; ;;;;;GrIS
+GGN0074;63,5576;-50,3999;Sermeq;Sermeq; ;Sermeq; ;;;;;GrIS
+GGN0075;63,5832;-41,2358; ; ;Sigyn Gletsjer;Sigyn Gletsjer; ;RGI40-05.06803;G318726E63593N;-41,2741;63,5928;LGIC
+GGN0076;63,5869;-41,6251; ; ;Storehund;Storehund; ;;;;;GrIS
+GGN0077;63,6081;-41,7483; ; ;Jomfruen;Jomfruen; ;;;;;GrIS
+GGN0078;63,6138;-41,5521; ; ;Lossen;Lossen; ;;;;;GrIS
+GGN0079;63,6407;-41,4878; ; ;Skorpionen;Skorpionen; ;;;;;GrIS
+GGN0080;63,6415;-41,1585; ; ;Tjalfe Gletsjer;Tjalfe Gletsjer; ;RGI40-05.06796;G318852E63633N;-41,1476;63,6333;LGIC
+GGN0081;63,6454;-41,0531; ; ;Røskva Gletsjer;Røskva Gletsjer; ;RGI40-05.06799;G318955E63641N;-41,0454;63,6406;LGIC
+GGN0082;63,6912;-41,8681; ; ;Mælkevejen;Mælkevejen; ;;;;;GrIS
+GGN0083;63,7046;-40,7387; ; ;Gymer Gletsjer;Gymer Gletsjer; ;RGI40-05.07003;G319232E63744N;-40,7676;63,7444;LGIC
+GGN0084;63,7051;-40,879; ; ;Gerd Gletsjer;Gerd Gletsjer; ;RGI40-05.07005;G319028E63741N;-40,9721;63,7405;LGIC
+GGN0085;63,7167;-41,65; ; ;Storebjørn;Storebjørn; ;;;;;GrIS
+GGN0086;63,7247;-40,9773; ; ;Ydun Gletsjer;Ydun Gletsjer; ;RGI40-05.07005;G319028E63741N;-40,9721;63,7405;LGIC
+GGN0087;63,8095;-40,6769; ; ;Gjallerbroen;Gjallerbroen; ;RGI40-05.07011;G319268E63812N;-40,7324;63,8117;LGIC
+GGN0088;63,8797;-40,7282; ; ;Gungner;Gungner; ;RGI40-05.07168;G319152E63854N;-40,8482;63,8536;LGIC
+GGN0089;63,8846;-41,7654; ; ;A.P. Bernstorff Gletsjer;A.P. Bernstorff Gletsjer; ;;;;;GrIS
+GGN0090;63,9;-41,3333; ; ;Sleipner;Sleipner; ;;;;;GrIS
+GGN0091;63,9502;-41,5146; ; ;Fimbulgletsjer;Fimbulgletsjer; ;;;;;GrIS
+GGN0092;64,1159;-40,607;Qapiarpik;Qapiarpik; ;Qapiarpik;Qapiarpi;RGI40-05.07193;G319241E64087N;-40,7588;64,0868;LGIC
+GGN0093;64,15;-49,75;Kangaasarsuup Sermia;Kangaussarssûp Sermia; ;Kangaasarsuup Sermia; ;;;;;GrIS
+GGN0094;64,2966;-49,6102;Kangiata Nunaata Sermia;Kangiata nunâta Sermia; ;Kangiata Nunaata Sermia; ;;;;;GrIS
+GGN0095;64,35;-41,5667; ; ;Gråulv;Gråulv; ;;;;;GrIS
+GGN0096;64,363;-40,9308;Apuseerserpia;Apusêrserpia; ;Apuseerserpia; ;;;;;GrIS
+GGN0097;64,3833;-49,4779;Akullersuup Sermia;Akugdlerssûp Sermia; ;Akullersuup Sermia; ;;;;;GrIS
+GGN0098;64,3981;-40,6551;Puisertoq;Puisertoq; ;Puisertoq; ;;;;;GrIS
+GGN0099;64,4049;-51,1232;Sermikasik; ; ;Sermikasik; ;RGI40-05.07469;G308910E64399N;-51,0902;64,3989;LGIC
+GGN0100;64,462;-40,2057;Kangerup Apusiia;Kangerup Apusîa; ;Kangerup Apusiia;Kangi Apusiia;RGI40-05.07490;G319659E64488N;-40,3412;64,4882;LGIC
+GGN0101;64,4872;-49,5064;Qamanaarsuup Sermia;Qamanârssûp Sermia; ;Qamanaarsuup Sermia; ;;;;;GrIS
+GGN0102;64,6672;-49,8576;Narsap Sermia;Narssap Sermia; ;Narsap Sermia; ;;;;;GrIS
+GGN0103;64,8667;-49,9;Kangilinnguata Sermia;Kangilínguata Sermia; ;Kangilinnguata Sermia; ;;;;;GrIS
+GGN0104;65,0731;-40,1955;Apuseeq;Apusêq; ;Apuseeq; ;;;;;GrIS
+GGN0105;65,2869;-50,4289;Saqqap Sermia;Sarqap Sermia; ;Saqqap Sermia; ;;;;;GrIS
+GGN0106;65,3167;-51,8333;Sermeralak;Sermeralak; ;Sermeralak; ;RGI40-05.00035;G308167E65307N;-51,8327;65,3069;LGIC
+GGN0107;65,6142;-52,4541;Sermeralak Killeq; ; ;Sermeralak Killeq; ;RGI40-05.00340;G307572E65613N;-52,4281;65,6132;LGIC
+GGN0108;65,628;-38,7084;Nattivit Apusiiat;Apusêrsêrpia; ;Nattivit Apusiiat;"Apuseerseerpia; Naddivid Apusiiad; Apuseer";;;;;GrIS
+GGN0109;65,6288;-52,0853;Qapiarfiup Sermia;Qapiarfiup Sermia; ;Qapiarfiup Sermia; ;RGI40-05.00115;G307874E65600N;-52,1262;65,6000;LGIC
+GGN0110;65,6326;-52,6537;Sermeralak; ; ;Sermeralak; ;RGI40-05.00111;G307352E65626N;-52,6485;65,6259;LGIC
+GGN0111;65,6472;-37,0777;Apusiaajik;Apusiâjik; ;Apusiaajik;Apusiaai;RGI40-05.11158;G322948E65651N;-37,0525;65,6512;LGIC
+GGN0112;65,649;-52,4373;Sermeralak Kangilleq; ; ;Sermeralak Kangilleq; ;RGI40-05.00355;G307607E65641N;-52,3931;65,6410;LGIC
+GGN0113;65,6551;-36,9815;Apusiaajik Kiatteq;Apusiâjik; ;Apusiaajik Kiatteq;"Apusiaajik; Apusiaai Kiadder";RGI40-05.11117;G323016E65653N;-36,9839;65,6528;LGIC
+GGN0114;65,6632;-51,5568;Aappilanileralak; ; ;Aappilanileralak; ;RGI40-05.00086;G308448E65663N;-51,5517;65,6631;LGIC
+GGN0115;65,7035;-38,7412; ; ;Bussemandgletsjer;Bussemandgletsjer; ;;;;;GrIS
+GGN0116;65,7333;-37;Apuseeq;Apusêq; ;Apuseeq; ;RGI40-05.11219;G322988E65738N;-37,0124;65,7379;LGIC
+GGN0117;65,8009;-38,2236;Apuseerajik Anngittumanngitteq; ;Hobbs Gletsjer;Apuseerajik Anngittumanngitteq;Apuseerngai anngitsumanngitser;RGI40-05.11225;G321802E65782N;-38,1978;65,7822;LGIC
+GGN0118;65,8609;-36,2318;Apuseertaa;Apusêrtâ; ;Apuseertaa; ;RGI40-05.11354;G323767E65862N;-36,2328;65,8616;LGIC
+GGN0119;65,863;-52,5227;Sermeralak; ; ;Sermeralak; ;RGI40-05.00268;G307470E65859N;-52,5300;65,8591;LGIC
+GGN0120;65,8673;-38,377;Apuseerajik;Apusêrajik;Hann Gletsjer;Apuseerajik;Apuseerngai;RGI40-05.11257;G321575E65856N;-38,4249;65,8555;LGIC
+GGN0121;65,8757;-37,4039; ; ;Dobbeltbræen;Dobbeltbræen; ;RGI40-05.11365;G322578E65882N;-37,4224;65,8822;LGIC
+GGN0122;65,9167;-36,55;Apusiiaajik;Apusiâjik; ;Apusiiaajik;"Apusiaajik; Apusiaai";RGI40-05.11398;G323454E65915N;-36,5459;65,9145;LGIC
+GGN0123;65,9268;-36,5802;Apusiigajik;Apusîgajik; ;Apusiigajik;"Apusiikajik; Apusiigai";RGI40-05.11414;G323425E65926N;-36,5755;65,9258;LGIC
+GGN0124;65,9281;-52,4308;Sermitsiaq Kangilleq; ; ;Sermitsiaq Kangilleq; ;RGI40-05.00828;G307587E65935N;-52,4135;65,9352;LGIC
+GGN0125;65,9333;-51,8;Aalasaama;Aulasâma; ;Aalasaama; ;RGI40-05.00314;G308176E65918N;-51,8245;65,9176;LGIC
+GGN0126;65,9357;-38,4601;Kangertivala Apusiiala Qeqqarterpaartaa;Apusêrajik;Brückner Gletsjer;Kangertivala Apusiiala Qeqqarterpaartaa;"Apuseerajik; Kangertsivala Apusiiala Qeqqartserpaartaa";;;;;GrIS
+GGN0127;65,9447;-37,4422;Apuseerajik;Apusêrajik; ;Apuseerajik;Apuseerngai;RGI40-05.11359;G322551E65918N;-37,4493;65,9180;LGIC
+GGN0128;65,9613;-52,0721;Inorersut Sermiat; ; ;Inorersut Sermiat; ;RGI40-05.00310;G307955E65949N;-52,0451;65,9493;LGIC
+GGN0129;65,9632;-52,2621;Taateraatsiaat Sermiat;Tâterâtsiait Sermiat; ;Taateraatsiaat Sermiat;Taateraat Sermiat Killeq;RGI40-05.00818;G307687E65965N;-52,3135;65,9645;LGIC
+GGN0130;65,9649;-52,5623;Sisuugussiviup Sermia;Sisûgússiviup Sermia; ;Sisuugussiviup Sermia; ;RGI40-05.00303;G307450E65956N;-52,5504;65,9562;LGIC
+GGN0131;65,9667;-52,5;Sermitaq Ammalortoq;Sermitaq Angmalortoq; ;Sermitaq Ammalortoq; ;RGI40-05.00839;G307519E65964N;-52,4809;65,9642;LGIC
+GGN0132;65,9833;-52,3;Itillineq;Itivdlineq; ;Itillineq; ;RGI40-05.00818;G307687E65965N;-52,3135;65,9645;LGIC
+GGN0133;65,9866;-38,4496;Kangertsivala Apusiia; ;Heim Gletsjer;Kangertsivala Apusiia; ;;;;;GrIS
+GGN0134;65,9906;-51,8946;Tapa;Tapa; ;Tapa; ;RGI40-05.00304;G308045E65929N;-51,9550;65,9293;LGIC
+GGN0135;66,0053;-52,4531;Taateraat Sermiat;Tâterât Sermiat; ;Taateraat Sermiat; ;RGI40-05.00800;G307859E66095N;-52,1410;66,0945;LGIC
+GGN0136;66,0096;-38,3644;Kattilertarpia;Kagtilersorpia; ;Kattilertarpia;"Kattilersorpia; Kaddilertsarpia";;;;;GrIS
+GGN0137;66,0121;-36,0128;Apuseeq;Apusineq; ;Apuseeq;Apusineq;RGI40-05.13934;G323982E66014N;-36,0178;66,0135;LGIC
+GGN0138;66,0152;-52,9947;Sermeralak;Sermeralak; ;Sermeralak;Sermeralaa;RGI40-05.00854;G307077E66077N;-52,9229;66,0765;LGIC
+GGN0139;66,0167;-52,2;Taateraatsiaat Sermiat;Tâterâtsiait Sermiat; ;Taateraatsiaat Sermiat;Taateraat Sermiat Kangilleq;RGI40-05.00798;G307793E66027N;-52,2069;66,0270;LGIC
+GGN0140;66,0167;-52,8167;Sermitsiaq;Sermitsiaq; ;Sermitsiaq; ;RGI40-05.00817;G307554E66152N;-52,4459;66,1519;LGIC
+GGN0141;66,0372;-52,0595;Salliarusiarsuit Sermiat;Sagdliarusiarssuit Sermiat; ;Salliarusiarsuit Sermiat; ;RGI40-05.00824;G307940E66043N;-52,0602;66,0430;LGIC
+GGN0142;66,0469;-36,3188;Apuseerajik;Apusêrajik; ;Apuseerajik;Apuseerngaiid;RGI40-05.11639;G323695E66046N;-36,3047;66,0463;LGIC
+GGN0143;66,0493;-52,4829;Avannarliup Sermia;Avangnardliup Sermia; ;Avannarliup Sermia; ;RGI40-05.00831;G307600E66099N;-52,4000;66,0993;LGIC
+GGN0144;66,05;-52;Salliarutsit Sermiat;Sagdliarutsit Sermiat; ;Salliarutsit Sermiat; ;RGI40-05.00822;G308004E66062N;-51,9958;66,0617;LGIC
+GGN0145;66,0607;-51,9042;Ippattaq;Ípagtaq; ;Ippattaq; ;RGI40-05.00821;G308098E66060N;-51,9020;66,0597;LGIC
+GGN0146;66,0699;-51,8629;Nakkarajooq;Nákarajôq; ;Nakkarajooq; ;RGI40-05.00814;G308093E66087N;-51,9070;66,0874;LGIC
+GGN0147;66,0851;-36,028; ; ;Stephan Gletsjer;Stephan Gletsjer; ;RGI40-05.13886;G323938E66079N;-36,0625;66,0791;LGIC
+GGN0148;66,1124;-36,7589; ; ;Kaarali Gletsjer;Kaarali Gletsjer; ;RGI40-05.13930;G323201E66153N;-36,7987;66,1529;LGIC
+GGN0149;66,1302;-53,013; ; ;Fagerbræ;Fagerbræ; ;RGI40-05.00846;G307026E66114N;-52,9745;66,1143;LGIC
+GGN0150;66,1324;-36,1343; ; ;Idrac Gletsjer;Idrac Gletsjer; ;RGI40-05.13995;G323748E66257N;-36,2521;66,2572;LGIC
+GGN0151;66,1833;-51,1667; ; ;Quantum Gletsjer;Quantum Gletsjer; ;RGI40-05.00445;G308765E66141N;-51,2355;66,1414;LGIC
+GGN0152;66,1833;-52,85; ; ;Dybe Rende;Dybe Rende; ;RGI40-05.00845;G307222E66172N;-52,7775;66,1717;LGIC
+GGN0153;66,187;-38,0714;Apuseerajik;Apusêrajik; ;Apuseerajik;Apuseerngai;;;;;GrIS
+GGN0154;66,2101;-36,2211;Apuseeq;Apusêq;Knud Rasmussen Gletsjer;Apuseeq; ;RGI40-05.13995;G323748E66257N;-36,2521;66,2572;LGIC
+GGN0155;66,2183;-52,7259; ; ;Lyngbræ;Lyngbræ; ;RGI40-05.00809;G307316E66184N;-52,6841;66,1836;LGIC
+GGN0156;66,2667;-51,3833; ; ;Tasersiaq Gletsjer;Tasersiaq Gletsjer; ;RGI40-05.00794;G308453E66278N;-51,5466;66,2781;LGIC
+GGN0157;66,2667;-52,6333; ; ;Vimmelskaftet;Vimmelskaftet; ;RGI40-05.00844;G307452E66239N;-52,5484;66,2389;LGIC
+GGN0158;66,3002;-36,7423; ; ;16. September Gletsjer;16. September Gletsjer; ;RGI40-05.13916;G323299E66302N;-36,7010;66,3024;LGIC
+GGN0159;66,3167;-51,4167; ; ;Sarfartooq Gletsjer;Sarfartooq Gletsjer; ;RGI40-05.00794;G308453E66278N;-51,5466;66,2781;LGIC
+GGN0160;66,3176;-35,7902;Apuseerajik;Apusêrajik; ;Apuseerajik; ;RGI40-05.13978;G324231E66323N;-35,7689;66,3231;LGIC
+GGN0161;66,3504;-52,5585;Serminnguaq;Sermínguaq; ;Serminnguaq; ;RGI40-05.00793;G307609E66296N;-52,3907;66,2959;LGIC
+GGN0162;66,3714;-36,1673; ; ;Håbet Gletsjer;Håbet Gletsjer; ;RGI40-05.13995;G323748E66257N;-36,2521;66,2572;LGIC
+GGN0163;66,3735;-38,3067; ; ;Helheim Gletsjer;Helheim Gletsjer; ;;;;;GrIS
+GGN0164;66,3803;-34,8863;Tuttiliip Kattertarpia;Tugtilîp Kagtilersorpia; ;Tuttiliip Kattertarpia;"Tuttiliip Kattilersorpia; Tuddiliip Kaddilertsarpia";RGI40-05.13754;G325104E66415N;-34,8964;66,4146;LGIC
+GGN0165;66,382;-37,5439;Apuseerajik;Apusêrajik;Fenris Gletsjer;Apuseerajik;Apuseerngai;;;;;GrIS
+GGN0166;66,3873;-35,2929;Nigertuluup Kattilertarpia Oqqorteq;Nigertulûp Kagtilersarpia orqorseq; ;Nigertuluup Kattilertarpia Oqqorteq;"Nigertuluup Kattilersorpia Oqqorseq; Ningertuluup Kaddilertsarpia Oqqortser";RGI40-05.13965;G324755E66481N;-35,2453;66,4810;LGIC
+GGN0167;66,4335;-35,1614;Nigertuluup Kattilertarpia Kiatteq;Nigertulûp Kagtilersarpia Kiáteq; ;Nigertuluup Kattilertarpia Kiatteq;"Nigertuluup Kattilersarpia Kiatteq; NIngertuluup Kaddilertsarpia Kiadder";RGI40-05.13965;G324755E66481N;-35,2453;66,4810;LGIC
+GGN0168;66,4436;-36,7381;Nigertiip Apusiia; ;Midgård Gletsjer;Nigertiip Apusiia;Ningertii apusiia;;;;;GrIS
+GGN0169;66,4475;-35,723;Kattilertarpia;Kagtilersorpia; ;Kattilertarpia;"Kattilersorpia; Kaddilertsarpia";RGI40-05.13961;G324527E66490N;-35,4731;66,4903;LGIC
+GGN0170;66,5008;-37,8436; ; ;Skakt Gletsjer;Skakt Gletsjer; ;RGI40-05.12459;G322152E66557N;-37,8484;66,5573;LGIC
+GGN0171;66,5056;-34,8588;Sulussuulip Apusiia;Sulugssûtip Apusîa;K.J.V. Steenstrup Søndre Bræ;Sulussuulip Apusiia;"Sulussuutip Apusiia; Tsulutsuulip Apusiia";RGI40-05.13952;G325098E66512N;-34,9024;66,5124;LGIC
+GGN0172;66,5145;-52,6893;Serminnguaq;Sermínguaq; ;Serminnguaq; ;RGI40-05.00991;G307314E66506N;-52,6861;66,5064;LGIC
+GGN0173;66,5209;-36,2361;Kattilersorpia;Kagtilersorpia;Glacier de France;Kattilersorpia; ;RGI40-05.13983;G324091E66567N;-35,9090;66,5668;LGIC
+GGN0174;66,5665;-36,7678; ; ;Franche Comté Gletsjer;Franche Comté Gletsjer; ;;;;;GrIS
+GGN0175;66,5955;-34,727; ; ;K.J.V. Steenstrup Nordre Bræ;K.J.V. Steenstrup Nordre Bræ; ;;;;;GrIS
+GGN0176;66,6219;-36,1169; ; ;Pourquoi-pas Gletsjer;Pourquoi-pas Gletsjer; ;RGI40-05.13983;G324091E66567N;-35,9090;66,5668;LGIC
+GGN0177;66,65;-36,6667; ; ;Femstjernen;Femstjernen; ;;;;;GrIS
+GGN0178;66,732;-36,1779; ; ;Champs Elysees Gletsjer;Champs Elysees Gletsjer; ;;;;;GrIS
+GGN0179;66,7333;-37,0667; ; ;Juragletsjeren;Juragletsjeren; ;;;;;GrIS
+GGN0180;66,7914;-36,2178; ; ;Kristian Gletsjer;Kristian Gletsjer; ;;;;;GrIS
+GGN0181;66,8312;-36,8344; ; ;Paris Gletsjer;Paris Gletsjer; ;;;;;GrIS
+GGN0182;66,8833;-36,75; ; ;Bjørnegletsjer;Bjørnegletsjer; ;;;;;GrIS
+GGN0183;66,9;-37,25; ; ;Døren;Døren; ;;;;;GrIS
+GGN0184;66,9304;-36,949; ; ;Forelporten;Forelporten; ;;;;;GrIS
+GGN0185;66,9315;-36,6762; ; ;Vinduet;Vinduet; ;;;;;GrIS
+GGN0186;66,9367;-34,1148; ; ;Laube Gletsjer;Laube Gletsjer; ;RGI40-05.12089;G325788E66942N;-34,2120;66,9415;LGIC
+GGN0187;66,9661;-36,741; ; ;Nordgabet;Nordgabet; ;;;;;GrIS
+GGN0188;67,1875;-50,1716;Isunnguata Sermia;Isúnguata Sermia; ;Isunnguata Sermia; ;;;;;GrIS
+GGN0189;67,5167;-49,9167;Inuppaat Quuat;Inugpait Qûat; ;Inuppaat Quuat; ;;;;;GrIS
+GGN0190;67,8774;-33,3799; ; ;Søndre Parallelgletsjer;Søndre Parallelgletsjer; ;RGI40-05.12680;G326477E67858N;-33,5228;67,8583;LGIC
+GGN0191;67,8935;-33,2983; ; ;Nordre Parallelgletsjer;Nordre Parallelgletsjer; ;RGI40-05.12680;G326477E67858N;-33,5228;67,8583;LGIC
+GGN0192;67,9422;-50,109; ; ;Geographical Union Gletsjer;Geographical Union Gletsjer; ;;;;;GrIS
+GGN0193;67,95;-32,45;Apuliliip Apusiia;Aputitêrtîp Apusîa;Polaric Gletsjer;Apuliliip Apusiia;"Aputiteertiip Apusiia; Apuliliip Apusiia";RGI40-05.12685;G327559E68005N;-32,4408;68,0045;LGIC
+GGN0194;67,9505;-50,3005;Usulluup Sermia;Usugdlûp Sermia;Poloniagletsjer;Usulluup Sermia; ;;;;;GrIS
+GGN0195;68,0833;-50,2667; ; ;J.P. Koch Gletsjer;J.P. Koch Gletsjer; ;;;;;GrIS
+GGN0196;68,1109;-32,856; ; ;Hutchinson Gletsjer;Hutchinson Gletsjer; ;RGI40-05.12685;G327559E68005N;-32,4408;68,0045;LGIC
+GGN0197;68,1167;-31,7; ; ;Tindegletsjer;Tindegletsjer; ;RGI40-05.12372;G328315E68124N;-31,6850;68,1235;LGIC
+GGN0198;68,1258;-31,6855; ; ;Brødregletsjer;Brødregletsjer; ;RGI40-05.12372;G328315E68124N;-31,6850;68,1235;LGIC
+GGN0199;68,1281;-31,613; ; ;Hammer Gletsjer;Hammer Gletsjer; ;RGI40-05.12414;G328401E68133N;-31,5990;68,1332;LGIC
+GGN0200;68,1409;-31,6752; ; ;Basisgletsjer;Basisgletsjer; ;RGI40-05.12402;G328322E68141N;-31,6783;68,1405;LGIC
+GGN0201;68,1545;-31,5739; ; ;Udløberen;Udløberen; ;RGI40-05.12567;G328426E68160N;-31,5740;68,1603;LGIC
+GGN0202;68,1758;-31,6404; ; ;Forbindelsesgletsjer;Forbindelsesgletsjer; ;RGI40-05.12568;G328377E68172N;-31,6234;68,1719;LGIC
+GGN0203;68,2236;-31,6658; ; ;Dobbeltgletsjeren;Dobbeltgletsjeren; ;RGI40-05.12692;G328363E68219N;-31,6369;68,2186;LGIC
+GGN0204;68,2558;-30,9283; ; ;Schelderup Gletsjer;Schelderup Gletsjer; ;RGI40-05.12852;G328959E68281N;-31,0410;68,2814;LGIC
+GGN0205;68,2679;-32,3974; ; ;Søndre Syenitgletsjer;Søndre Syenitgletsjer; ;RGI40-05.12686;G327585E68274N;-32,4146;68,2744;LGIC
+GGN0206;68,2912;-32,7787; ; ;Hovedvejen;Hovedvejen; ;RGI40-05.12903;G327175E68227N;-32,8248;68,2265;LGIC
+GGN0207;68,3054;-32,379; ; ;Nordre Syenitgletsjer;Nordre Syenitgletsjer; ;RGI40-05.12906;G327622E68308N;-32,3779;68,3084;LGIC
+GGN0208;68,3254;-51,0073;Akuliarutsip Sermia;Akuliarutsip Sermia;Nordenskiöld Gletsjer;Akuliarutsip Sermia;"Akuliarutsip Sermersua; Tasiusarsuup Sermersua";;;;;GrIS
+GGN0209;68,3333;-31,9167; ; ;Sidegletsjer;Sidegletsjer; ;RGI40-05.12769;G328155E68353N;-31,8455;68,3529;LGIC
+GGN0210;68,3454;-32,4722; ; ;Kælvegletsjer;Kælvegletsjer; ;RGI40-05.12934;G327414E68310N;-32,5857;68,3103;LGIC
+GGN0211;68,4557;-31,662; ; ;Frederiksborg Gletsjer;Frederiksborg Gletsjer; ;;;;;GrIS
+GGN0212;68,506;-30,9328; ; ;Sorgenfri Gletsjer;Sorgenfri Gletsjer; ;;;;;GrIS
+GGN0213;68,5822;-31,6375; ; ;Gaffelen;Gaffelen; ;;;;;GrIS
+GGN0214;68,5975;-32,0228; ; ;Courtauld Gletsjer;Courtauld Gletsjer; ;;;;;GrIS
+GGN0215;68,6164;-33,2201;Apuseeq Qinnilik;Apusêq Qivnilik; ;Apuseeq Qinnilik; ;;;;;GrIS
+GGN0216;68,6369;-29,3836; ; ;Rosenborg Gletsjer;Rosenborg Gletsjer; ;RGI40-05.13667;G330976E68786N;-29,0236;68,7861;LGIC
+GGN0217;68,6372;-31,4921; ; ;Læbæltet;Læbæltet; ;;;;;GrIS
+GGN0218;68,6746;-33,076; ; ;Kangerlussuaq Gletsjer;Kangerlussuaq Gletsjer; ;;;;;GrIS
+GGN0219;68,6934;-32,3728; ; ;Styrtegletsjer;Styrtegletsjer; ;;;;;GrIS
+GGN0220;68,7;-30,6167; ; ;Christian IV Gletsjer;Christian IV Gletsjer; ;;;;;GrIS
+GGN0221;68,7194;-32,6487; ; ;Nordfjord Gletsjer;Nordfjord Gletsjer; ;;;;;GrIS
+GGN0222;68,7247;-28,6544; ; ;Kronborg Gletsjer;Kronborg Gletsjer; ;RGI40-05.13667;G330976E68786N;-29,0236;68,7861;LGIC
+GGN0223;68,7497;-28,1278; ; ;Borggraven;Borggraven; ;RGI40-05.13536;G331157E69166N;-28,8434;69,1659;LGIC
+GGN0224;68,7853;-30,1831; ; ;Korridoren;Korridoren; ;;;;;GrIS
+GGN0225;68,8167;-27,0833; ; ;Sortebræ;Sortebræ; ;RGI40-05.13429;G332759E68980N;-27,2411;68,9795;LGIC
+GGN0226;68,8249;-31,0979; ; ;Isfaldgletsjer;Isfaldgletsjer; ;;;;;GrIS
+GGN0227;68,8667;-50,2833;Saqqarliup Sermia;Sarqardliup Sermia; ;Saqqarliup Sermia; ;;;;;GrIS
+GGN0228;68,8667;-26,1;Apuseeq Anittangasikkaajuk; ;Storbræ;Apuseeq Anittangasikkaajuk;Apuseer anittangasikkaaju;RGI40-05.13499;G333654E69030N;-26,3461;69,0304;LGIC
+GGN0229;68,9167;-50,2;Alanngorliup Sermia;Alángordliup Sermia; ;Alanngorliup Sermia; ;;;;;GrIS
+GGN0230;68,9461;-31,5994; ; ;Øvre Frederiksborg Gletsjer;Øvre Frederiksborg Gletsjer; ;;;;;GrIS
+GGN0231;68,9809;-29,9736; ; ;Gino Gletsjer;Gino Gletsjer; ;;;;;GrIS
+GGN0232;69,0667;-29,3; ; ;Kronborg Gletsjer;Kronborg Gletsjer; ;RGI40-05.13667;G330976E68786N;-29,0236;68,7861;LGIC
+GGN0233;69,1;-30,5833; ; ;Lindbergh Gletsjer;Lindbergh Gletsjer; ;;;;;GrIS
+GGN0234;69,1667;-31,1333; ; ;Seward Gletsjer;Seward Gletsjer; ;;;;;GrIS
+GGN0235;69,1833;-49,8;Sermeq Kujalleq;Sermeq Kujatdleq;Jakobshavn Isbræ;Sermeq Kujalleq; ;;;;;GrIS
+GGN0236;69,3;-53,5672; ; ;Petersen Gletsjer;Petersen Gletsjer; ;RGI40-05.00623;G306428E69317N;-53,5718;69,3166;LGIC
+GGN0237;69,3;-53,4005; ; ;Pjetursson Gletsjer;Pjetursson Gletsjer; ;RGI40-05.00602;G306613E69293N;-53,3869;69,2930;LGIC
+GGN0238;69,3333;-53,6005; ; ;Lyngmarksbræ;Lyngmarksbræ; ;RGI40-05.00621;G306381E69333N;-53,6191;69,3331;LGIC
+GGN0239;69,35;-53,5839; ; ;Chamberlin Gletsjer;Chamberlin Gletsjer; ;RGI40-05.00627;G306414E69352N;-53,5861;69,3524;LGIC
+GGN0240;69,3833;-50,2667;Sermeq Avannarleq;Sermeq Avangnardleq; ;Sermeq Avannarleq; ;;;;;GrIS
+GGN0241;69,4;-31; ; ;Gronau Gletsjer;Gronau Gletsjer; ;;;;;GrIS
+GGN0242;69,5;-29,8333; ; ;Grønlands Styrelse Gletsjer;Grønlands Styrelse Gletsjer; ;;;;;GrIS
+GGN0243;69,55;-53,0004; ; ;C.A. Nielsen Bræ;C.A. Nielsen Bræ; ;RGI40-05.01335;G307040E69541N;-52,9599;69,5406;LGIC
+GGN0244;69,6;-25,5; ; ;Dendritgletsjer;Dendritgletsjer; ;RGI40-05.13575;G333975E69553N;-26,0253;69,5532;LGIC
+GGN0245;69,6142;-52,918; ; ;Steenstrup Gletsjer;Steenstrup Gletsjer; ;RGI40-05.01358;G307148E69623N;-52,8520;69,6229;LGIC
+GGN0246;69,6567;-24,1294; ; ;Bartholin Bræ;Bartholin Bræ; ;RGI40-05.13717;G335358E69815N;-24,6421;69,8145;LGIC
+GGN0247;69,6939;-52,9475;Sermersuaq;Sermerssuaq;Storbræen;Sermersuaq; ;RGI40-05.01371;G306980E69700N;-53,0200;69,6998;LGIC
+GGN0248;69,7333;-52,817; ; ;Moltke Gletsjer;Moltke Gletsjer; ;RGI40-05.01355;G307166E69739N;-52,8339;69,7386;LGIC
+GGN0249;69,7836;-54,1239;Sermia;Sermia; ;Sermia; ;RGI40-05.01216;G305860E69779N;-54,1402;69,7793;LGIC
+GGN0250;69,808;-50,1851;Eqip Sermia;Eqip Sermia; ;Eqip Sermia; ;;;;;GrIS
+GGN0251;69,8167;-53,3338; ; ;Snekalotten;Snekalotten; ;RGI40-05.01445;G306658E69817N;-53,3417;69,8166;LGIC
+GGN0252;69,8567;-23,5624; ; ;Steno Bræ;Steno Bræ; ;RGI40-05.13505;G336006E69900N;-23,9944;69,9001;LGIC
+GGN0253;69,9009;-50,342;Kangilernata Sermia;Kangilernata Sermia; ;Kangilernata Sermia;"Kangilerngata Sermia;Sermeq Av";;;;;GrIS
+GGN0254;69,9333;-27,75; ; ;Kista Dan Gletsjer;Kista Dan Gletsjer; ;RGI40-05.13567;G331685E69750N;-28,3152;69,7500;LGIC
+GGN0255;69,9333;-27,0833; ; ;Magga Dan Gletsjer;Magga Dan Gletsjer; ;RGI40-05.13501;G332658E69567N;-27,3418;69,5665;LGIC
+GGN0256;69,996;-50,1596;Sermeq Kujalleq;Sermeq Kujatdleq; ;Sermeq Kujalleq;Alianaatsup Sermia;;;;;GrIS
+GGN0257;70,0496;-22,4683; ; ;Sfinxgletsjer;Sfinxgletsjer; ;RGI40-05.13619;G337529E70042N;-22,4713;70,0418;LGIC
+GGN0258;70,0497;-28,6343; ; ;Gåsegletsjer;Gåsegletsjer; ;RGI40-05.14872;G330936E69934N;-29,0638;69,9341;LGIC
+GGN0259;70,0567;-22,7303;Ilinnigajia;Ilivnikajia;Roma Gletsjer;Ilinnigajia;"Ilinnikajia; Ilinnigajja";RGI40-05.13616;G337269E70048N;-22,7308;70,0477;LGIC
+GGN0260;70,0652;-26,2688; ; ;Sydbræ;Sydbræ; ;RGI40-05.13722;G333752E70017N;-26,2477;70,0167;LGIC
+GGN0261;70,0667;-23,3333; ; ;Torvgletsjer;Torvgletsjer; ;RGI40-05.13568;G336622E69997N;-23,3778;69,9968;LGIC
+GGN0262;70,0784;-22,9249; ; ;Milano Gletsjer;Milano Gletsjer; ;RGI40-05.13497;G337049E70068N;-22,9511;70,0679;LGIC
+GGN0263;70,0824;-22,4312;Kikkiagajik; ;Kamelgletsjer;Kikkiagajik;Kikkiagai;RGI40-05.14995;G337618E70091N;-22,3823;70,0914;LGIC
+GGN0264;70,0838;-23,57; ; ;Østre Borggletsjer;Østre Borggletsjer; ;RGI40-05.13565;G336337E70062N;-23,6634;70,0620;LGIC
+GGN0265;70,0853;-50,2468;Sermeq Avannarleq;Sermeq Avangnardleq; ;Sermeq Avannarleq; ;;;;;GrIS
+GGN0266;70,0875;-23,1274;Nakkaagajik Avatteq;Nákâkajik; ;Nakkaagajik Avatteq;"Nakkaakajik; Nakkaagai; Nakkaagai avadder";RGI40-05.13628;G336904E70076N;-23,0956;70,0760;LGIC
+GGN0267;70,0993;-23,8397;Nakkaagajik Timerseq; ;Vestre Borggletsjer;Nakkaagajik Timerseq;Nakkaagai Dimerser;RGI40-05.13564;G335798E70038N;-24,2019;70,0384;LGIC
+GGN0268;70,1031;-23,4604; ; ;Torvet;Torvet; ;RGI40-05.13566;G336557E70090N;-23,4434;70,0903;LGIC
+GGN0269;70,1597;-26,8597; ; ;Rævebræ;Rævebræ; ;RGI40-05.13281;G333205E70140N;-26,7951;70,1401;LGIC
+GGN0270;70,1709;-25,9126; ; ;Østbræ;Østbræ; ;RGI40-05.13625;G334135E70167N;-25,8648;70,1672;LGIC
+GGN0271;70,1747;-24,1493; ; ;Månegletsjer;Månegletsjer; ;RGI40-05.13495;G335865E70129N;-24,1355;70,1289;LGIC
+GGN0272;70,1823;-25,1091; ; ;Bredegletsjer;Bredegletsjer; ;RGI40-05.13726;G334864E70010N;-25,1365;70,0096;LGIC
+GGN0273;70,1833;-24,5167; ; ;Solgletsjer;Solgletsjer; ;RGI40-05.13496;G335518E70165N;-24,4821;70,1648;LGIC
+GGN0274;70,2578;-24,773; ; ;Foldegletsjer;Foldegletsjer; ;RGI40-05.13728;G335200E70232N;-24,8005;70,2321;LGIC
+GGN0275;70,2942;-29,4703; ; ;Vestfjord Gletsjer;Vestfjord Gletsjer; ;;;;;GrIS
+GGN0276;70,2969;-25,0435; ; ;Helgegletsjer;Helgegletsjer; ;RGI40-05.13464;G334981E70270N;-25,0192;70,2696;LGIC
+GGN0277;70,3479;-51,355;Sermikassak;Sermikavsak; ;Sermikassak; ;RGI40-05.02159;G308607E70361N;-51,3926;70,3605;LGIC
+GGN0278;70,4;-51,8333;Sermersuaq;Sermerssuaq; ;Sermersuaq; ;RGI40-05.02163;G308199E70378N;-51,8006;70,3778;LGIC
+GGN0279;70,4054;-50,5364;Sermeq Kujalleq;Sermeq Kujatdleq;Store Gletsjer;Sermeq Kujalleq; ;;;;;GrIS
+GGN0280;70,4122;-51,566;Ilusissup Sermia;Ilusigsup Sermia; ;Ilusissup Sermia; ;RGI40-05.02147;G308389E70400N;-51,6109;70,3997;LGIC
+GGN0281;70,4754;-51,9816;Umiartorfiup Sermia;Umiartorfiup Sermia; ;Umiartorfiup Sermia; ;RGI40-05.02123;G307948E70447N;-52,0517;70,4471;LGIC
+GGN0282;70,481;-52,5397;Sermikassak;Sermikavsak; ;Sermikassak; ;RGI40-05.02126;G307537E70486N;-52,4633;70,4863;LGIC
+GGN0283;70,4833;-29,2833; ; ;Døde Bræ;Døde Bræ; ;;;;;GrIS
+GGN0284;70,5316;-52,0627;Assakaat Sermiat;Agssakait Sermiat; ;Assakaat Sermiat; ;RGI40-05.02117;G307855E70484N;-52,1450;70,4839;LGIC
+GGN0285;70,5319;-28,9019; ; ;Rolige Bræ;Rolige Bræ; ;;;;;GrIS
+GGN0286;70,5412;-29,3363; ; ;Langemanden;Langemanden; ;RGI40-05.15186;G330611E70544N;-29,3892;70,5435;LGIC
+GGN0287;70,5454;-50,4896;Sermeq Avannarleq;Sermeq Avangnardleq;Lille Gletsjer;Sermeq Avannarleq; ;;;;;GrIS
+GGN0288;70,6225;-53,402;Aaffarsuup Sermia;Auvfarssûp Sermia; ;Aaffarsuup Sermia; ;RGI40-05.02281;G306592E70619N;-53,4085;70,6194;LGIC
+GGN0289;70,6251;-52,8178;Sermersuaq;Sermerssuaq; ;Sermersuaq; ;RGI40-05.02318;G307216E70649N;-52,7843;70,6488;LGIC
+GGN0290;70,6333;-50,6167;Sermilik;Sermilik;Sermilik Isbræ;Sermilik; ;;;;;GrIS
+GGN0291;70,6399;-22,1009; ; ;Grete Gletsjer;Grete Gletsjer; ;RGI40-05.15821;G337976E70640N;-22,0240;70,6399;LGIC
+GGN0292;70,6746;-53,2073;Qiterlikassaap Sermia;Qiterdlikavsaup Sermia; ;Qiterlikassaap Sermia; ;RGI40-05.02278;G306792E70668N;-53,2078;70,6677;LGIC
+GGN0293;70,6768;-22,1299; ; ;Hans Gletsjer;Hans Gletsjer; ;RGI40-05.15836;G337933E70679N;-22,0673;70,6789;LGIC
+GGN0294;70,6833;-21,8667;Apusiikajik;Apusîkajik;Aage Nielsen Gletsjer;Apusiikajik; ;RGI40-05.15834;G338097E70681N;-21,9028;70,6810;LGIC
+GGN0295;70,7184;-50,6523;Kangilleq;Kangigdleq; ;Kangilleq; ;;;;;GrIS
+GGN0296;70,735;-21,9603; ; ;Bjerring Pedersen Gletsjer;Bjerring Pedersen Gletsjer; ;RGI40-05.15827;G338040E70737N;-21,9598;70,7369;LGIC
+GGN0297;70,7474;-50,6447;Sisoortartukassak;Sisôrtartukavsak; ;Sisoortartukassak; ;;;;;GrIS
+GGN0298;70,8021;-26,2411; ; ;Korridoren;Korridoren; ;RGI40-05.15467;G333613E70810N;-26,3872;70,8097;LGIC
+GGN0299;70,8268;-50,7627;Sermeq Silarleq;Sermeq Silardleq; ;Sermeq Silarleq; ;;;;;GrIS
+GGN0300;70,8463;-21,8827; ; ;Emmanuel Gletsjer;Emmanuel Gletsjer; ;RGI40-05.16232;G338047E70864N;-21,9527;70,8639;LGIC
+GGN0301;70,9359;-52,0836;Serminnguaq;Sermínguaq; ;Serminnguaq; ;RGI40-05.02345;G307956E70929N;-52,0442;70,9292;LGIC
+GGN0302;70,9541;-51,5766;Sisuugajooq;Sisûgajôq; ;Sisuugajooq; ;RGI40-05.02359;G308485E70961N;-51,5146;70,9613;LGIC
+GGN0303;70,9909;-50,9227;Perlerfiup Sermia;Perdlerfiup Sermia; ;Perlerfiup Sermia; ;;;;;GrIS
+GGN0304;71,0015;-51,4613;Sermipalaaq; ; ;Sermipalaaq; ;RGI40-05.02353;G308510E70986N;-51,4903;70,9857;LGIC
+GGN0305;71,0275;-50,8354;Sermeq Avannarleq;Sermeq Avangnardleq; ;Sermeq Avannarleq;Avannarleq;;;;;GrIS
+GGN0306;71,0349;-51,7;Sermikassak;Sermikavsak; ;Sermikassak; ;RGI40-05.02352;G308332E71004N;-51,6682;71,0040;LGIC
+GGN0307;71,1435;-51,3648;Tassartooq;Tavsartôq; ;Tassartooq; ;RGI40-05.02422;G308609E71159N;-51,3909;71,1585;LGIC
+GGN0308;71,15;-51,1667;Qaamarujuup Sermia;Qaumarujûp Sermia; ;Qaamarujuup Sermia;Qaamarujuup Sermikassaa;;;;;GrIS
+GGN0309;71,1667;-28,0833; ; ;Eielson Gletsjer;Eielson Gletsjer; ;;;;;GrIS
+GGN0310;71,1745;-26,598; ; ;Edward Bailey Gletsjer;Edward Bailey Gletsjer; ;RGI40-05.16072;G333444E71216N;-26,5560;71,2164;LGIC
+GGN0311;71,1911;-52,7654;Serminnguaq;Sermínguaq; ;Serminnguaq;Sermikassak;RGI40-05.02495;G307266E71206N;-52,7337;71,2057;LGIC
+GGN0312;71,2362;-51,6242;Umiatsiakassak; ; ;Umiatsiakassak; ;RGI40-05.02417;G308407E71224N;-51,5926;71,2236;LGIC
+GGN0313;71,2493;-51,4707;Kangerluarsuup Sermia;Kangerdluarssûp Sermia; ;Kangerluarsuup Sermia; ;;;;;GrIS
+GGN0314;71,25;-28,8333; ; ;Vindue Gletsjer;Vindue Gletsjer; ;;;;;GrIS
+GGN0315;71,2578;-52,0132;Aappaluttukassaap Kangiani Sermikassak;Augpalugtukavsaup Kangiane Sermikavsak; ;Aappaluttukassaap Kangiani Sermikassak; ;RGI40-05.02452;G307917E71273N;-52,0835;71,2728;LGIC
+GGN0316;71,2667;-53,0333;Qunnertusup Sermia;Quvnertussup Sermia; ;Qunnertusup Sermia; ;RGI40-05.02489;G307163E71277N;-52,8370;71,2765;LGIC
+GGN0317;71,2833;-27,5333; ; ;Syvsøstre Bræ;Syvsøstre Bræ; ;RGI40-05.16097;G332579E71266N;-27,4215;71,2663;LGIC
+GGN0318;71,3134;-53,0942;Sermeq Qiterleq;Sermeq Qiterdleq; ;Sermeq Qiterleq; ;RGI40-05.02486;G307016E71310N;-52,9842;71,3103;LGIC
+GGN0319;71,3295;-53,0957;Qungulertusup Sermia;Qungulertussup Sermia; ;Qungulertusup Sermia; ;RGI40-05.02485;G307062E71341N;-52,9382;71,3411;LGIC
+GGN0320;71,3298;-25,9038;Apusinigajik;Apusinikajik; ;Apusinigajik; ;RGI40-05.16061;G333795E71323N;-26,2049;71,3234;LGIC
+GGN0321;71,3478;-51,8294;Sermikassak;Sermikavsak; ;Sermikassak; ;RGI40-05.02541;G308135E71360N;-51,8652;71,3601;LGIC
+GGN0322;71,4129;-52,0067;Nunaarsussuup Oqquatungaani Sermikassak; ; ;Nunaarsussuup Oqquatungaani Sermikassak; ;RGI40-05.02526;G308023E71368N;-51,9767;71,3681;LGIC
+GGN0323;71,4193;-51,9238;Nunaarsussuup Kangiatungaani Sermikassak; ; ;Nunaarsussuup Kangiatungaani Sermikassak; ;RGI40-05.02527;G308139E71396N;-51,8615;71,3961;LGIC
+GGN0324;71,4333;-29,5833; ; ;Freuchen Gletsjer;Freuchen Gletsjer; ;;;;;GrIS
+GGN0325;71,435;-51,4196;Sermip Kujataatungaani Sermikassak; ; ;Sermip Kujataatungaani Sermikassak; ;RGI40-05.02547;G308526E71392N;-51,4743;71,3916;LGIC
+GGN0326;71,4588;-51,3101;Kangerlussuup Sermia; ; ;Kangerlussuup Sermia; ;;;;;GrIS
+GGN0327;71,5015;-51,7892;Nakkala; ; ;Nakkala; ;RGI40-05.02619;G308040E71507N;-51,9601;71,5068;LGIC
+GGN0328;71,5187;-51,6101;Sermikassak; ; ;Sermikassak; ;RGI40-05.02622;G308214E71544N;-51,7863;71,5438;LGIC
+GGN0329;71,5207;-25,3095; ; ;Oxford Gletsjer;Oxford Gletsjer; ;RGI40-05.17200;G334740E71586N;-25,2602;71,5859;LGIC
+GGN0330;71,5663;-52,1744;Tinumanikassaata Sermia; ; ;Tinumanikassaata Sermia; ;RGI40-05.02616;G307887E71521N;-52,1126;71,5211;LGIC
+GGN0331;71,5914;-51,7084;Sermikassak;Sermikavsak;Johannes Bræ;Sermikassak; ;;;;;GrIS
+GGN0332;71,6169;-25,5059; ; ;Løberen;Løberen; ;RGI40-05.17150;G334470E71600N;-25,5303;71,6003;LGIC
+GGN0333;71,6454;-24,9199; ; ;Leo Gletsjer;Leo Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0334;71,6557;-25,0079; ; ;Mercurius Gletsjer;Mercurius Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0335;71,6717;-25,2579; ; ;Ursus Minor Gletsjer;Ursus Minor Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0336;71,6794;-53,2674;Sermikassak; ; ;Sermikassak; ;RGI40-05.02724;G306804E71662N;-53,1958;71,6616;LGIC
+GGN0337;71,6846;-25,1825; ; ;Virgo Gletsjer;Virgo Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0338;71,6887;-25,2629; ; ;Jupiter Gletsjer;Jupiter Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0339;71,6939;-24,9805; ; ;Bjørnbo Gletsjer;Bjørnbo Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0340;71,6975;-25,7829; ; ;Borgbjerg Gletsjer;Borgbjerg Gletsjer; ;RGI40-05.17145;G334174E71767N;-25,8256;71,7668;LGIC
+GGN0341;71,6983;-25,3621; ; ;Ursus Major Gletsjer;Ursus Major Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0342;71,7241;-25,3184; ; ;Orion Gletsjer;Orion Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0343;71,7405;-25,2599; ; ;Pegasus Gletsjer;Pegasus Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0344;71,7442;-24,8901; ; ;Saturn Gletsjer;Saturn Gletsjer; ;RGI40-05.17220;G335105E71744N;-24,8947;71,7444;LGIC
+GGN0345;71,75;-29; ; ;Daugaard-Jensen Gletsjer;Daugaard-Jensen Gletsjer; ;;;;;GrIS
+GGN0346;71,7548;-25,0045; ; ;Mars Gletsjer;Mars Gletsjer; ;RGI40-05.17177;G335124E71666N;-24,8763;71,6664;LGIC
+GGN0347;71,7723;-51,4951;Kangilliup Sermia;Kangigdliup Sermia;Rink Isbræ;Kangilliup Sermia; ;;;;;GrIS
+GGN0348;71,8063;-52,3578;Umiammakku Sermiat;Umiámáko Sermiat;Umiammakku Isbræ;Umiammakku Sermiat;Umiammakku Sermia;;;;;GrIS
+GGN0349;71,8705;-24,1855; ; ;Nedre Randgletsjer;Nedre Randgletsjer; ;RGI40-05.17743;G335827E71868N;-24,1733;71,8677;LGIC
+GGN0350;71,8763;-23,9829; ; ;Breithorn Gletsjer;Breithorn Gletsjer; ;RGI40-05.17067;G335975E71859N;-24,0255;71,8592;LGIC
+GGN0351;71,8833;-24,15; ; ;Øvre Randgletsjer;Øvre Randgletsjer; ;RGI40-05.17071;G335932E71895N;-24,0677;71,8948;LGIC
+GGN0352;71,8971;-24,149; ; ;Aldebaran Gletsjer;Aldebaran Gletsjer; ;RGI40-05.17071;G335932E71895N;-24,0677;71,8948;LGIC
+GGN0353;71,9101;-25,4527; ; ;Duart Gletsjer;Duart Gletsjer; ;RGI40-05.17192;G334487E71915N;-25,5134;71,9145;LGIC
+GGN0354;71,9116;-23,7997; ; ;Søndergletsjer;Søndergletsjer; ;RGI40-05.17065;G336181E71913N;-23,8195;71,9129;LGIC
+GGN0355;71,9159;-24,6469; ; ;Storgletsjer;Storgletsjer; ;RGI40-05.17160;G335162E71964N;-24,8384;71,9640;LGIC
+GGN0356;71,9211;-26,3723; ; ;Sydgletsjer;Sydgletsjer; ;RGI40-05.17186;G333680E71859N;-26,3201;71,8593;LGIC
+GGN0357;71,9217;-23,9131; ; ;Hvidefirn;Hvidefirn; ;RGI40-05.17163;G335939E71927N;-24,0613;71,9274;LGIC
+GGN0358;71,932;-25,5232; ; ;Spærregletsjer;Spærregletsjer; ;RGI40-05.17192;G334487E71915N;-25,5134;71,9145;LGIC
+GGN0359;71,9337;-24,0653; ; ;Sirius Gletsjer;Sirius Gletsjer; ;RGI40-05.17163;G335939E71927N;-24,0613;71,9274;LGIC
+GGN0360;71,9416;-23,7826; ; ;Cirkusgletsjer;Cirkusgletsjer; ;RGI40-05.17062;G336219E71937N;-23,7811;71,9367;LGIC
+GGN0361;71,945;-25,8438; ; ;Prinsessegletsjer;Prinsessegletsjer; ;RGI40-05.17084;G334134E71899N;-25,8664;71,8987;LGIC
+GGN0362;71,9466;-25,4366; ; ;Parker Piece;Parker Piece; ;RGI40-05.17192;G334487E71915N;-25,5134;71,9145;LGIC
+GGN0363;71,95;-24,3; ; ;Schuchert Gletsjer;Schuchert Gletsjer; ;RGI40-05.17199;G335513E72006N;-24,4872;72,0063;LGIC
+GGN0364;71,9512;-26,6473; ; ;Toscano Gletsjer;Toscano Gletsjer; ;RGI40-05.17126;G333324E71890N;-26,6761;71,8896;LGIC
+GGN0365;71,9635;-24,2344; ; ;Arcturus Gletsjer;Arcturus Gletsjer; ;RGI40-05.17199;G335513E72006N;-24,4872;72,0063;LGIC
+GGN0366;71,9643;-23,7558; ; ;Termier Gletsjer;Termier Gletsjer; ;RGI40-05.17782;G336238E71962N;-23,7621;71,9623;LGIC
+GGN0367;71,9651;-24,1823; ; ;Bredefirn;Bredefirn; ;RGI40-05.17199;G335513E72006N;-24,4872;72,0063;LGIC
+GGN0368;71,9667;-51,1667;Kangerlussuup Sermersua;Kangerdlugssûp Sermerssua; ;Kangerlussuup Sermersua; ;;;;;GrIS
+GGN0369;71,9765;-25,1462; ; ;Canta Bræ;Canta Bræ; ;RGI40-05.17118;G334533E72097N;-25,4666;72,0966;LGIC
+GGN0370;71,9807;-24,1573; ; ;Langefirn;Langefirn; ;RGI40-05.17199;G335513E72006N;-24,4872;72,0063;LGIC
+GGN0371;71,9847;-23,7786; ; ;Nedre Antarctic Gletsjer;Nedre Antarctic Gletsjer; ;RGI40-05.17175;G336173E71978N;-23,8269;71,9777;LGIC
+GGN0372;71,9849;-23,8516; ; ;Nedre Studer Gletsjer;Nedre Studer Gletsjer; ;RGI40-05.17175;G336173E71978N;-23,8269;71,9777;LGIC
+GGN0373;71,9857;-24,1225; ; ;Mellemgletsjer;Mellemgletsjer; ;RGI40-05.17165;G335855E71993N;-24,1449;71,9933;LGIC
+GGN0374;71,9906;-24,0389; ; ;Kargletsjer;Kargletsjer; ;RGI40-05.17049;G336036E71975N;-23,9644;71,9753;LGIC
+GGN0375;71,992;-24,8181; ; ;Storgletsjer;Storgletsjer; ;RGI40-05.17160;G335162E71964N;-24,8384;71,9640;LGIC
+GGN0376;71,9922;-23,9226; ; ;Trestrømmen;Trestrømmen;;RGI40-05.17049;G336036E71975N;-23,9644;71,9753;LGIC
+GGN0377;72,0034;-55,3242;Sermersuaq;Sermerssuaq; ;Sermersuaq; ;RGI40-05.03148;G304671E72005N;-55,3286;72,0046;LGIC
+GGN0378;72,0066;-23,8284; ; ;Nedre Studer Gletsjer;Nedre Studer Gletsjer; ;RGI40-05.17056;G336149E72004N;-23,8508;72,0037;LGIC
+GGN0379;72,0115;-25,6215; ; ;Spærregletsjer;Spærregletsjer; ;RGI40-05.17192;G334487E71915N;-25,5134;71,9145;LGIC
+GGN0380;72,0167;-27,9667; ; ;Universitetets Gletsjer;Universitetets Gletsjer; ;RGI40-05.16816;G331883E72130N;-28,1173;72,1295;LGIC
+GGN0381;72,0167;-25,4333; ; ;Krabbegletsjer;Krabbegletsjer; ;RGI40-05.17070;G334634E71988N;-25,3661;71,9875;LGIC
+GGN0382;72,0167;-24,1333; ; ;Vestre Gletsjer;Vestre Gletsjer; ;RGI40-05.17168;G335805E72027N;-24,1948;72,0269;LGIC
+GGN0383;72,0175;-24,0809; ; ;Mellemgletsjer;Mellemgletsjer; ;RGI40-05.17165;G335855E71993N;-24,1449;71,9933;LGIC
+GGN0384;72,0194;-23,8359; ; ;Øvre Studer Gletsjer;Øvre Studer Gletsjer; ;RGI40-05.17794;G336153E72017N;-23,8469;72,0173;LGIC
+GGN0385;72,0266;-23,936; ; ;Sukces Gletsjer;Sukces Gletsjer; ;RGI40-05.17796;G336084E72025N;-23,9165;72,0254;LGIC
+GGN0386;72,0293;-24,0038; ; ;Østre Gletsjer;Østre Gletsjer; ;RGI40-05.17049;G336036E71975N;-23,9644;71,9753;LGIC
+GGN0387;72,0333;-25,2833; ; ;Tioram Gletsjer;Tioram Gletsjer; ;RGI40-05.17118;G334533E72097N;-25,4666;72,0966;LGIC
+GGN0388;72,0345;-23,9124; ; ;Retrætegletsjer;Retrætegletsjer; ;RGI40-05.17808;G336131E72040N;-23,8695;72,0397;LGIC
+GGN0389;72,036;-54,8766;Qatsinneq;Qatsingneq; ;Qatsinneq; ;RGI40-05.03185;G305094E72041N;-54,9063;72,0407;LGIC
+GGN0390;72,0373;-52,6054;Salliarutsip Sermia;Sagdliarutsip Sermia;Inngia Isbræ;Salliarutsip Sermia; ;;;;;GrIS
+GGN0391;72,05;-25,7667; ; ;Smallegletsjer;Smallegletsjer; ;RGI40-05.17019;G334126E72089N;-25,8736;72,0894;LGIC
+GGN0392;72,053;-25,2319; ; ;Sefström Gletsjer;Sefström Gletsjer; ;RGI40-05.17118;G334533E72097N;-25,4666;72,0966;LGIC
+GGN0393;72,0669;-26,0048; ; ;Scioragletsjer;Scioragletsjer; ;RGI40-05.17035;G334006E72088N;-25,9939;72,0875;LGIC
+GGN0394;72,0833;-28,2333; ; ;F. Graae Gletsjer;F. Graae Gletsjer; ;RGI40-05.16814;G331780E72051N;-28,2204;72,0505;LGIC
+GGN0395;72,0833;-24,7167; ; ;Glamis Gletsjer;Glamis Gletsjer; ;RGI40-05.17171;G335293E72137N;-24,7069;72,1369;LGIC
+GGN0396;72,0833;-24,5; ; ;Kismul Gletsjer;Kismul Gletsjer; ;RGI40-05.17057;G335563E72066N;-24,4369;72,0659;LGIC
+GGN0397;72,0833;-24,3833; ; ;Skelbræ;Skelbræ; ;RGI40-05.17057;G335563E72066N;-24,4369;72,0659;LGIC
+GGN0398;72,0952;-25,2426; ; ;Gullygletsjer;Gullygletsjer; ;RGI40-05.17118;G334533E72097N;-25,4666;72,0966;LGIC
+GGN0399;72,0962;-25,1727; ; ;Cavendish Gletsjer;Cavendish Gletsjer; ;RGI40-05.17118;G334533E72097N;-25,4666;72,0966;LGIC
+GGN0400;72,1074;-26,1993; ; ;Langkløftgletsjer;Langkløftgletsjer; ;RGI40-05.17036;G333890E72125N;-26,1100;72,1247;LGIC
+GGN0401;72,1167;-24,5833; ; ;Beaumaris Gletsjer;Beaumaris Gletsjer; ;RGI40-05.17171;G335293E72137N;-24,7069;72,1369;LGIC
+GGN0402;72,1333;-25,65; ; ;Trekantgletsjer;Trekantgletsjer; ;RGI40-05.17284;G334342E72139N;-25,6583;72,1394;LGIC
+GGN0403;72,1333;-24,5833; ; ;Bersærkerbræ;Bersærkerbræ; ;RGI40-05.17171;G335293E72137N;-24,7069;72,1369;LGIC
+GGN0404;72,1343;-27,6158; ; ;Jomfru Gletsjer;Jomfru Gletsjer; ;RGI40-05.16807;G332216E72175N;-27,7845;72,1747;LGIC
+GGN0405;72,1364;-53,8372;Sermikassak;Sermikavsak; ;Sermikassak; ;RGI40-05.03166;G306140E72118N;-53,8605;72,1183;LGIC
+GGN0406;72,1667;-25,7667; ; ;Sydvestgletsjer;Sydvestgletsjer; ;RGI40-05.17047;G334184E72124N;-25,8165;72,1236;LGIC
+GGN0407;72,1667;-22,5667; ; ;Tårngletsjer;Tårngletsjer; ;RGI40-05.18669;G337470E72164N;-22,5303;72,1640;LGIC
+GGN0408;72,1667;-22,35; ; ;Årringgletsjer;Årringgletsjer; ;RGI40-05.18674;G337664E72169N;-22,3365;72,1688;LGIC
+GGN0409;72,1833;-24,6667; ; ;Harlech Gletsjer;Harlech Gletsjer; ;RGI40-05.17171;G335293E72137N;-24,7069;72,1369;LGIC
+GGN0410;72,185;-25,2984; ; ;Vikingebræ;Vikingebræ; ;RGI40-05.17117;G334930E72170N;-25,0698;72,1696;LGIC
+GGN0411;72,1922;-22,4374; ; ;Rundgletsjer;Rundgletsjer; ;RGI40-05.18677;G337565E72191N;-22,4348;72,1912;LGIC
+GGN0412;72,1929;-25,9228; ; ;Sandgletsjer;Sandgletsjer; ;RGI40-05.17042;G334024E72192N;-25,9764;72,1920;LGIC
+GGN0413;72,2;-25,0667; ; ;Frihedsgletsjer;Frihedsgletsjer; ;RGI40-05.17117;G334930E72170N;-25,0698;72,1696;LGIC
+GGN0414;72,2;-24,5667; ; ;Tårnfjeld Gletsjer;Tårnfjeld Gletsjer; ;RGI40-05.17170;G335397E72218N;-24,6027;72,2183;LGIC
+GGN0415;72,25;-25,25; ; ;Fangsthyttegletsjer;Fangsthyttegletsjer; ;RGI40-05.17344;G334791E72234N;-25,2086;72,2336;LGIC
+GGN0416;72,2572;-24,4911; ; ;Flødegletsjer;Flødegletsjer; ;RGI40-05.17174;G335436E72251N;-24,5639;72,2511;LGIC
+GGN0417;72,2576;-22,6804; ; ;Sjapgletsjer;Sjapgletsjer; ;RGI40-05.18682;G337333E72263N;-22,6666;72,2633;LGIC
+GGN0418;72,2706;-22,6342; ; ;Bamsegletsjer;Bamsegletsjer; ;RGI40-05.18682;G337333E72263N;-22,6666;72,2633;LGIC
+GGN0419;72,2722;-22,5101; ; ;Buegletsjer;Buegletsjer; ;RGI40-05.18689;G337493E72270N;-22,5068;72,2701;LGIC
+GGN0420;72,2833;-24,5833; ; ;Pianofirn;Pianofirn; ;RGI40-05.17116;G335410E72273N;-24,5902;72,2730;LGIC
+GGN0421;72,2833;-24,7167; ; ;Skjoldungebræ;Skjoldungebræ; ;RGI40-05.17053;G335329E72221N;-24,6708;72,2206;LGIC
+GGN0422;72,2833;-22,8; ; ;Forkgletsjer;Forkgletsjer; ;RGI40-05.18729;G337266E72308N;-22,7342;72,3082;LGIC
+GGN0423;72,2834;-26,7563; ; ;Violingletsjer;Violingletsjer; ;;;;;GrIS
+GGN0424;72,299;-26,3062; ; ;Kæmpegletsjer;Kæmpegletsjer; ;RGI40-05.17052;G333735E72257N;-26,2651;72,2569;LGIC
+GGN0425;72,3;-25,1333; ; ;Sedgwick Gletsjer;Sedgwick Gletsjer; ;RGI40-05.17055;G334902E72279N;-25,0984;72,2786;LGIC
+GGN0426;72,3;-22,9; ; ;Banangletsjer;Banangletsjer; ;RGI40-05.17918;G337093E72295N;-22,9066;72,2949;LGIC
+GGN0427;72,3049;-22,5088; ; ;Gaffelgletsjer;Gaffelgletsjer; ;RGI40-05.18737;G337442E72291N;-22,5579;72,2908;LGIC
+GGN0428;72,3069;-26,1843; ; ;Snedrivegletsjer;Snedrivegletsjer; ;RGI40-05.17052;G333735E72257N;-26,2651;72,2569;LGIC
+GGN0429;72,3161;-22,5725; ; ;Brumse Gletsjer;Brumse Gletsjer; ;RGI40-05.18733;G337398E72309N;-22,6025;72,3094;LGIC
+GGN0430;72,3167;-24,4667; ; ;Krypt Gletsjer;Krypt Gletsjer; ;RGI40-05.17877;G335526E72314N;-24,4737;72,3143;LGIC
+GGN0431;72,3167;-22,7667; ; ;Barrikadegletsjer;Barrikadegletsjer; ;RGI40-05.18729;G337266E72308N;-22,7342;72,3082;LGIC
+GGN0432;72,3176;-24,9395; ; ;Linne' Gletsjer;Linne' Gletsjer; ;RGI40-05.17198;G335076E72236N;-24,9241;72,2358;LGIC
+GGN0433;72,3333;-24,5667; ; ;Sorteelv Gletsjer;Sorteelv Gletsjer; ;RGI40-05.17116;G335410E72273N;-24,5902;72,2730;LGIC
+GGN0434;72,3339;-22,6186; ; ;Langgletsjer;Langgletsjer; ;RGI40-05.17947;G337377E72333N;-22,6227;72,3334;LGIC
+GGN0435;72,3355;-22,7135; ; ;Bredgletsjer;Bredgletsjer; ;RGI40-05.18729;G337266E72308N;-22,7342;72,3082;LGIC
+GGN0436;72,45;-22,1; ; ;Haregletsjer;Haregletsjer; ;RGI40-05.18074;G337944E72442N;-22,0564;72,4420;LGIC
+GGN0437;72,4529;-22,0689; ; ;Ødegletsjer;Ødegletsjer; ;RGI40-05.18074;G337944E72442N;-22,0564;72,4420;LGIC
+GGN0438;72,4667;-22,15; ; ;Månegletsjer;Månegletsjer; ;RGI40-05.18079;G337863E72462N;-22,1371;72,4623;LGIC
+GGN0439;72,4815;-22,1652; ; ;Polypen Gletsjer;Polypen Gletsjer; ;RGI40-05.18077;G337815E72469N;-22,1851;72,4694;LGIC
+GGN0440;72,4839;-22,066; ; ;Fladegletsjer;Fladegletsjer; ;RGI40-05.18094;G337950E72482N;-22,0505;72,4823;LGIC
+GGN0441;72,5088;-27,0544; ; ;Wahlenberg Gletsjer;Wahlenberg Gletsjer; ;;;;;GrIS
+GGN0442;72,531;-26,4867; ; ;Vestre Tvillinggletsjer;Vestre Tvillinggletsjer; ;RGI40-05.18778;G333561E72500N;-26,4393;72,4995;LGIC
+GGN0443;72,546;-26,4115; ; ;Østre Tvillinggletsjer;Østre Tvillinggletsjer; ;RGI40-05.18774;G333737E72517N;-26,2626;72,5169;LGIC
+GGN0444;72,5497;-22,4777; ; ;Skjoldgletsjer;Skjoldgletsjer; ;RGI40-05.18116;G337504E72558N;-22,4962;72,5579;LGIC
+GGN0445;72,639;-27,8958; ; ;Concordia Plads;Concordia Plads; ;;;;;GrIS
+GGN0446;72,7;-25,9333; ; ;Argand Gletsjer;Argand Gletsjer; ;RGI40-05.18821;G334024E72591N;-25,9761;72,5905;LGIC
+GGN0447;72,764;-28,6008; ; ;Verenagletsjer;Verenagletsjer; ;;;;;GrIS
+GGN0448;72,7667;-25,3; ; ;Narhvalgletsjer;Narhvalgletsjer; ;RGI40-05.18033;G334688E72737N;-25,3118;72,7372;LGIC
+GGN0449;72,7668;-27,3843; ; ;Langenthaler Gletsjer;Langenthaler Gletsjer; ;RGI40-05.17999;G332603E72742N;-27,3973;72,7422;LGIC
+GGN0450;72,776;-27,7231; ; ;Hisinger Gletsjer;Hisinger Gletsjer; ;;;;;GrIS
+GGN0451;72,8167;-28,3833; ; ;Passagegletsjer;Passagegletsjer; ;RGI40-05.18967;G331606E72823N;-28,3944;72,8234;LGIC
+GGN0452;72,8409;-54,2837;Sermeq;Sermeq;Upernavik Isstrøm;Sermeq; ;;;;;GrIS
+GGN0453;72,9066;-26,9645; ; ;Fulach Gletsjer;Fulach Gletsjer; ;RGI40-05.19162;G332905E72930N;-27,0947;72,9299;LGIC
+GGN0454;72,9107;-26,1268; ; ;Østre Spærregletsjer;Østre Spærregletsjer; ;RGI40-05.18917;G333869E72887N;-26,1314;72,8873;LGIC
+GGN0455;72,9182;-26,2701; ; ;Vestre Spærregletsjer;Vestre Spærregletsjer; ;RGI40-05.18903;G333661E72888N;-26,3386;72,8876;LGIC
+GGN0456;72,9674;-27,9706; ; ;Charpentier Gletsjer;Charpentier Gletsjer; ;RGI40-05.18950;G331989E72965N;-28,0107;72,9654;LGIC
+GGN0457;73;-28,1667; ; ;Nedre Rypegletsjer;Nedre Rypegletsjer; ;;;;;GrIS
+GGN0458;73,0167;-28,1667; ; ;Rypegletsjer;Rypegletsjer; ;;;;;GrIS
+GGN0459;73,0167;-28,0333; ; ;Øvre Rypegletsjer;Øvre Rypegletsjer; ;;;;;GrIS
+GGN0460;73,0333;-27,9167; ; ;Mercanton Gletsjer;Mercanton Gletsjer; ;RGI40-05.18977;G332133E73047N;-27,8673;73,0469;LGIC
+GGN0461;73,0461;-54,8756;Akullikassaap Sermia; ; ;Akullikassaap Sermia; ;;;;;GrIS
+GGN0462;73,05;-28,35; ; ;Disa Gletsjer;Disa Gletsjer; ;;;;;GrIS
+GGN0463;73,0667;-27,6; ; ;Riddergletsjer;Riddergletsjer; ;RGI40-05.18939;G332353E73059N;-27,6467;73,0592;LGIC
+GGN0464;73,0759;-26,6804; ; ;Borggletsjer;Borggletsjer; ;RGI40-05.19134;G333282E73036N;-26,7185;73,0356;LGIC
+GGN0465;73,0773;-26,7762; ; ;Stejlegletsjer;Stejlegletsjer; ;RGI40-05.19141;G333185E73051N;-26,8155;73,0513;LGIC
+GGN0466;73,0859;-26,5836; ; ;Ispassagen;Ispassagen; ;RGI40-05.19143;G333446E73048N;-26,5538;73,0482;LGIC
+GGN0467;73,1167;-26,0833; ; ;Sonklargletsjer;Sonklargletsjer; ;RGI40-05.19132;G333831E73107N;-26,1692;73,1072;LGIC
+GGN0468;73,1309;-26,4614; ; ;Payer Gletsjer;Payer Gletsjer; ;RGI40-05.19105;G333615E73092N;-26,3848;73,0922;LGIC
+GGN0469;73,1333;-28,2333; ; ;Nathorst Gletsjer;Nathorst Gletsjer; ;RGI40-05.18871;G331568E73118N;-28,4317;73,1175;LGIC
+GGN0470;73,1333;-27,8833; ; ;Nordenskiöld Gletsjer;Nordenskiöld Gletsjer; ;;;;;GrIS
+GGN0471;73,1667;-28,3333; ; ;Gregory Gletsjer;Gregory Gletsjer; ;RGI40-05.20117;G331649E73194N;-28,3512;73,1936;LGIC
+GGN0472;73,1667;-28,45; ; ;Spaltegletsjer;Spaltegletsjer; ;RGI40-05.18871;G331568E73118N;-28,4317;73,1175;LGIC
+GGN0473;73,1667;-26,4167; ; ;Kehlhofer Gletsjer;Kehlhofer Gletsjer; ;RGI40-05.19180;G333658E73148N;-26,3423;73,1479;LGIC
+GGN0474;73,1667;-55,05;Alanngorsuup Sermia;Alángorssûp Sermia; ;Alanngorsuup Sermia; ;;;;;GrIS
+GGN0475;73,1833;-27,8333; ; ;Portgletsjer;Portgletsjer; ;RGI40-05.19017;G332108E73178N;-27,8916;73,1784;LGIC
+GGN0476;73,2014;-28,0141; ; ;Lavinegletsjer;Lavinegletsjer; ;RGI40-05.19003;G331986E73195N;-28,0143;73,1952;LGIC
+GGN0477;73,2071;-28,0628; ; ;Stenløsgletsjer;Stenløsgletsjer; ;RGI40-05.19000;G331942E73192N;-28,0580;73,1924;LGIC
+GGN0478;73,2304;-27,7236; ; ;Lystergletsjer;Lystergletsjer; ;RGI40-05.19251;G332276E73272N;-27,7238;73,2716;LGIC
+GGN0479;73,25;-28,8333; ; ;Victor Madsen Gletsjer;Victor Madsen Gletsjer; ;;;;;GrIS
+GGN0480;73,25;-28,0167; ; ;Lejrgletsjer;Lejrgletsjer; ;RGI40-05.19253;G332000E73248N;-27,9997;73,2481;LGIC
+GGN0481;73,25;-55,0833;Naajarsuit Sermiat; ; ;Naajarsuit Sermiat;Nunatakassaap Sermia;;;;;GrIS
+GGN0482;73,35;-26,1667; ; ;Gauli Gletsjer;Gauli Gletsjer; ;RGI40-05.19489;G333810E73373N;-26,1897;73,3734;LGIC
+GGN0483;73,4167;-25,9167; ; ;Luciagletsjer;Luciagletsjer; ;RGI40-05.19473;G333903E73407N;-26,0973;73,4073;LGIC
+GGN0484;73,4333;-27,8667; ; ;Jættegletsjer;Jættegletsjer; ;;;;;GrIS
+GGN0485;73,4667;-25,75; ; ;Blåbærgletsjer;Blåbærgletsjer; ;RGI40-05.19451;G334100E73475N;-25,8999;73,4748;LGIC
+GGN0486;73,4784;-55,3035;Kakiffaat Sermiat;Kakivfait Sermiat; ;Kakiffaat Sermiat; ;;;;;GrIS
+GGN0487;73,5359;-27,3987; ; ;Louise Gletsjer;Louise Gletsjer; ;RGI40-05.19083;G332484E73565N;-27,5160;73,5648;LGIC
+GGN0488;73,55;-29; ; ;Hamberg Gletsjer;Hamberg Gletsjer; ;;;;;GrIS
+GGN0489;73,5667;-55,2167; ; ;Giesecke Bræer;Giesecke Bræer; ;;;;;GrIS
+GGN0490;73,5932;-55,5306;Qeqertarsuup Sermia;Qeqertarssûp Sermia; ;Qeqertarsuup Sermia; ;;;;;GrIS
+GGN0491;73,6179;-25,8849; ; ;Fangergletsjer;Fangergletsjer; ;RGI40-05.19632;G334011E73670N;-25,9890;73,6703;LGIC
+GGN0492;73,6667;-29,25; ; ;Ever Gletsjer;Ever Gletsjer; ;;;;;GrIS
+GGN0493;73,6716;-25,3257; ; ;Spaltegletsjer;Spaltegletsjer; ;RGI40-05.19554;G334479E73647N;-25,5207;73,6466;LGIC
+GGN0494;73,6833;-27,6333; ; ;Gerard de Geer Gletsjer;Gerard de Geer Gletsjer; ;;;;;GrIS
+GGN0495;73,7037;-25,3958; ; ;Endeløs;Endeløs; ;RGI40-05.19556;G334259E73703N;-25,7412;73,7027;LGIC
+GGN0496;73,7833;-26,2167; ; ;Knibtangen;Knibtangen; ;RGI40-05.19552;G333812E73731N;-26,1876;73,7307;LGIC
+GGN0497;73,7833;-25,9667; ; ;Forhindringsgletsjer;Forhindringsgletsjer; ;RGI40-05.19647;G333995E73766N;-26,0053;73,7660;LGIC
+GGN0498;73,8317;-55,5825;Sermeq Kujalleq; ; ;Sermeq Kujalleq; ;;;;;GrIS
+GGN0499;73,8568;-25,6713; ; ;Dukkegletsjer;Dukkegletsjer; ;RGI40-05.19700;G334202E73856N;-25,7979;73,8564;LGIC
+GGN0500;73,9;-55,55; ; ;Ussing Bræer;Ussing Bræer; ;;;;;GrIS
+GGN0501;73,9113;-25,0306; ; ;Søgletscher;Søgletscher; ;RGI40-05.19781;G335048E73943N;-24,9521;73,9434;LGIC
+GGN0502;73,9167;-24,4167; ; ;Waltershausen Gletsjer;Waltershausen Gletsjer; ;;;;;GrIS
+GGN0503;73,941;-55,7679;Sermeq Avanarleq; ; ;Sermeq Avanarleq; ;;;;;GrIS
+GGN0504;73,95;-25,9333; ; ;Nunatakgletsjer;Nunatakgletsjer; ;;;;;GrIS
+GGN0505;73,9833;-28,65; ; ;Skråbræ;Skråbræ; ;;;;;GrIS
+GGN0506;73,9833;-28,0167; ; ;Hindringsgletsjer;Hindringsgletsjer; ;;;;;GrIS
+GGN0507;73,9861;-22,6292; ; ;Fellenberg Gletsjer;Fellenberg Gletsjer; ;RGI40-05.19877;G337447E74002N;-22,5530;74,0019;LGIC
+GGN0508;74,0333;-26,75; ; ;Adolf Hoel Gletsjer;Adolf Hoel Gletsjer; ;;;;;GrIS
+GGN0509;74,0333;-22,4167; ; ;A. Schmidt Gletsjer;A. Schmidt Gletsjer; ;RGI40-05.19869;G337558E74027N;-22,4421;74,0271;LGIC
+GGN0510;74,0376;-22,6972; ; ;Rungstedgletsjer;Rungstedgletsjer; ;RGI40-05.19877;G337447E74002N;-22,5530;74,0019;LGIC
+GGN0511;74,0425;-22,5488; ; ;Haussmann Gletsjer;Haussmann Gletsjer; ;RGI40-05.19866;G337404E74038N;-22,5958;74,0384;LGIC
+GGN0512;74,0492;-22,4873; ; ;Nippoldt Gletsjer;Nippoldt Gletsjer; ;RGI40-05.19875;G337497E74033N;-22,5033;74,0325;LGIC
+GGN0513;74,0667;-25,6333; ; ;Dødehundebræ;Dødehundebræ; ;;;;;GrIS
+GGN0514;74,1167;-27; ; ;Eyvind Fjeld Gletsjer;Eyvind Fjeld Gletsjer; ;;;;;GrIS
+GGN0515;74,1831;-56,7513;Sermikassak;Sermikavsak; ;Sermikassak;Sermilikassak;RGI40-05.07403;G303259E74170N;-56,7412;74,1696;LGIC
+GGN0516;74,1833;-21,15; ; ;Taggletsjer;Taggletsjer; ;RGI40-05.19936;G338832E74181N;-21,1685;74,1814;LGIC
+GGN0517;74,2275;-23,4113; ; ;Irisgletsjer;Irisgletsjer; ;;;;;GrIS
+GGN0518;74,2307;-55,8275;Ikissuup Sermersua;Ikigssûp Sermerssua;Cornell Gletsjer;Ikissuup Sermersua; ;;;;;GrIS
+GGN0519;74,2333;-23,9167; ; ;Vibeke Gletsjer;Vibeke Gletsjer; ;;;;;GrIS
+GGN0520;74,25;-23; ; ;Wordie Gletsjer;Wordie Gletsjer; ;;;;;GrIS
+GGN0521;74,2667;-20,9167; ; ;Skillegletsjer;Skillegletsjer; ;RGI40-05.20002;G338999E74270N;-21,0009;74,2700;LGIC
+GGN0522;74,35;-25,55; ; ;Korsgletsjer;Korsgletsjer; ;;;;;GrIS
+GGN0523;74,35;-22,9167; ; ;Grantagletsjer;Grantagletsjer; ;;;;;GrIS
+GGN0524;74,3667;-20,9; ; ;Misteltengletsjer;Misteltengletsjer; ;RGI40-05.20026;G339105E74378N;-20,8954;74,3776;LGIC
+GGN0525;74,37;-21,0219; ; ;Hødgletsjer;Hødgletsjer; ;RGI40-05.19973;G338940E74365N;-21,0599;74,3648;LGIC
+GGN0526;74,3833;-20,8167; ; ;Frejagletsjer;Frejagletsjer; ;RGI40-05.20030;G339171E74378N;-20,8288;74,3778;LGIC
+GGN0527;74,4;-24,2167; ; ;Vestre Vibeke Gletsjer;Vestre Vibeke Gletsjer; ;;;;;GrIS
+GGN0528;74,4007;-21,0768; ; ;Balmunggletsjer;Balmunggletsjer; ;RGI40-05.19999;G338904E74401N;-21,0963;74,4006;LGIC
+GGN0529;74,4167;-55,9666;Illullip Sermia;Igdlugdlip Sermia; ;Illullip Sermia; ;;;;;GrIS
+GGN0530;74,6;-22,2667; ; ;Copeland Gletsjer;Copeland Gletsjer; ;RGI40-05.20038;G337563E74561N;-22,4373;74,5610;LGIC
+GGN0531;74,6232;-56,2193;Nunatakassaap Sermia;Nunatakavsaup Sermia; ;Nunatakassaap Sermia; ;;;;;GrIS
+GGN0532;74,6333;-22,2667; ; ;Kløftgletsjer;Kløftgletsjer; ;RGI40-05.20042;G337651E74611N;-22,3489;74,6111;LGIC
+GGN0533;74,6667;-22,1; ; ;Stejlgletsjer;Stejlgletsjer; ;RGI40-05.20097;G337922E74678N;-22,0780;74,6779;LGIC
+GGN0534;74,6833;-22,5833; ; ;Pasterze;Pasterze; ;;;;;GrIS
+GGN0535;74,7;-22,4667; ; ;Grifgletsjer;Grifgletsjer; ;;;;;GrIS
+GGN0536;74,7;-21,8; ; ;Trinity Gletsjer;Trinity Gletsjer; ;RGI40-05.20092;G338195E74672N;-21,8055;74,6719;LGIC
+GGN0537;74,7167;-22; ; ;Barriere Gletsjer;Barriere Gletsjer; ;RGI40-05.20096;G338005E74703N;-21,9948;74,7027;LGIC
+GGN0538;74,8667;-22,5; ; ;Tvegegletsjer;Tvegegletsjer; ;;;;;GrIS
+GGN0539;74,9618;-57,0355;Tuttulikassaap Sermia; ;Hayes Gletsjer;Tuttulikassaap Sermia; ;;;;;GrIS
+GGN0540;75,0996;-57,5723; ; ;Kjer Gletsjer;Kjer Gletsjer; ;;;;;GrIS
+GGN0541;75,1596;-22,8267; ; ;Heinkel Gletsjer;Heinkel Gletsjer; ;;;;;GrIS
+GGN0542;75,3167;-57,8333;Sermersuaq;Sermerssuaq;Steenstrup Gletsjer;Sermersuaq; ;;;;;GrIS
+GGN0543;75,4531;-22,7266; ; ;Canongletsjer;Canongletsjer; ;;;;;GrIS
+GGN0544;75,4582;-58,0637; ; ;Dietrichson Gletsjer;Dietrichson Gletsjer; ;;;;;GrIS
+GGN0545;75,564;-22,6295; ; ;Stejlgletsjer;Stejlgletsjer; ;;;;;GrIS
+GGN0546;75,6195;-57,9704; ; ;Sverdrup Gletsjer;Sverdrup Gletsjer; ;;;;;GrIS
+GGN0547;75,6833;-22,75; ; ;Stormgletsjer;Stormgletsjer; ;;;;;GrIS
+GGN0548;75,6833;-22,5; ; ;Ejnar Mikkelsen Gletsjer;Ejnar Mikkelsen Gletsjer; ;;;;;GrIS
+GGN0549;75,7759;-58,8283; ; ;Nansen Gletsjer;Nansen Gletsjer; ;;;;;GrIS
+GGN0550;75,8248;-59,0399; ; ;Nordenskiöld Gletsjer;Nordenskiöld Gletsjer; ;;;;;GrIS
+GGN0551;75,9394;-66,5167;Sermipaluk;Sermipaluk; ;Sermipaluk;Hermipaluk;RGI40-05.07597;G293495E75933N;-66,5047;75,9332;LGIC
+GGN0552;75,9876;-22,3788; ; ;Lillegletsjer;Lillegletsjer; ;;;;;GrIS
+GGN0553;75,989;-59,8575;Nuussuup Sermia;Nûgssûp Sermia;Kong Oscar Gletsjer;Nuussuup Sermia; ;;;;;GrIS
+GGN0554;76,0167;-23,3; ; ;L. Bistrup Bræ;L. Bistrup Bræ; ;;;;;GrIS
+GGN0555;76,0473;-65,5518;Sermipaluk;Sermipaluk; ;Sermipaluk;Hermipaluk;RGI40-05.07624;G294491E76127N;-65,5086;76,1267;LGIC
+GGN0556;76,0655;-65,6468;Kumaat Sermiat; ; ;Kumaat Sermiat;Kumait Hermiat;RGI40-05.07624;G294491E76127N;-65,5086;76,1267;LGIC
+GGN0557;76,0667;-60,6333;Issuusarsuit Sermiat;Igssûssarssuit Sermiat; ;Issuusarsuit Sermiat; ;;;;;GrIS
+GGN0558;76,0912;-68,2097;Appakkooriaq;Sermipaluk; ;Appakkooriaq;Sermipaluk;RGI40-05.07697;G291951E76111N;-68,0489;76,1110;LGIC
+GGN0559;76,0941;-67,7789;Nasersorfik;Nagssersorfik; ;Nasersorfik;"Nassersorfik; Naherhorvik";RGI40-05.07787;G292660E76080N;-67,3399;76,0797;LGIC
+GGN0560;76,1167;-60,3999; ; ;Peary Gletsjer;Peary Gletsjer; ;;;;;GrIS
+GGN0561;76,15;-24,5; ; ;A.B. Drachmann Gletsjer;A.B. Drachmann Gletsjer; ;;;;;GrIS
+GGN0562;76,1555;-68,2844; ; ;Neptune Gletsjer;Neptune Gletsjer; ;RGI40-05.07715;G291776E76147N;-68,2244;76,1474;LGIC
+GGN0563;76,1667;-21,9167; ; ;Soranerbræen;Soranerbræen; ;;;;;GrIS
+GGN0564;76,1741;-68,3171; ; ;Cluett Gletsjer;Cluett Gletsjer; ;RGI40-05.07722;G291761E76185N;-68,2394;76,1848;LGIC
+GGN0565;76,2;-26,1167; ; ;Metaforgletsjer;Metaforgletsjer; ;;;;;GrIS
+GGN0566;76,2;-25,5; ; ;Ebbe Gletsjer;Ebbe Gletsjer; ;;;;;GrIS
+GGN0567;76,2167;-60,9999; ; ;Rink Gletsjer;Rink Gletsjer; ;;;;;GrIS
+GGN0568;76,2397;-65,2432;Savissuup Sermia;;Savigssuaq Gletscher;Savissuup Sermia;Savissuaq Gletscher;;;;;GrIS
+GGN0569;76,2533;-64,8682; ; ;Helland Gletsjer;Helland Gletsjer; ;;;;;GrIS
+GGN0570;76,2667;-63,7998;Appaliarsulipaluup Sermia;Agpaliarssulipalûp Sermia;Mohn Gletsjer;Appaliarsulipaluup Sermia;Appaliarrulipaluup Hermia;RGI40-05.07600;G296228E76253N;-63,7722;76,2525;LGIC
+GGN0571;76,2774;-68,5855;Paakitsup Sermersua;Pâkitsup Sermerssua;Pituffik Gletsjer;Paakitsup Sermersua;Paakitsup Hermerrianga;RGI40-05.07736;G291713E76310N;-68,2868;76,3096;LGIC
+GGN0572;76,3;-61,7666;Qeqertat Timaanni Sermeq; ;Döcker Smith Gletsjer;Qeqertat Timaanni Sermeq;Qikertat Timaani Sermeq;;;;;GrIS
+GGN0573;76,3167;-62,4999; ; ;Morell Gletsjer;Morell Gletsjer;;;;;;GrIS
+GGN0574;76,3195;-24,9938; ; ;Budolfi Isstrøm;Budolfi Isstrøm; ;;;;;GrIS
+GGN0575;76,3334;-64,0831; ; ;Yngvar Nielsen Gletsjer;Yngvar Nielsen Gletsjer; ;;;;;GrIS
+GGN0576;76,3833;-62,7665;Innaqqissorsuup Oqquani Sermeq; ;Gade Gletsjer;Innaqqissorsuup Oqquani Sermeq; ;;;;;GrIS
+GGN0577;76,4256;-24,1076; ; ;Ejnar Gletsjer;Ejnar Gletsjer; ;;;;;GrIS
+GGN0578;76,4873;-25,0504; ; ;Pony Gletsjer;Pony Gletsjer; ;;;;;GrIS
+GGN0579;76,5001;-68,2366; ; ;Store Landgletsjer;Store Landgletsjer; ;RGI40-05.07772;G291955E76463N;-68,0454;76,4630;LGIC
+GGN0580;76,5371;-24,7491; ; ;Kursbræ;Kursbræ; ;RGI40-05.09342;G335213E76547N;-24,7875;76,5465;LGIC
+GGN0581;76,5797;-67,626;Ullip Sermia;Uvdlip Sermerssuaq;Harald Moltke Bræ;Ullip Sermia;"Sermersuaq; Nunatarruup Hermia";;;;;GrIS
+GGN0582;76,6333;-22,6667; ; ;Bredebræ;Bredebræ; ;;;;;GrIS
+GGN0583;76,65;-24,1333; ; ;Borgjøkel;Borgjøkel; ;;;;;GrIS
+GGN0584;76,6988;-67,0432; ; ;Søndre Tvillinggletsjer;Søndre Tvillinggletsjer;;;;;;GrIS
+GGN0585;76,719;-68,4795;Naajat Sermiat;Naujat Sermiat;Chamberlin Gletsjer;Naajat Sermiat; ;RGI40-05.08057;G291497E76805N;-68,5028;76,8049;LGIC
+GGN0586;76,7229;-68,6739;Pinguarsuit Sermiat;Pinguarssuit Sermiat;Salisbury Gletsjer;Pinguarsuit Sermiat; ;RGI40-05.08057;G291497E76805N;-68,5028;76,8049;LGIC
+GGN0587;76,7275;-67,0014; ; ;Nordre Tvillinggletsjer;Nordre Tvillinggletsjer;;;;;;GrIS
+GGN0588;76,7578;-67,7971;Equutissaatsut Sermiat;Eqûtigssaitsut Sermiat;Knud Rasmussen Gletsjer;Equutissaatsut Sermiat; ;RGI40-05.08054;G292408E76864N;-67,5921;76,8639;LGIC
+GGN0589;76,773;-67,0206; ; ;Rampen;Rampen; ;;;;;GrIS
+GGN0590;76,8303;-66,8866; ; ;Tunnelgletsjer;Tunnelgletsjer; ;RGI40-05.07857;G293108E76832N;-66,8925;76,8319;LGIC
+GGN0591;76,8413;-67,2557; ; ;Hundetunge Gletsjer;Hundetunge Gletsjer; ;RGI40-05.08054;G292408E76864N;-67,5921;76,8639;LGIC
+GGN0592;76,85;-24,7667; ; ;Trefork Gletsjer;Trefork Gletsjer; ;;;;;GrIS
+GGN0593;76,85;-66,8329; ; ;Skjulgletsjer;Skjulgletsjer; ;;;;;GrIS
+GGN0594;76,8887;-70,1684; ; ;Witzansky Gletsjer;Witzansky Gletsjer; ;RGI40-05.08052;G289786E76905N;-70,2139;76,9054;LGIC
+GGN0595;76,9406;-70,0698; ; ;Ivar Berendsen Gletsjer;Ivar Berendsen Gletsjer; ;RGI40-05.08048;G289856E76945N;-70,1436;76,9445;LGIC
+GGN0596;76,9833;-25,1333; ; ;Admiralty Gletsjer;Admiralty Gletsjer; ;;;;;GrIS
+GGN0597;76,9876;-70,9062;Sermipaluk;Sermipaluk; ;Sermipaluk; ;RGI40-05.08044;G289231E77041N;-70,7686;77,0406;LGIC
+GGN0598;77,0607;-69,4712; ; ;Berlingske Bræ;Berlingske Bræ; ;RGI40-05.08033;G290557E77062N;-69,4434;77,0621;LGIC
+GGN0599;77,0667;-22,7667; ; ;Storstrømmen;Storstrømmen; ;;;;;GrIS
+GGN0600;77,0801;-66,2232;Sermiarsupaluk;Sermiarssupaluk; ;Sermiarsupaluk; ;;;;;GrIS
+GGN0601;77,0825;-24,6629; ; ;Admiralty Gletsjer;Admiralty Gletsjer; ;;;;;GrIS
+GGN0602;77,0875;-24,169; ; ;Gultop Gletsjer;Gultop Gletsjer; ;;;;;GrIS
+GGN0603;77,1167;-25,1667; ; ;Sunderland Gletsjer;Sunderland Gletsjer; ;;;;;GrIS
+GGN0604;77,1167;-22,0833; ; ;Sælsøgletsjer;Sælsøgletsjer; ;;;;;GrIS
+GGN0605;77,1299;-70,7566; ; ;Tyndall Gletsjer;Tyndall Gletsjer; ;RGI40-05.08042;G289278E77092N;-70,7216;77,0922;LGIC
+GGN0606;77,1602;-69,6024;Itillersuaq;Itivdlerssuaq;Politiken Bræ;Itillersuaq;Itutterriaq;RGI40-05.08024;G290425E77172N;-69,5747;77,1722;LGIC
+GGN0607;77,1858;-69,2548;Sermiarsupaluk;Sermiarssupaluk;Savage Gletsjer;Sermiarsupaluk; ;RGI40-05.08065;G290678E77156N;-69,3221;77,1557;LGIC
+GGN0608;77,2065;-70,4837;Sermipaluk; ; ;Sermipaluk;Hermipaluk;RGI40-05.08013;G289533E77202N;-70,4671;77,2021;LGIC
+GGN0609;77,2069;-66,0029;Kangerluarsorujussuup Qinngua;Kangerdluarssûp Qíngua;Marie Gletsjer;Kangerluarsorujussuup Qinngua;"Kangerluarsuup Qinngua; Kangertuarrurujussuup Qinngua; Marie Bræ; Marre Gletscher";;;;;GrIS
+GGN0610;77,2167;-24,9833; ; ;Hasting Gletsjer;Hasting Gletsjer; ;;;;;GrIS
+GGN0611;77,2223;-69,7298;Sermiarsussuaq; ; ;Sermiarsussuaq; ;RGI40-05.08022;G290260E77195N;-69,7401;77,1949;LGIC
+GGN0612;77,2322;-24,3124; ; ;Britannia Gletsjer;Britannia Gletsjer; ;;;;;GrIS
+GGN0613;77,2345;-65,3164; ; ;Academy Gletsjer;Academy Gletsjer;;;;;;GrIS
+GGN0614;77,2353;-70,1452;Misuumasoq;Misûmassoq; ;Misuumasoq; ;RGI40-05.08020;G289879E77222N;-70,1210;77,2217;LGIC
+GGN0615;77,25;-20,7834; ; ;Søgletsjer;Søgletsjer; ;RGI40-05.09558;G339406E77225N;-20,5943;77,2248;LGIC
+GGN0616;77,2562;-65,977; ; ;Leidy Gletsjer;Leidy Gletsjer;;;;;;GrIS
+GGN0617;77,3403;-71,6945;Qassisallip Sermia; ;Kiatak Gletsjer;Qassisallip Sermia;Qaggihattup Hermia;RGI40-05.08136;G288274E77340N;-71,7262;77,3404;LGIC
+GGN0618;77,3618;-67,9872;Siunnaatalik;Siúnautalik;Hurlbut Gletsjer;Siunnaatalik; ;RGI40-05.07854;G292196E77316N;-67,8041;77,3161;LGIC
+GGN0619;77,3667;-24,4167; ; ;Suzanne Bræ;Suzanne Bræ; ;;;;;GrIS
+GGN0620;77,3783;-72,2667;Ujarasussuarsuit Itilliat; ; ;Ujarasussuarsuit Itilliat;Ujarahuhhuarruit Itivtiat;RGI40-05.08122;G287724E77384N;-72,2758;77,3838;LGIC
+GGN0621;77,3933;-71,6583;Sermiarsussuaq;Sermiarssugssuaq; ;Sermiarsussuaq; ;RGI40-05.08129;G288260E77381N;-71,7403;77,3809;LGIC
+GGN0622;77,4072;-71,8968;Marnit Sermiat; ;Robins Gletsjer;Marnit Sermiat;Marnit Hermiat;RGI40-05.08119;G288095E77402N;-71,9053;77,4022;LGIC
+GGN0623;77,4072;-72,4525;Qangattaat Sermiat;Sermiarssupaluk;Vestgletsjer;Qangattaat Sermiat;"Sermiarsupaluk; Qangattait Hermiat Appaarruit Timaanni";RGI40-05.08117;G287589E77408N;-72,4112;77,4077;LGIC
+GGN0624;77,4199;-72,0338;Ujaassuup Sermia;Ujâgsup Sermia;Parish Gletsjer;Ujaassuup Sermia;"Ujaassup Sermia; Ujaagguup Hermia";RGI40-05.08118;G287929E77398N;-72,0713;77,3982;LGIC
+GGN0625;77,4312;-70,4834;Sermiarsupaluk; ; ;Sermiarsupaluk; Hermiarrupaluk;RGI40-05.08083;G289336E77433N;-70,6638;77,4327;LGIC
+GGN0626;77,4323;-72,2135;Upernavissuup Sermia;Upernavigssûp Sermia;Kissel Gletsjer;Upernavissuup Sermia;Upernavigguup Hermia;RGI40-05.08116;G287782E77421N;-72,2179;77,4210;LGIC
+GGN0627;77,4494;-70,6344;Sermiarsussuaq; ; ;Sermiarsussuaq;Hermiarrurruaq;RGI40-05.08083;G289336E77433N;-70,6638;77,4327;LGIC
+GGN0628;77,4999;-69,1936; ; ;Qaanaaq Gletsjer;Qaanaaq Gletsjer; ;RGI40-05.08005;G290838E77522N;-69,1616;77,5223;LGIC
+GGN0629;77,5;-21,8667; ; ;Kofoed-Hansen Bræ;Kofoed-Hansen Bræ; ;;;;;GrIS
+GGN0630;77,5009;-68,7533;Sermiarsupaluk;Sermiarssupaluk; ;Sermiarsupaluk;Hermiarrupaluk;RGI40-05.08110;G291039E77514N;-68,9608;77,5141;LGIC
+GGN0631;77,5167;-65,6664;Qaqujaarsuup Sermia;Qaqujârssûp Sermia;Heilprin Gletsjer;Qaqujaarsuup Sermia; ;;;;;GrIS
+GGN0632;77,5257;-69,3009; ; ;Bryant Gletsjer;Bryant Gletsjer; ;RGI40-05.08005;G290838E77522N;-69,1616;77,5223;LGIC
+GGN0633;77,5262;-68,6944; ; ;Twin Gletsjer;Twin Gletsjer; ;RGI40-05.08109;G291280E77528N;-68,7202;77,5280;LGIC
+GGN0634;77,5602;-68,7785; ; ;Sydgletsjer;Sydgletsjer; ;RGI40-05.08108;G291022E77560N;-68,9777;77,5597;LGIC
+GGN0635;77,5629;-69,6524; ; ;Fan Gletsjer;Fan Gletsjer; ;RGI40-05.08106;G290534E77581N;-69,4664;77,5808;LGIC
+GGN0636;77,5764;-68,2681; ; ;Østgletsjer;Østgletsjer; ;RGI40-05.08063;G291817E77564N;-68,1827;77,5639;LGIC
+GGN0637;77,6025;-67,7419;Quinisut Sermiat;Quinissut Sermiat;Hubbard Gletsjer;Quinisut Sermiat;Quinnisut Sermiat;;;;;GrIS
+GGN0638;77,6059;-68,7698;Sermiarsupaluk;Sermiarssupaluk;Gnom Gletsjer;Sermiarsupaluk;Hermiarrupaluk;RGI40-05.08104;G291169E77605N;-68,8314;77,6050;LGIC
+GGN0639;77,6167;-68,1828; ; ;Gable Gletsjer;Gable Gletsjer; ;;;;;GrIS
+GGN0640;77,636;-68,9673;Qaqortap Sermia;;Qaqortaq Gletscher;Qaqortap Sermia;;RGI40-05.08103;G290914E77601N;-69,0859;77,6010;LGIC
+GGN0641;77,6545;-69,4092; ; ;Scarlet Heart Gletsjer;Scarlet Heart Gletsjer; ;RGI40-05.08095;G290628E77632N;-69,3719;77,6324;LGIC
+GGN0642;77,6564;-65,9679;Qeqertaarsuusarsuup Sermia;Qeqertârssûssarssûp Sermia;Tracy Gletsjer;Qeqertaarsuusarsuup Sermia; ;;;;;GrIS
+GGN0643;77,6777;-68,3207; ; ;Mirror Gletsjer;Mirror Gletsjer; ;;;;;GrIS
+GGN0644;77,6934;-68,5829;Kangerluarsuup Sermia; ;Bowdoin Gletsjer;Kangerluarsuup Sermia; ;;;;;GrIS
+GGN0645;77,6991;-67,1759;Paarnarsuit Sermiat; ;Hart Gletsjer;Paarnarsuit Sermiat; ;;;;;GrIS
+GGN0646;77,7;-66,233;Tuttulipaluup Sermia; ;Farquhar Gletsjer;Tuttulipaluup Sermia; ;;;;;GrIS
+GGN0647;77,7167;-66,9496;Toornaarsulissuup Sermii; ;Sharp Gletsjer;Toornaarsulissuup Sermii; ;;;;;GrIS
+GGN0648;77,7315;-66,6444;Toornaarsulissuup Sermii; ;Melville Gletsjer;Toornaarsulissuup Sermii; ;;;;;GrIS
+GGN0649;77,7336;-68,3524; ; ;East Branch Gletsjer;East Branch Gletsjer; ;;;;;GrIS
+GGN0650;77,7337;-68,7931;Tuttu Gletsjer;;Tugto Gletscher;Tuttu Gletsjer; ;;;;;GrIS
+GGN0651;77,779;-69,4287;Iterlassuup Sermia;Iterdlagssûp Qíngua;Sun Gletsjer;Iterlassuup Sermia;"Iterlassuup Qinngua; Itertagguup Sermia";;;;;GrIS
+GGN0652;77,8108;-70,9613;Naajaat Sermiat; ;Illuluarsuit Gletsjer;Naajaat Sermiat;Naujaat Sermiat;RGI40-05.08191;G289065E77823N;-70,9353;77,8230;LGIC
+GGN0653;77,8378;-71,1813;Sermiarsupaluk;Sermiarssupaluk; ;Sermiarsupaluk; ;RGI40-05.08188;G288897E77833N;-71,1034;77,8329;LGIC
+GGN0654;77,854;-70,6716;Siorarsuit Sermiat; ;Siorarsuaq Gletsjer;Siorarsuit Sermiat; ;RGI40-05.08182;G289359E77848N;-70,6412;77,8478;LGIC
+GGN0655;77,8757;-69,8513;Qinnguata Sermia;Siorapalûp Qíngua;Verhoeff Gletsjer;Qinnguata Sermia;Siorapaluup Qinngua;;;;;GrIS
+GGN0656;77,88;-70,2973;Ikernup Sermia;Ikernup Sermia;Meehan Gletsjer;Ikernup Sermia; ;;;;;GrIS
+GGN0657;77,907;-71,0812;Neqip Sermia;Neqip Sermia;Morris Jesup Gletsjer;Neqip Sermia; ;;;;;GrIS
+GGN0658;77,9475;-71,8501;Arfalluarfiup Sermia;Pitorâviup Sermia;Clements Markham Gletsjer;Arfalluarfiup Sermia;Pitoraaviup Sermia;;;;;GrIS
+GGN0659;77,9521;-71,5907;Arfalluarfiup Sermia;Arfagdluarfiup Sermia;Diebitsch Gletsjer;Arfalluarfiup Sermia;Neqip Illuata Sermia;;;;;GrIS
+GGN0660;78,0224;-72,1669; ; ;Bamse Gletsjer;Bamse Gletsjer; ;;;;;GrIS
+GGN0661;78,0598;-72,2383; ; ;Bu Gletsjer;Bu Gletsjer; ;;;;;GrIS
+GGN0662;78,0717;-72,4301;Itutterriaq; ;Child Gletsjer;Itutterriaq; ;;;;;GrIS
+GGN0663;78,1415;-72,7544; ; ;Storm Gletsjer;Storm Gletsjer; ;;;;;GrIS
+GGN0664;78,1537;-72,6797;Itilliarsuk;Itivdliarssuk; ;Itilliarsuk; ;;;;;GrIS
+GGN0665;78,1761;-72,6796; ; ;Dodge Gletsjer;Dodge Gletsjer; ;;;;;GrIS
+GGN0666;78,2833;-21,5833; ; ;Blæsebræ;Blæsebræ; ;;;;;GrIS
+GGN0667;78,2834;-72,2654; ; ;Brother John Gletsjer;Brother John Gletsjer;;;;;;GrIS
+GGN0668;78,6778;-21,4834; ; ;Gammel Hellerup Gletsjer;Gammel Hellerup Gletsjer; ;;;;;GrIS
+GGN0669;78,8203;-67,0518; ; ;Hiawatha Gletsjer;Hiawatha Gletsjer;;;;;;GrIS
+GGN0670;78,9333;-21; ; ;Zachariae Isstrøm;Zachariae Isstrøm; ;;;;;GrIS
+GGN0671;79,4462;-63,3957;Sermersuaq;Sermerssuaq;Humboldt Gletsjer;Sermersuaq;;;;;;GrIS
+GGN0672;79,7113;-20,2928; ; ;Spaltegletsjer;Spaltegletsjer; ;;;;;GrIS
+GGN0673;80,2059;-16,8321; ; ;Depotgletsjer;Depotgletsjer; ;RGI40-05.09997;G343249E80231N;-16,7508;80,2313;LGIC
+GGN0674;80,2224;-16,6659; ; ;Mallemukgletsjer;Mallemukgletsjer; ;RGI40-05.09997;G343249E80231N;-16,7508;80,2313;LGIC
+GGN0675;80,3167;-19,9; ; ;Aage Bertelsen Gletsjer;Aage Bertelsen Gletsjer; ;RGI40-05.09937;G339749E80313N;-20,2507;80,3125;LGIC
+GGN0676;80,4605;-16,6279; ; ;Mågegletsjer;Mågegletsjer; ;RGI40-05.09992;G343355E80425N;-16,6451;80,4253;LGIC
+GGN0677;80,4951;-18,94; ; ;Brede Spærregletsjer;Brede Spærregletsjer; ;RGI40-05.09915;G340801E80458N;-19,1988;80,4576;LGIC
+GGN0678;80,5712;-19,3767; ; ;Dråbegletsjer;Dråbegletsjer; ;RGI40-05.09919;G340571E80575N;-19,4290;80,5754;LGIC
+GGN0679;80,5833;-60,05; ; ;Petermann Gletsjer;Petermann Gletsjer;;;;;;GrIS
+GGN0680;80,6176;-18,072; ; ;Bjørnegletsjer;Bjørnegletsjer; ;RGI40-05.10324;G341927E80608N;-18,0728;80,6077;LGIC
+GGN0681;80,6336;-18,6443; ; ;Smalle Spærregletsjer;Smalle Spærregletsjer; ;RGI40-05.10352;G341418E80693N;-18,5820;80,6934;LGIC
+GGN0682;80,6742;-19,4168; ; ;Hjørnegletsjer;Hjørnegletsjer; ;RGI40-05.10347;G340822E80748N;-19,1776;80,7481;LGIC
+GGN0683;80,7171;-59,2811; ; ;Porsild Gletsjer;Porsild Gletsjer;;;;;;GrIS
+GGN0684;80,7622;-17,473; ; ;Tobias Gletsjer;Tobias Gletsjer; ;RGI40-05.10361;G341865E80809N;-18,1354;80,8087;LGIC
+GGN0685;80,8179;-60,0525; ; ;Sigurd Berg Gletsjer;Sigurd Berg Gletsjer;;;;;;GrIS
+GGN0686;80,8651;-61,7795; ; ;Cecil Gletsjer;Cecil Gletsjer;;RGI40-05.08445;G297905E80883N;-62,0950;80,8825;LGIC
+GGN0687;80,9504;-61,8693; ; ;Faith Gletsjer;Faith Gletsjer;;RGI40-05.08443;G297605E81009N;-62,3950;81,0091;LGIC
+GGN0688;80,9835;-60,6321; ; ;Hubert Gletsjer;Hubert Gletsjer;;;;;;GrIS
+GGN0689;81,0404;-60,8206; ; ;Belgrave Gletsjer;Belgrave Gletsjer;;;;;;GrIS
+GGN0690;81,058;-62,19; ; ;Edith Gletsjer;Edith Gletsjer;;RGI40-05.08443;G297605E81009N;-62,3950;81,0091;LGIC
+GGN0691;81,0778;-62,4186; ; ;Constance Gletsjer;Constance Gletsjer;Constance Gletscher;RGI40-05.08443;G297605E81009N;-62,3950;81,0091;LGIC
+GGN0692;81,3333;-16,9667; ; ;Marsk Stig Bræ;Marsk Stig Bræ; ;RGI40-05.10315;G344790E81287N;-15,2101;81,2869;LGIC
+GGN0693;81,3833;-54,0333; ; ;Steensby Gletsjer;Steensby Gletsjer;;;;;;GrIS
+GGN0694;81,45;-27,35; ; ;Hagen Bræ;Hagen Bræ; ;;;;;GrIS
+GGN0695;81,5333;-14,7334; ; ;Flade Isblink;Flade Isblink; ;RGI40-05.10315;G344790E81287N;-15,2101;81,2869;LGIC
+GGN0696;81,5449;-45,3668; ; ;C.H. Ostenfeld Gletsjer;C.H. Ostenfeld Gletsjer;;;;;;GrIS
+GGN0697;81,55;-50,25; ; ;Ryder Gletsjer;Ryder Gletsjer;;;;;;GrIS
+GGN0698;81,5667;-32,25; ; ;Academy GGletsjer;Academy GGletsjer; ;;;;;GrIS
+GGN0699;81,7333;-35,6667; ; ;Nyeboe Gletsjer;Nyeboe Gletsjer; ;;;;;GrIS
+GGN0700;81,7742;-44,445; ; ;Harder Gletsjer;Harder Gletsjer; ;;;;;GrIS
+GGN0701;81,7833;-34,5; ; ;Marie Sophie Gletsjer;Marie Sophie Gletsjer; ;;;;;GrIS
+GGN0702;81,9;-36; ; ;Hobbs Gletsjer;Hobbs Gletsjer; ;;;;;GrIS
+GGN0703;81,9167;-29,1667; ; ;Hestetunge Bræ;Hestetunge Bræ; ;RGI40-05.10312;G331215E81911N;-28,7849;81,9112;LGIC
+GGN0704;81,95;-29,1333; ; ;Hugh Lee Bræ;Hugh Lee Bræ; ;RGI40-05.10312;G331215E81911N;-28,7849;81,9112;LGIC
+GGN0705;81,95;-28,7833; ; ;Josephine Bræ;Josephine Bræ; ;RGI40-05.10312;G331215E81911N;-28,7849;81,9112;LGIC
+GGN0706;82,1167;-38,6667; ; ;Astrup Bræ;Astrup Bræ; ;;;;;GrIS
+GGN0707;82,1262;-42,6552; ; ;Jungersen Gletsjer;Jungersen Gletsjer;;;;;;GrIS
+GGN0708;82,2021;-39,9639; ; ;Adams Gletsjer;Adams Gletsjer;;;;;;GrIS
+GGN0709;82,2459;-40,7836; ; ;Ekspedition Bræ ;Ekspedition Bræ ;Henson Gletsjer;;;;;GrIS
+GGN0710;82,4833;-40,3333; ; ;Inukitsaq Gletsjer;Inukitsaq Gletsjer; ;RGI40-05.10755;G319949E82483N;-40,0514;82,4827;LGIC
+GGN0711;82,5542;-40,3068; ; ;Aajaku Gletsjer;Aajaku Gletsjer;;RGI40-05.10736;G320012E82531N;-39,9880;82,5309;LGIC
+GGN0712;82,5647;-38,8078; ; ;Persuaq Gletsjer;Persuaq Gletsjer; ;RGI40-05.10748;G321124E82566N;-38,8762;82,5656;LGIC
+GGN0713;82,6333;-36,3333; ; ;Ymer Gletsjer;Ymer Gletsjer;;RGI40-05.10747;G323244E82655N;-36,7557;82,6546;LGIC
+GGN0714;82,6833;-39,4167; ; ;Lurgletscher;Lurgletscher; ;RGI40-05.10748;G321124E82566N;-38,8762;82,5656;LGIC
+GGN0715;82,7937;-38,5; ; ;Tjalfe Gletsjer;Tjalfe Gletsjer;;RGI40-05.10749;G322065E82674N;-37,9353;82,6735;LGIC
+GGN0716;82,9;-35,3333; ; ;Sleipner Bræ;Sleipner Bræ; ;RGI40-05.10683;G324663E82878N;-35,3367;82,8783;LGIC
+GGN0717;82,9119;-31,9207; ; ;Balder Gletsjer;Balder Gletsjer;;RGI40-05.10862;G328441E82854N;-31,5587;82,8540;LGIC
+GGN0718;83,0178;-45,369; ; ;Buys-Ballot Gletsjer;Buys-Ballot Gletsjer;;RGI40-05.10607;G314965E83009N;-45,0348;83,0089;LGIC
+GGN0719;83,0594;-31,058; ; ;Gefion Bræ;Gefion Bræ; ;RGI40-05.10844;G329178E83012N;-30,8218;83,0117;LGIC
+GGN0720;83,1638;-36,9626; ; ;Dreng Bræ;Dreng Bræ; ;RGI40-05.10988;G322874E83240N;-37,1259;83,2401;LGIC
+GGN0721;83,2333;-33,3333; ; ;Sif Gletsjer;Sif Gletsjer;;RGI40-05.10893;G326894E83267N;-33,1058;83,2673;LGIC
+GGN0722;83,2714;-33,9225; ; ;Nysne Gletsjer;Nysne Gletsjer; ;RGI40-05.11024;G326293E83301N;-33,7075;83,3008;LGIC
+GGN0723;83,3165;-28,4146; ; ;Ydun Gletsjer;Ydun Gletsjer; ;RGI40-05.11042;G331745E83306N;-28,2549;83,3059;LGIC
+GGN0724;83,3167;-34,25; ; ;Sydgletsjer;Sydgletsjer; ;RGI40-05.10959;G325843E83366N;-34,1573;83,3658;LGIC
+GGN0725;83,3232;-34,5818; ; ;Modvindgletsjer;Modvindgletsjer; ;RGI40-05.10959;G325843E83366N;-34,1573;83,3658;LGIC
+GGN0726;83,3633;-38,5602; ; ;Thomas Gletsjer;Thomas Gletsjer; ;RGI40-05.10957;G321679E83360N;-38,3207;83,3603;LGIC
+GGN0727;83,3863;-34,2573; ; ;Malcantone Gletsjer;Malcantone Gletsjer; ;RGI40-05.10959;G325843E83366N;-34,1573;83,3658;LGIC
+GGN0728;83,4091;-29,604; ; ;Borup Gletsjer;Borup Gletsjer;;RGI40-05.11037;G330072E83405N;-29,9281;83,4054;LGIC
+GGN0729;83,4213;-36,7822; ; ;A. Harmsworth Gletsjer;A. Harmsworth Gletsjer;;RGI40-05.11001;G323832E83396N;-36,1684;83,3962;LGIC
+GGN0730;83,4376;-28,502; ; ;Moore Gletsjer;Moore Gletsjer;;RGI40-05.11026;G331489E83400N;-28,5111;83,4004;LGIC
+GGN0731;83,45;-34,3333; ; ;MacMillan Gletsjer;MacMillan Gletsjer; ;RGI40-05.10889;G325659E83447N;-34,3414;83,4473;LGIC
+GGN0732;83,4532;-27,6277; ; ;Bertelsen Gletsjer;Bertelsen Gletsjer;;RGI40-05.11025;G332052E83445N;-27,9484;83,4452;LGIC
+GGN0733;83,4589;-34,7222; ; ;Nordgletsjer;Nordgletsjer; ;RGI40-05.10887;G325109E83418N;-34,8915;83,4182;LGIC
