@@ -23,17 +23,17 @@ from model import Deeplabv3
 from clr_callback import CyclicLR
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 import cv2, glob
 from skimage.io import imsave, imread
 from skimage.transform import resize, rotate, rescale
 from random import shuffle
 
-from data_cfm_256 import create_unagumented_data_from_image, load_validation_data
+from data_cfm_320 import create_unagumented_data_from_image, load_validation_data
 from albumentations import *
 
-img_size = 256
+img_size = 320
 data_path = 'data/'
 pred_path = 'preds/'
 temp_path = 'temp/'
@@ -219,9 +219,9 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator(12)
+	train_generator = imgaug_generator(4)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=2000,
+				steps_per_epoch=4000,
 				epochs=20,
 				validation_data=validation_data,
 				verbose=1,
