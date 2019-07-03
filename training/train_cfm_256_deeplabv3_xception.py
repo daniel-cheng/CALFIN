@@ -40,10 +40,10 @@ temp_path = 'temp/'
 
 def aug_daniel_part1(prob=1.0):
 	return Compose([
-        OneOf([
-            LongestMaxSize(max_size=img_size),
-            Resize(img_size, img_size)
-        ], p=1.0),
+		OneOf([
+			LongestMaxSize(max_size=img_size),
+			Resize(img_size, img_size)
+		], p=1.0),
 		OneOf([
 			CLAHE(clip_limit=2, p=.6),
 			IAASharpen(p=.2),
@@ -66,7 +66,7 @@ def aug_daniel_part1(prob=1.0):
 	
 def aug_daniel_part2(prob=1.0):
 	return Compose([
-        PadIfNeeded(min_height=img_size, min_width=img_size),
+		PadIfNeeded(min_height=img_size, min_width=img_size),
 		ShiftScaleRotate(shift_limit=.05, scale_limit=0.0, rotate_limit=15, border_mode=cv2.BORDER_CONSTANT, p=.75),
 		OneOf([
 			OpticalDistortion(interpolation=cv2.INTER_NEAREST, border_mode=cv2.BORDER_CONSTANT),
@@ -77,20 +77,45 @@ def aug_daniel_part2(prob=1.0):
 			JpegCompression(quality_lower=40)
 		], p=0.7)
 	], p=prob)
+
+def aug_daniel(prob=0.8):
+	return Compose([
+		RandomRotate90(p=0.5),
+		Transpose(p=0.5),
+		Flip(p=0.5),
+		OneOf([
+			IAAAdditiveGaussianNoise(),
+			GaussNoise(),
+			#Blur(),
+		], p=0.3),
+		OneOf([
+			CLAHE(clip_limit=2),
+			IAASharpen(),
+			IAAEmboss(),
+			OneOf([
+				RandomContrast(),
+				RandomBrightness(),
+			]),
+			#Blur(),
+			#GaussNoise()
+		], p=0.5),
+		HueSaturationValue(p=0.5)
+		], p=prob)
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 			
-def imgaug_generator(batch_size = 16):
+def imgaug_generator(batch_size = 4, img_size=256):
 	train_data_path = 'data/train'
 	temp_path = 'temp/train'
 	images = glob.glob(train_data_path + '/*[0-9].png')
 	shuffle(images)
 	source_counter = 0
 	source_limit = len(images)
-	images_per_metabatch = batch_size
-	augs_per_image = batch_size
+	images_per_metabatch = 16
+	augs_per_image = 4
+	gray_lower = 255 * 0.33
+	gray_upper = 255 * 0.66
 
-	augs_part1 = aug_daniel_part1()
-	augs_part2 = aug_daniel_part2()
+	augs = aug_daniel()
 
 	while True:
 		returnCount = 0
@@ -101,7 +126,7 @@ def imgaug_generator(batch_size = 16):
 
 		#Process up to 16 images in one batch to maitain randomness
 		for i in range(images_per_metabatch):
-			#Load images, resetting source "iterator" when reaching the end. Also updates images if new ones are added during training.
+			#Load images, resetting source "iterator" when reaching the end
 			if source_counter == source_limit:
 				images = glob.glob(train_data_path + '/*[0-9].png')
 				shuffle(images)
@@ -110,53 +135,43 @@ def imgaug_generator(batch_size = 16):
 			image_name = images[source_counter].split(os.path.sep)[-1]
 			image_mask_name = image_name.split('.')[0] + '_mask.png'
 			img = imread(os.path.join(train_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
-			mask = imread(os.path.join(train_data_path, image_mask_name), as_gray=True).astype(np.float32) #np.uint8 [0, 255]
+			mask = imread(os.path.join(train_data_path, image_mask_name), as_gray=True) #np.uint8 [0, 255]
 			img = resize(img, (img_size, img_size), preserve_range=True)  #np.float32 [0.0, 65535.0]
 			mask = resize(mask, (img_size, img_size), preserve_range=True) #np.float32 [0.0, 255.0]
 	
 			source_counter += 1
 
-			#Convert greyscale to RGB greyscale, preserving as max range as possible in uint8 
-			#(since it will be normalized again for imagenet means, it's ok if it's not divided by actual max of uint16)
-			img = (img * (255.0 / img.max())).astype(np.uint8)
-			img_rgb = np.stack((img,)*3, axis=-1)
-			mask_rgb = np.stack((mask,)*3, axis=-1)
-			gray_lower = 255 * 0.33
-			gray_upper = 255 * 0.66
+			#Convert greyscale to RGB greyscale
+			img = img.astype(np.uint8)
+			img_3 = np.stack((img,)*3, axis=-1)
+			mask_3 = np.stack((mask,)*3, axis=-1)
+
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image.
-				dat_1 = augs_part1(image=img_rgb, mask=mask_rgb)
-				img_aug_1 = dat_1['image']
-				mask_aug_1 = dat_1['mask']
+				dat = augs(image=img_3, mask=mask_3)
+				img_aug = np.mean(dat['image'], axis=2)
+				mask_aug = np.mean(dat['mask'], axis=2)
 				
-				#Calculate edge from mask and dilate.
-				mask_aug_1 = mask_aug_1.astype(np.uint8)
 				#Gray values represent inderterminate boundaries, and do not create edges along their boundaries
-				white_pixels = mask_aug_1 >= gray_upper
-				black_pixels = mask_aug_1 <= gray_lower
+				white_pixels = mask_aug >= gray_upper
+				black_pixels = mask_aug <= gray_lower
 				gray_pixels = np.logical_not(np.logical_or(white_pixels, black_pixels))
-				mask_aug_1[white_pixels]= 255
-				mask_aug_1[black_pixels]= 0
-				mask_aug_1[gray_pixels]= 127
-				mask_edge = cv2.Canny(mask_aug_1.astype(np.uint8), 255*3, 255*4, L2gradient=True)
+				mask_aug[white_pixels]= 255
+				mask_aug[black_pixels]= 0
+				mask_aug[gray_pixels]= 127
+
+				#Calculate edge from mask and dilate.
+				mask_edge = cv2.Canny(mask_aug.astype(np.uint8), 255*3, 255*4, L2gradient=True)
 				kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 				mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
-				mask_edge = np.where(mask_edge > np.mean(mask_edge), 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
-				mask_edge_rgb = np.stack((mask_edge,)*3, axis=-1)
+				mask_edge = np.where(mask_edge > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 				
-				#Perform second augmentations after edge is generated
-				dat_part2 = augs_part2(image=img_aug_1, mask=mask_edge_rgb)
+				patches, maskPatches = create_unagumented_data_from_image(img_aug, mask_edge)
 				
-				img_aug = np.mean(dat_part2['image'], axis=2)
-				mask_aug = np.mean(dat_part2['mask'], axis=2)
-				img_aug = (img_aug / img_aug.max() * 255).astype(np.uint8)  #np.uint8 [0, 255]
-				
-				patches, maskPatches = create_unagumented_data_from_image(img_aug, mask_aug)
-				
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
-				
+#			   imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+#			   imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+		
 				#Add to batches
 				if batch_img is not None:
 					batch_img = np.concatenate((batch_img, patches)) #np.float32 [-1.0, 1.0], imagenet mean (~0.45)
@@ -180,7 +195,6 @@ def imgaug_generator(batch_size = 16):
 			batch_mask_return = batch_mask[returnCount:returnCount+batch_size,:,:,:]
 			returnCount += batch_size
 			yield (batch_image_return, batch_mask_return)
-
 
 if __name__ == '__main__':
 	print('-'*30)
@@ -221,14 +235,14 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator(12)
+	train_generator = imgaug_generator(10, img_size)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=2000,
 				epochs=20,
 				validation_data=validation_data,
 				verbose=1,
-                max_queue_size=64,
+				max_queue_size=64,
 				use_multiprocessing=True,
-                workers=2,
+				workers=2,
 				callbacks=callbacks_list)
 	print(history.history)
