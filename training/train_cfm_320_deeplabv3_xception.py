@@ -101,10 +101,12 @@ def imgaug_generator(batch_size = 16):
 
 		#Process up to 16 images in one batch to maitain randomness
 		for i in range(images_per_metabatch):
-			#Load images, resetting source "iterator" when reaching the end
+			#Load images, resetting source "iterator" when reaching the end. Also updates images if new ones are added during training.
 			if source_counter == source_limit:
+				images = glob.glob(train_data_path + '/*[0-9].png')
 				shuffle(images)
 				source_counter = 0
+				source_limit = len(images)
 			image_name = images[source_counter].split(os.path.sep)[-1]
 			image_mask_name = image_name.split('.')[0] + '_mask.png'
 			img = imread(os.path.join(train_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
