@@ -30,14 +30,10 @@ from skimage.io import imsave, imread
 from skimage.transform import resize, rotate, rescale
 from random import shuffle
 
-from data_landsat_binary_with_boundary_224 import create_unagumented_data_from_image, load_validation_data
+from data_cfm import create_unagumented_data_from_image, load_validation_data
 from albumentations import *
 
-img_size = 224
-img_rows = img_size
-img_cols = img_size
-stride = int((img_rows + img_cols) / 2 / 2) #1/2 of img_window square
-smooth = 1.
+img_size = 256
 data_path = 'landsat_raw_boundaries/'
 pred_path = 'landsat_preds_boundaries/'
 temp_path = 'landsat_temp_boundaries/'
@@ -123,7 +119,8 @@ def imgaug_generator(batch_size = 16):
 			img = (img * (255.0 / img.max())).astype(np.uint8)
 			img_rgb = np.stack((img,)*3, axis=-1)
 			mask_rgb = np.stack((mask,)*3, axis=-1)
-		
+			gray_lower = 255 * 0.33
+			gray_upper = 255 * 0.66
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image.
@@ -133,13 +130,20 @@ def imgaug_generator(batch_size = 16):
 				
 				#Calculate edge from mask and dilate.
 				mask_aug_1 = mask_aug_1.astype(np.uint8)
-				mask_aug_1 = np.where(mask_aug_1 > np.mean(mask_aug_1), 255.0, 0.0).astype(np.uint8) #np.float32 [0.0, 1.0]
-				mask_edge = cv2.Canny(mask_aug_1, 100, 200)	
+				#Gray values represent inderterminate boundaries, and do not create edges along their boundaries
+				white_pixels = mask_aug_1 >= gray_upper
+				black_pixels = mask_aug_1 <= gray_lower
+				gray_pixels = np.logical_not(np.logical_or(white_pixels, black_pixels))
+				mask_aug_1[white_pixels]= 255
+				mask_aug_1[black_pixels]= 0
+				mask_aug_1[gray_pixels]= 127
+				mask_edge = cv2.Canny(mask_aug_1.astype(np.uint8), 255, 255*3, L2gradient=True)
 				kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 				mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
 				mask_edge = np.where(mask_edge > np.mean(mask_edge), 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 				mask_edge_rgb = np.stack((mask_edge,)*3, axis=-1)
 				
+				#Perform second augmentations after edge is generated
 				dat_part2 = augs_part2(image=img_aug_1, mask=mask_edge_rgb)
 				
 				img_aug = np.mean(dat_part2['image'], axis=2)
@@ -180,7 +184,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Loading validation data...')
 	print('-'*30)
-	validation_data = load_validation_data() 
+	validation_data = load_validation_data(img_size) 
 	
 	hyperparameters = [32, 3, 2]
 	hyperparameters_string = '-'.join(str(x) for x in hyperparameters)
@@ -195,14 +199,14 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Creating and compiling model...')
 	print('-'*30)
-	img_shape = (img_rows,img_cols,1)
-	flatten_shape = (img_rows*img_cols,)
-	target_shape = (img_rows,img_cols,3)
+	img_shape = (img_size, img_size, 1)
+	flatten_shape = (img_size * img_size,)
+	target_shape = (img_size, img_size, 3)
 	inputs = Input(shape=img_shape)
 	r1 = Reshape(flatten_shape)(inputs)
 	r2 = RepeatVector(3)(r1)
 	r3 = Reshape(target_shape)(r2)
-	base_model = Deeplabv3(input_shape=(img_rows,img_cols,3), classes=1, backbone='xception')
+	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, backbone='xception')
 	last_linear = base_model(r3)
 	out = Activation('sigmoid')(last_linear)
 
@@ -226,33 +230,3 @@ if __name__ == '__main__':
                 workers=2,
 				callbacks=callbacks_list)
 	print(history.history)
-
-	#plt.figure(1)
-	#plt.plot(history.history['acc'])
-	#plt.plot(history.history['val_acc'])
-	#plt.title('model accuracy')
-	#plt.ylabel('accuracy')
-	#plt.xlabel('epoch')
-	#plt.legend(['train', 'test'], loc='upper left')
-	#plt.show()
-
-	## summarize history for loss
-	#plt.figure(2)
-	#plt.plot(history.history['loss'])
-	#plt.plot(history.history['val_loss'])
-	#plt.title('model loss')
-	#plt.ylabel('loss')
-	#plt.xlabel('epoch')
-	#plt.legend(['train', 'test'], loc='upper left')
-	#plt.show()
-
-
-	## summarize history for loss
-	#plt.figure(3)
-	#plt.plot(history.history['iou_score'])
-	#plt.plot(history.history['val_iou_score'])
-	#plt.title('model iou_score')
-	#plt.ylabel('iou_score')
-	#plt.xlabel('epoch')
-	#plt.legend(['train', 'test'], loc='upper left')
-	#plt.show()

@@ -49,6 +49,8 @@ def bulkAdd():
 	domain_groups = []
 	# For each domain in CalvingFronts...
 	for domain in os.listdir(source_path):
+		if domain != 'Kangerlussuaq':
+			continue
 		domain_groups.append(domain)
 		root_group.addGroup(domain)
 		domain_group = findGroup(root_group, domain)
@@ -69,6 +71,3 @@ def bulkAdd():
 		iface.mainWindow().findChild( QAction, 'mActionSaveProject' ).trigger()
 
 bulkAdd()
-
-if __name__ == "__main__":
-	bulkAdd()

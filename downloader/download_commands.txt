@@ -73,7 +73,3 @@
 #python download_landsat_scene_cleanup.py -o liste -l scenes/kong-oscar* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kong-Oscar"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/helheim* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
 python download_landsat_scene_cleanup.py -o liste -l scenes/kangerlussuaq* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kangerlussuaq"
-python download_landsat_scene_cleanup.py -o liste -l scenes/helheim_L15.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
-python download_landsat_scene_cleanup.py -o liste -l scenes/helheim_L45.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
-python download_landsat_scene_cleanup.py -o liste -l scenes/helheim_L7_1.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
-python download_landsat_scene_cleanup.py -o liste -l scenes/helheim_L7_2.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
