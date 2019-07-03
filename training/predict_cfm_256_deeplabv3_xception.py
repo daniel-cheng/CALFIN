@@ -151,9 +151,9 @@ img_rows = 256
 img_cols = 256
 stride = int((img_rows + img_cols) / 2 / 2) #1/2 of img_window square
 smooth = 1.
-data_path = 'landsat_raw_boundaries/'
-pred_path = 'landsat_preds_boundaries/'
-temp_path = 'landsat_temp_boundaries/'
+data_path = 'data/'
+pred_path = 'preds/'
+temp_path = 'temp/'
 
 '''
 https://github.com/pietz/unet-keras/blob/master/unet.py
@@ -189,40 +189,6 @@ keras.metrics.dice_coef = dice_coef
 import keras.losses
 keras.losses.dice_coef_loss = dice_coef_loss
 
-def conv_block(m, dim, acti, bn, res, do=0):
-	n = Conv2D(dim, 3, activation=acti, dilation_rate=1, padding='same', kernel_regularizer=l1_l2(0.0001, 0.0001))(m)
-	n = BatchNormalization()(n) if bn else n
-	n = Dropout(do)(n) if do else n
-	n = Conv2D(dim, 3, activation=acti, dilation_rate=1, padding='same', kernel_regularizer=l1_l2(0.0001, 0.0001))(n)
-	n = BatchNormalization()(n) if bn else n
-	return Concatenate()([m, n]) if res else n
-
-def level_block(m, dim, depth, inc, acti, do, bn, mp, up, res):
-	if depth > 0:
-		#n = conv_block(m, dim, acti, bn, res, do)
-		n = conv_block(m, dim, acti, bn, res)
-		m = MaxPooling2D()(n) if mp else Conv2D(dim, 3, strides=2, padding='same')(n)
-		m = level_block(m, int(inc*dim), depth-1, inc, acti, do, bn, mp, up, res)
-		if up:
-			m = UpSampling2D()(m)
-			m = Conv2D(dim, 2, activation=acti, padding='same', kernel_regularizer=l1_l2(0.0001, 0.0001))(m)
-		else:
-			m = Conv2DTranspose(dim, 3, strides=2, activation=acti, padding='same')(m)
-		n = Concatenate()([n, m])
-		m = conv_block(n, dim, acti, bn, res)
-		#m = conv_block(n, dim, acti, bn, res, do)
-	else:
-		#m = conv_block(m, dim, acti, bn, res)
-		m = conv_block(m, dim, acti, bn, res, do)
-	return m
-
-def UNetModel(img_shape, out_ch=1, start_ch=48, depth=4, inc_rate=2., activation='relu',
-		 dropout=0.4, batchnorm=True, maxpool=True, upconv=True, residual=True):
-	i = Input(shape=img_shape)
-	o = level_block(i, start_ch, depth, inc_rate, activation, dropout, batchnorm, maxpool, upconv, residual)
-	o = Conv2D(out_ch, 1, activation='sigmoid')(o)
-	return Model(inputs=i, outputs=o)
-
 def predict(model, image):
 	#Load img in as ?X? gray, cast from uint16 to uint8 (0-255)
 	patches, _ = create_unagumented_data_from_image(image, None) #np.float32 [-1.0, 1.0] (mean ~0.45), shape = (1, 256, 256, 1) #np.float32 [0.0, 1.0] (mean<0.5), shape = (1, 256, 256, 1)
@@ -245,6 +211,7 @@ def mix_data(patches, mask_patches, patches2, mask_patches2):
 
 	idx = np.random.choice(np.arange(len(patches_all)), len(patches), replace=False)
 	return patches_all[idx], mask_patches_all[idx]
+
 def preprocess_input(x):
 	"""Preprocesses a numpy array encoding a batch of images.
 	# Arguments
@@ -253,90 +220,6 @@ def preprocess_input(x):
 		Input array scaled to [-1.,1.]
 	"""
 	return imagenet_utils.preprocess_input(x, mode='tf')
-
-			
-def imgaug_generator(batch_size = 4):
-	train_data_path = 'landsat_raw_boundaries/train_full'
-	temp_path = 'landsat_temp_boundaries/train_full'
-	images = glob.glob(train_data_path + '/*[0-9].png')
-	shuffle(images)
-	source_counter = 0
-	source_limit = len(images)
-	images_per_metabatch = 16
-	augs_per_image = 8
-
-	augs = aug_daniel()
-
-	while True:
-		returnCount = 0
-		batch_img_patches = None
-		batch_mask_patches = None
-		batch_img = None
-		batch_mask = None
-
-		#Process up to 16 images in one batch to maitain randomness
-		for i in range(images_per_metabatch):
-			#Load images, resetting source "iterator" when reaching the end
-			if source_counter == source_limit:
-				shuffle(images)
-				source_counter = 0
-			image_name = images[source_counter].split(os.path.sep)[-1]
-			image_mask_name = image_name.split('.')[0] + '_mask.png'
-			img = imread(os.path.join(train_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
-			mask = imread(os.path.join(train_data_path, image_mask_name), as_gray=True) #np.uint8 [0, 255]
-			img = resize(img, (256, 256), preserve_range=True)  #np.float32 [0.0, 65535.0]
-			mask = resize(mask, (256, 256), preserve_range=True) #np.float32 [0.0, 255.0]
-	
-			source_counter += 1
-
-			#Convert greyscale to RGB greyscale
-			img = (img * (255.0 / img.max())).astype(np.uint8)
-			img_3 = np.stack((img,)*3, axis=-1)
-			mask_3 = np.stack((mask,)*3, axis=-1)
-		
-			#Run each image through 8 random augmentations per image
-			for j in range(augs_per_image):
-				#Augment image.
-				dat = augs(image=img_3, mask=mask_3)
-				img_aug = np.mean(dat['image'], axis=2)
-				mask_aug = np.mean(dat['mask'], axis=2)
-				img_aug = (img_aug / img_aug.max() * 255).astype(np.uint8)  #np.uint8 [0, 255]
-				
-				#Calculate edge from mask and dilate.
-				mask_edge = cv2.Canny(mask_aug.astype(np.uint8), 100, 200)	
-				kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-				mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
-				mask_edge = np.where(mask_edge > np.mean(mask_edge), 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
-				
-				patches, maskPatches = create_unagumented_data_from_image(img_aug, mask_edge)
-				
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
-		
-				#Add to batches
-				if batch_img is not None:
-					batch_img = np.concatenate((batch_img, patches)) #np.float32 [-1.0, 1.0], imagenet mean (~0.45)
-					batch_mask = np.concatenate((batch_mask, maskPatches))  #np.float32 [0.0, 1.0]
-				else:
-					batch_img = patches
-					batch_mask = maskPatches
-
-		#Should have total of augs_per_image * images_per_metabatch to randomly choose from
-		totalPatches = len(batch_img)
-		#Now, return up batch_size number of patches, or generate new ones if exhausting curent patches
-		#Shuffle
-		idx = np.random.permutation(len(batch_img))
-		if (len(batch_img) is not len(batch_mask)):
-			#print('batch img/mask mismatch!')
-			continue
-		batch_img = batch_img[idx]
-		batch_mask = batch_mask[idx]
-		while returnCount + batch_size < totalPatches:
-			batch_image_return = batch_img[returnCount:returnCount+batch_size,:,:,:]
-			batch_mask_return = batch_mask[returnCount:returnCount+batch_size,:,:,:]
-			returnCount += batch_size
-			yield (batch_image_return, batch_mask_return)
-
 
 if __name__ == '__main__':
 	print('-'*30)

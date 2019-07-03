@@ -3,7 +3,7 @@ from __future__ import print_function
 import numpy as np
 import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import plot_model, multi_gpu_model
+from keras.utils import plot_model
 from keras.models import Model, Input, load_model
 from keras.layers import Concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, Dropout, UpSampling2D, BatchNormalization, RepeatVector, Reshape, Permute, Flatten
 from keras.optimizers import Adam
@@ -18,7 +18,7 @@ from segmentation_models.losses import bce_jaccard_loss, jaccard_loss, binary_cr
 from segmentation_models.metrics import iou_score
 
 import sys
-sys.path.insert(0, 'keras-deeplab-v3-plus-master')
+sys.path.insert(0, 'keras-deeplab-v3-plus')
 from model import Deeplabv3
 from clr_callback import CyclicLR
 
@@ -34,9 +34,9 @@ from data_cfm import create_unagumented_data_from_image, load_validation_data
 from albumentations import *
 
 img_size = 256
-data_path = 'landsat_raw_boundaries/'
-pred_path = 'landsat_preds_boundaries/'
-temp_path = 'landsat_temp_boundaries/'
+data_path = 'data/'
+pred_path = 'preds/'
+temp_path = 'temp/'
 
 def aug_daniel_part1(prob=1.0):
 	return Compose([
@@ -80,8 +80,8 @@ def aug_daniel_part2(prob=1.0):
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 			
 def imgaug_generator(batch_size = 16):
-	train_data_path = 'landsat_raw_boundaries/train_full'
-	temp_path = 'landsat_temp_boundaries/train_full'
+	train_data_path = 'data/train'
+	temp_path = 'temp/train'
 	images = glob.glob(train_data_path + '/*[0-9].png')
 	shuffle(images)
 	source_counter = 0
@@ -137,7 +137,7 @@ def imgaug_generator(batch_size = 16):
 				mask_aug_1[white_pixels]= 255
 				mask_aug_1[black_pixels]= 0
 				mask_aug_1[gray_pixels]= 127
-				mask_edge = cv2.Canny(mask_aug_1.astype(np.uint8), 255, 255*3, L2gradient=True)
+				mask_edge = cv2.Canny(mask_aug_1.astype(np.uint8), 255*3, 255*4, L2gradient=True)
 				kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 				mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
 				mask_edge = np.where(mask_edge > np.mean(mask_edge), 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 	
 	hyperparameters = [32, 3, 2]
 	hyperparameters_string = '-'.join(str(x) for x in hyperparameters)
-	model_checkpoint = ModelCheckpoint('landsat_weights_with_boundary_' + str(img_size) + '_deeplabv3_xception_aug_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
+	model_checkpoint = ModelCheckpoint('cfm_weights_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
 	
 	clr_triangular = CyclicLR(mode='triangular2', step_size=4000, base_lr=6e-4, max_lr=6e-5)
 	callbacks_list = [
@@ -213,16 +213,16 @@ if __name__ == '__main__':
 	model = Model(inputs, out)
 	model.compile(optimizer=Adam(lr=1e-5), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('landsat_weights_with_boundary_224_deeplabv3_xception_aug_e10_iou0.8776.h5')
+	#model.load_weights('cfm_weights_e10_iou0.8776.h5')
 	
 
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator(16)
+	train_generator = imgaug_generator(12)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=2000,
-				epochs=40,
+				epochs=20,
 				validation_data=validation_data,
 				verbose=1,
                 max_queue_size=64,

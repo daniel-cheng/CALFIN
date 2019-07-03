@@ -12,9 +12,8 @@ from keras.applications import imagenet_utils
 
 from aug_generators import aug_resize, aug_pad
 
-data_path = 'landsat_raw_boundaries/'
-temp_path = 'landsat_temp_boundaries/'
-
+data_path = 'data/'
+temp_path = 'temp/'
 img_size = 256
 image_stride = img_size / 4
 image_stride_range = 9
@@ -94,8 +93,8 @@ def create_validation_data_from_image(img, mask, image_name, image_mask_name):
 
 	#Normalize inputs.
 	img = (img / img.max() * 255).astype(np.uint8)
-	imsave(os.path.join(temp_path, 'validation_full', image_name), img)
-	imsave(os.path.join(temp_path, 'validation_full', image_mask_name), (mask * 255).astype(np.uint8))
+	imsave(os.path.join(temp_path, 'validation', image_name), img)
+	imsave(os.path.join(temp_path, 'validation', image_mask_name), (mask * 255).astype(np.uint8))
 	
 	#Create img_size x img_size strided patches from image
 	patches, maskPatches = create_unagumented_data_from_image(img, mask)
@@ -103,8 +102,8 @@ def create_validation_data_from_image(img, mask, image_name, image_mask_name):
 	return patches, maskPatches
 	
 def create_validation_data_from_directory(img_size):
-	data_path = 'landsat_raw_boundaries'
-	validation_data_path = os.path.join(data_path, 'validation_full')
+	data_path = 'data'
+	validation_data_path = os.path.join(data_path, 'validation')
 	images = os.listdir(validation_data_path)
 	augmentations = 1
 	total = len(images) // 2 * augmentations
@@ -125,7 +124,7 @@ def create_validation_data_from_directory(img_size):
 		image_pred_name = image_name.split('.')[0] + '_pred.png'
 		img = imread(os.path.join(validation_data_path, image_name), as_gray=True)
 		mask = imread(os.path.join(validation_data_path, image_mask_name), as_gray=True)
-		imsave(os.path.join(temp_path, 'validation_full', image_mask_name), mask)
+		imsave(os.path.join(temp_path, 'validation', image_mask_name), mask)
 		img_resized = resize(img, (img_size, img_size), preserve_range=True)  #np.float32 [0.0, 65535.0]
 		mask_resized = resize(mask, (img_size, img_size), preserve_range=True) #np.float32 [0.0, 255.0]
 		
@@ -139,7 +138,17 @@ def create_validation_data_from_directory(img_size):
 		#mask_rgb_resized = dat_resize['mask']
 		
 		#Calculate edge from mask and dilate.
-		mask_edges = cv2.Canny(mask_resized.astype(np.uint8), 100, 200)	
+		mask_resized = mask_resized.astype(np.uint8)
+		#Gray values represent inderterminate boundaries, and do not create edges along their boundaries
+		gray_lower = 255 * 0.33
+		gray_upper = 255 * 0.66
+		white_pixels = mask_resized >= gray_upper
+		black_pixels = mask_resized <= gray_lower
+		gray_pixels = np.logical_not(np.logical_or(white_pixels, black_pixels))
+		mask_resized[white_pixels]= 255
+		mask_resized[black_pixels]= 0
+		mask_resized[gray_pixels]= 127
+		mask_edges = cv2.Canny(mask_resized.astype(np.uint8), 255*3, 255*4, L2gradient=True)
 		kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 		mask_edges = cv2.dilate(mask_edges.astype('float64'), kernel, iterations = 1)
 		mask_edges = np.where(mask_edges > np.mean(mask_edges), 1.0, 0.0).astype('float32')
@@ -168,4 +177,7 @@ def create_validation_data_from_directory(img_size):
 		
 if __name__ == '__main__':
 #	create_validation_data_from_directory(sys.argv[1])
+	img_size = 256
+	image_stride = img_size / 4
+	image_stride_range = 9
 	create_validation_data_from_directory(256)
