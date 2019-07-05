@@ -10,11 +10,11 @@ from scipy.ndimage.filters import median_filter
 from scipy import ndimage
 from keras.applications import imagenet_utils
 
-from aug_generators import aug_resize, aug_pad
+from aug_generators import aug_daniel, create_unagumented_data_from_image
 
 data_path = 'data/'
 temp_path = 'temp/'
-img_size = 256
+img_size = 320
 image_stride = img_size / 4
 image_stride_range = 9
 
@@ -60,114 +60,61 @@ def preprocess_input(x):
 	"""
 	return imagenet_utils.preprocess_input(x, mode='tf')
 
-def create_unagumented_data_from_image(img, mask):	
-	#Normalize inputs.
-	img_pre = img.astype('float32')
-	img_pre = preprocess_input(img_pre)
-	
-	img_resize = img_pre[np.newaxis,:,:,np.newaxis]
-	if mask is None:
-		mask_resize = None
-	else:
-		mask_resize = mask[np.newaxis,:,:,np.newaxis]
-	
-	return img_resize, mask_resize
-
 def load_validation_data(img_size):
 	imgs_validation = np.load('landsat_imgs_validation_boundaries_' + str(img_size) + '.npy').astype(np.float32)
 	imgs_mask_validation = np.load('landsat_imgs_mask_validation_boundaries_' + str(img_size) + '.npy').astype(np.float32)
 	return (imgs_validation, imgs_mask_validation)
 
-def create_validation_data_from_image(img, mask, image_name, image_mask_name):
-	#Important: rotating images in this case is important for training - otherwise, degenerates and picks false optimum	
-	
-#	clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-#	img = clahe.apply(img)
-	
-#	#Sharpen image.
-#	blurred_img = ndimage.gaussian_filter(img, 3)
-#	filter_blurred_img = ndimage.gaussian_filter(blurred_img, 1)
-#	alpha = 40
-#	sharpened = blurred_img + alpha * (blurred_img - filter_blurred_img)
-	
-
-	#Normalize inputs.
-	img = (img / img.max() * 255).astype(np.uint8)
-	imsave(os.path.join(temp_path, 'validation', image_name), img)
-	imsave(os.path.join(temp_path, 'validation', image_mask_name), (mask * 255).astype(np.uint8))
-	
-	#Create img_size x img_size strided patches from image
-	patches, maskPatches = create_unagumented_data_from_image(img, mask)
-
-	return patches, maskPatches
-	
 def create_validation_data_from_directory(img_size):
-	data_path = 'data'
-	validation_data_path = os.path.join(data_path, 'validation')
-	images = os.listdir(validation_data_path)
-	augmentations = 1
-	total = len(images) // 2 * augmentations
+	validation_data_path = 'data/validation'
+	temp_path = 'temp/validation'
+	images = glob.glob(validation_data_path + '/*[0-9].png')
+	shuffle(images)
+	total = len(images)
 	imgs = None
 	imgs_mask = None
 	i = 0
-	augs_resize = aug_resize(img_size=img_size)
-	augs_pad = aug_pad(img_size=img_size)
-
+	
+	augs = aug_daniel()
+	
 	print('-'*30)
 	print('Creating validation images...')
 	print('-'*30)
 
 	for image_name in images:
-		if '_mask.png' in image_name or '_bqa.png' in image_name  or '_mtl.txt' in image_name or not os.path.isfile(os.path.join(validation_data_path, image_name)):
-			continue
 		image_mask_name = image_name.split('.')[0] + '_mask.png'
-		image_pred_name = image_name.split('.')[0] + '_pred.png'
-		img = imread(os.path.join(validation_data_path, image_name), as_gray=True)
-		mask = imread(os.path.join(validation_data_path, image_mask_name), as_gray=True)
-		imsave(os.path.join(temp_path, 'validation', image_mask_name), mask)
-		img_resized = resize(img, (img_size, img_size), preserve_range=True)  #np.float32 [0.0, 65535.0]
-		mask_resized = resize(mask, (img_size, img_size), preserve_range=True) #np.float32 [0.0, 255.0]
+		img_uint16 = imread(os.path.join(validation_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
+		mask_uint16 = imread(os.path.join(validation_data_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
+		img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+		mask_f64 = resize(mask_uint16, (img_size, img_size), preserve_range=True) #np.float64 [0.0, 65535.0]
 		
 		#Convert greyscale to RGB greyscale, preserving as max range as possible in uint8 
-		#(since it will be normalized again for imagenet means, it's ok if it's not divided by actual max of uint16)
-		img = (img * (255.0 / img.max())).astype(np.uint8)
-		
-		#Resize image to max img_size
-		#dat_resize = augs_resize(image=img, mask=mask)
-		#img_rgb_resized = dat_resize['image']
-		#mask_rgb_resized = dat_resize['mask']
+		img_max = img_f64.max()
+		mask_max = mask_f64.max()
+		if (img_max != 0.0):
+			img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+		if (mask_max != 0.0):
+			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 		
 		#Calculate edge from mask and dilate.
-		mask_resized = mask_resized.astype(np.uint8)
-		#Gray values represent inderterminate boundaries, and do not create edges along their boundaries
-		gray_lower = 255 * 0.33
-		gray_upper = 255 * 0.66
-		white_pixels = mask_resized >= gray_upper
-		black_pixels = mask_resized <= gray_lower
-		gray_pixels = np.logical_not(np.logical_or(white_pixels, black_pixels))
-		mask_resized[white_pixels]= 255
-		mask_resized[black_pixels]= 0
-		mask_resized[gray_pixels]= 127
-		mask_edges = cv2.Canny(mask_resized.astype(np.uint8), 255*3, 255*4, L2gradient=True)
 		kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-		mask_edges = cv2.dilate(mask_edges.astype('float64'), kernel, iterations = 1)
-		mask_edges = np.where(mask_edges > np.mean(mask_edges), 1.0, 0.0).astype('float32')
-
-		#Pad image to img_size
-		#dat_padded = augs_pad(image=img_rgb_resized, mask=mask_edges)
-		#img_rgb_padded = dat_padded['image']
-		#mask_rgb_padded = dat_padded['mask']
+		mask_edge = cv2.Canny(mask_uint8.astype(np.uint8), 250, 255 * 2) #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
+		mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
+		mask_edge = np.where(mask_edge > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 		
-		patches, patches_mask = create_validation_data_from_image(img_resized, mask_edges, image_name, image_pred_name)
+		patches, maskPatches = create_unagumented_data_from_image(img_uint8, mask_edge)
 		
+		imsave(os.path.join(temp_path, image_name), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+		imsave(os.path.join(temp_path, image_mask_name), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+	
 		if (imgs is not None):
 			imgs = np.concatenate((imgs, patches))
-			imgs_mask = np.concatenate((imgs_mask, patches_mask))
+			imgs_mask = np.concatenate((imgs_mask, maskPatches))
 			if (imgs.shape[0] != imgs_mask.shape[0]):
 				raise ValueError()
 		else:
 			imgs = patches
-			imgs_mask = patches_mask
+			imgs_mask = maskPatches
 
 		i += 1
 		print('Done: {0}/{1} images'.format(i, total))
@@ -177,7 +124,4 @@ def create_validation_data_from_directory(img_size):
 		
 if __name__ == '__main__':
 #	create_validation_data_from_directory(sys.argv[1])
-	img_size = 256
-	image_stride = img_size / 4
-	image_stride_range = 9
-	create_validation_data_from_directory(256)
+	create_validation_data_from_directory(img_size)

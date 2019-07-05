@@ -6,3 +6,4 @@ testing_calfin
 testing
 *.pyc
 *.h5
+/training/temp
