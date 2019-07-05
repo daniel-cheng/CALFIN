@@ -33,7 +33,7 @@ from random import shuffle
 
 from data_cfm_320 import load_validation_data
 from albumentations import *
-from aug_generators import aug_daniel
+from aug_generators import aug_daniel, imgaug_generator
 
 img_size = 320
 data_path = 'data/'
