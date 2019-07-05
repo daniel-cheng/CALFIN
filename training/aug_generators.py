@@ -137,6 +137,8 @@ def imgaug_generator(batch_size = 4, img_size=256):
 			img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 			mask_f64 = resize(mask_uint16, (img_size, img_size), preserve_range=True) #np.float64 [0.0, 65535.0]
 			
+			source_counter += 1
+
 			#Convert greyscale to RGB greyscale
 			img_max = img_f64.max()
 			mask_max = mask_f64.max()
