@@ -50,7 +50,7 @@ if __name__ == '__main__':
 	model_checkpoint = ModelCheckpoint('cfm_weights_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
 	clr_triangular = CyclicLR(mode='triangular2', step_size=4000, base_lr=6e-4, max_lr=6e-5)
 	callbacks_list = [
-		EarlyStopping(patience=6, verbose=1, restore_best_weights=True),
+		EarlyStopping(patience=6, verbose=1, restore_best_weights=False),
 #		clr_triangular,
 		model_checkpoint
 	]
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	#model.load_weights('cfm_weights_e10_iou0.8776.h5')
+	model.load_weights('cfm_weights_256_e05_iou0.0335.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 	train_generator = imgaug_generator(1, img_size)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=16000,
-				epochs=40,
+				epochs=35,
 				validation_data=validation_data,
 				verbose=1,
 				max_queue_size=64,
