@@ -65,14 +65,14 @@ if __name__ == '__main__':
 	r1 = Reshape(flatten_shape)(inputs)
 	r2 = RepeatVector(3)(r1)
 	r3 = Reshape(target_shape)(r2)
-	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, OS=8, backbone='xception')
+	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, OS=16, backbone='xception')
 	last_linear = base_model(r3)
 	out = Activation('sigmoid')(last_linear)
 	
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-#	model.load_weights('landsat_weights_with_boundary_224_deeplabv3_xception_e20_iou0.8794.h5')
+	model.load_weights('cfm_weights_224_e16_iou0.3634.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 	train_generator = imgaug_generator(4, img_size)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=4000,
-				epochs=20,
+				epochs=10,
 				validation_data=validation_data,
 				verbose=1,
 #				max_queue_size=64,

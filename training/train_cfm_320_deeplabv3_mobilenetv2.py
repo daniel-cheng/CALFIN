@@ -70,17 +70,17 @@ if __name__ == '__main__':
 	out = Activation('sigmoid')(last_linear)
 	
 	model = Model(inputs, out)
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
 #	model.load_weights('cfm_weights_320_e07_iou0.0139.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator(1, img_size)
+	train_generator = imgaug_generator(4, img_size)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=16000,
-				epochs=10,
+				steps_per_epoch=2000,
+				epochs=40,
 				validation_data=validation_data,
 				verbose=1,
 #				max_queue_size=64,
