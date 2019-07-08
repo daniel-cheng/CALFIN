@@ -24,7 +24,7 @@ from clr_callback import CyclicLR
 from AdamAccumulate import AdamAccumulate
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 import cv2, glob
 from skimage.io import imsave, imread
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	train_generator = imgaug_generator(1, img_size)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=16000,
+				steps_per_epoch=8000,
 				epochs=10,
 				validation_data=validation_data,
 				verbose=1,

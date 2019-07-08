@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	img_shape = (img_size, img_size, 1)
 	inputs = Input(shape=img_shape)
-	base_model = Deeplabv3(input_shape=img_shape, classes=1, alpha = 2.0, backbone='mobilenetv2', weights=None) 
+	base_model = Deeplabv3(input_shape=img_shape, classes=1, alpha = 1.4, backbone='mobilenetv2', weights=None) 
 	last_linear = base_model(inputs)
 	out = Activation('sigmoid')(last_linear)
 	
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	train_generator = imgaug_generator(1, img_size)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=16000,
+				steps_per_epoch=8000,
 				epochs=40,
 				validation_data=validation_data,
 				verbose=1,
