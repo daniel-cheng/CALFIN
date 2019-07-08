@@ -371,7 +371,7 @@ if 'A' in steps:
 	#automatically save all images that don't have detections, and create masks
 
 if 'production' in steps:
-	preds_root_path = r'D:\Daniel\Pictures\CALFIN Imagery\landsat_preds'
+	preds_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds_core'
 	masks_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\all'
 	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\production'
 	
@@ -428,7 +428,7 @@ if 'production' in steps:
 		result_mask = extract_front_indicators(img_uint8, mask_edge, i, resolution)
 		result_pred = extract_front_indicators(img_uint8, pred_uint8, i, resolution)
 		
-		if result_pred is None:
+		if result_pred is None or result_mask is None:
 			print(raw_path, 'mean distance from front: NaN - unable to extract front')
 			continue
 		
@@ -480,6 +480,6 @@ if 'production' in steps:
 #		mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 #	
 	for domain, error_array in mean_errors.items():
-		print(domain, 'mean distance from front:', str(np.mean(error_array)) + 'm') 
+		print(domain, 'mean distance from front:', str(np.mean(error_array)) + 'm', 'median:', str(np.median(error_array)) + 'm')
 		
 	
