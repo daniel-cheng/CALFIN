@@ -59,17 +59,7 @@ if __name__ == '__main__':
 	print('Creating and compiling model...')
 	print('-'*30)
 	img_shape = (img_size, img_size, 1)
-#	flatten_shape = (img_size * img_size,)
-#	target_shape = (img_size, img_size, 3)
-	inputs = Input(shape=img_shape)
-#	r1 = Reshape(flatten_shape)(inputs)
-#	r2 = RepeatVector(3)(r1)
-#	r3 = Reshape(target_shape)(r2)
-	base_model = Deeplabv3(input_shape=img_shape, classes=1, alpha = 1.4, backbone='mobilenetv2', weights=None)
-	last_linear = base_model(inputs)
-	out = Activation('sigmoid')(last_linear)
-	
-	model = Model(inputs, out)
+	model = Deeplabv3(input_shape=img_shape, classes=1, alpha = 2.0, backbone='mobilenetv2', weights=None)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
 #	model.load_weights('cfm_weights_320_e07_iou0.0139.h5')
@@ -79,8 +69,8 @@ if __name__ == '__main__':
 	print('-'*30)
 	train_generator = imgaug_generator(1, img_size)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=8000,
-				epochs=10,
+				steps_per_epoch=32000,
+				epochs=20,
 				validation_data=validation_data,
 				verbose=1,
 #				max_queue_size=64,
