@@ -72,7 +72,7 @@ if __name__ == '__main__':
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=1), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_224_e02_iou0.4222.h5')
+	model.load_weights('cfm_weights_224_e20_iou0.5660.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
