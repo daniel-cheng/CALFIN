@@ -44,7 +44,7 @@ def step_1(root, domain):
 	mask_paths =  get_paths(root, domain, '_pred')
 	return raw_paths, mask_paths
 
-if '1' in steps:
+if '1' in steps and __name__ == "__main__":
 	#For testing - performs step 1 with default parameters.
 	root = r'D:\Daniel\Documents\Github\CALFIN Repo\postprocessing'
 	domain = 'testing_calfin'
@@ -185,7 +185,7 @@ def step_2(raw_paths, mask_paths, reprocessing_path, source_root_path):
 			shutil.copy2(os.path.join(source_path, raw_name), os.path.join(domain_path, mask_name))
 	return overlays, fronts_lines, fronts_normals, processed_paths
 
-if '2' in steps:
+if '2' in steps and __name__ == "__main__":
 	#For testing - performs step 2 with default parameters.
 	overlays, fronts_lines, fronts_normals, processed_paths = step_2(raw_paths, mask_paths)
 	
@@ -223,7 +223,7 @@ def step_3(fronts_lines, processed_paths, reprocessing_path, source_root_path):
 	
 	return median_start_point, median_end_point
 
-if '3' in steps:
+if '3' in steps and __name__ == "__main__":
 	#For testing - performs step 3 with default parameters.
 	median_start_point, median_end_point = step_3(fronts_lines)
 	
@@ -313,7 +313,7 @@ def step_4(overlays, processed_paths, output_path, name):
 	make_video(overlays, processed_paths, file_path, fps=1.0)
 	return yearly_bins, monthly_bins
 
-if '4' in steps:
+if '4' in steps and __name__ == "__main__":
 	#For testing - performs step 4 with default parameters.
 	output_path = '.'
 	name = "Upernavik-NE"
@@ -345,7 +345,7 @@ def load_domain(domain):
 	yearly_bins = data['yearly_bins']
 	monthly_bins = data['monthly_bins']
 
-if 'A' in steps:
+if 'A' in steps and __name__ == "__main__":
 	#For testing - performs all steps with default parameters.
 	root_path = r'D:\Daniel\Pictures\CALFIN Imagery\landsat_preds'
 	output_path = r'D:\Daniel\Documents\Github\CALFIN Repo\postprocessing\videos'

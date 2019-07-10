@@ -372,6 +372,119 @@ if 'A' in steps:
 
 if 'production' in steps:
 	preds_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds_core'
+	masks_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation'
+	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\production'
+	
+	
+	raw_paths = glob.glob(masks_root_path + '/*[0-9].png')
+#	mask_paths = glob.glob(masks_root_path + '/*_mask.png')
+#	pred_paths = glob.glob(preds_root_path + '/*_pred.png')
+#	for i in range(0, 25):
+	mean_errors = defaultdict(list)
+	for i in range(len(raw_paths)):
+		raw_path = raw_paths[i]
+#		mask_path = mask_paths[i]
+#		pred_path = pred_paths[i]
+		
+		image_name = raw_path.split(os.path.sep)[-1].split('.')[0]
+		image_name_parts = image_name.split('_')
+		domain = image_name_parts[0]
+		band = image_name_parts[-1]
+		mask_name = image_name + '_mask.png'
+		pred_name = domain + '\\' + image_name + '_pred.png'
+		mask_path = os.path.join(masks_root_path, mask_name)
+		pred_path = os.path.join(preds_root_path, pred_name)
+		
+		if not os.path.exists(pred_path):
+			continue
+		
+		img_uint16 = skimage.io.imread(raw_path, as_gray=True) #np.uint16 [0, 65535]
+		mask_uint16 = skimage.io.imread(mask_path, as_gray=True) #np.uint16 [0, 65535]
+		pred_uint8 = skimage.io.imread(pred_path, as_gray=True) #np.uint8 [0, 255]
+		
+		resolution = pred_uint8.shape
+		resolution_original = mask_uint16.shape
+		img_size = resolution[0]
+		img_f64 = skimage.transform.resize(img_uint16, resolution, preserve_range=True)  #np.float64 [0.0, 65535.0]
+		mask_f64 = skimage.transform.resize(mask_uint16, resolution, order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
+		pred_f64 = skimage.transform.resize(pred_uint8, resolution, order=0, preserve_range=True) #np.float64 [0.0, 255.0]
+	
+		#Convert greyscale to RGB greyscale
+		img_max = img_f64.max()
+		mask_max = mask_f64.max()
+		pred_max = pred_f64.max()
+		if (img_max != 0.0):
+			img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+		if (mask_max != 0.0):
+			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+		if (pred_max != 0.0 and pred_max != 255.0):
+			pred_uint8 = np.floor(pred_f64 / pred_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+		
+		#Calculate edge from mask and dilate.
+		kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+		mask_edge = cv2.Canny(mask_uint8, 250, 255 * 2) #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
+		mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
+		
+		result_mask = extract_front_indicators(img_uint8, mask_edge, i, resolution)
+		result_pred = extract_front_indicators(img_uint8, pred_uint8, i, resolution)
+		
+		if result_pred is None or result_mask is None:
+			#Save to reprocessing
+#			print(raw_path, 'mean distance from front: NaN - unable to extract front')
+			continue
+		
+		mask_test = np.zeros(resolution)
+		pred_test = np.zeros(resolution)
+		
+		front_line_mask = result_mask[1]
+		front_line_pred = result_pred[1]
+		front_contour_mask = []
+		front_contour_pred = []
+		for j in range(len(front_line_mask[0])):
+			front_contour_mask.append([front_line_mask[0][j], front_line_mask[1][j]])
+		for j in range(len(front_line_pred[0])):
+			front_contour_pred.append([front_line_pred[0][j], front_line_pred[1][j]])
+		
+
+				
+		front_contour_mask = np.array([front_contour_mask], dtype=np.int32)
+		cv2.fillPoly(mask_test, front_contour_mask, 255)
+#		plt.figure(i * 2)
+#		plt.clf()
+#		plt.imshow(mask_test)
+#		plt.show()
+#		return
+		front_contour_pred = np.array([front_contour_pred], dtype=np.int32)
+		cv2.fillPoly(pred_test, front_contour_pred, 255)
+#		plt.figure(i * 2 + 1)
+#		plt.clf()
+#		plt.imshow(pred_test)
+#		plt.show()
+		
+		intersection = np.logical_xor(mask_test, pred_test)
+		line_length = cv2.arcLength(front_contour_mask, False)
+		error_area = np.sum(intersection)
+		mean_error_per_unit = error_area / line_length
+		
+		x_scale = resolution_original[0] / resolution[0]
+		y_scale = resolution_original[1] / resolution[1]
+		norm_scale = np.sqrt(x_scale * x_scale + y_scale * y_scale)
+		landsat_resolution = 30
+		if band == 'B7':
+			landsat_resolution = 60
+		
+		mean_error_per_meter = mean_error_per_unit * norm_scale * landsat_resolution
+		mean_errors[domain].append(mean_error_per_meter)
+#		print(raw_path, 'mean distance from front:', str(mean_error_per_meter) + 'm') 
+#		raise Exception()
+#		img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+#		mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
+#	
+	for domain, error_array in mean_errors.items():
+		print(domain, 'mean distance from front:', str(np.mean(error_array)) + 'm', 'median:', str(np.median(error_array)) + 'm')
+		
+if 'production' in steps:
+	preds_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds_core'
 	masks_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\all'
 	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\production'
 	
@@ -429,7 +542,7 @@ if 'production' in steps:
 		result_pred = extract_front_indicators(img_uint8, pred_uint8, i, resolution)
 		
 		if result_pred is None or result_mask is None:
-			print(raw_path, 'mean distance from front: NaN - unable to extract front')
+#			print(raw_path, 'mean distance from front: NaN - unable to extract front')
 			continue
 		
 		mask_test = np.zeros(resolution)
@@ -474,7 +587,7 @@ if 'production' in steps:
 		
 		mean_error_per_meter = mean_error_per_unit * norm_scale * landsat_resolution
 		mean_errors[domain].append(mean_error_per_meter)
-		print(raw_path, 'mean distance from front:', str(mean_error_per_meter) + 'm') 
+#		print(raw_path, 'mean distance from front:', str(mean_error_per_meter) + 'm') 
 #		raise Exception()
 #		img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 #		mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
@@ -482,4 +595,3 @@ if 'production' in steps:
 	for domain, error_array in mean_errors.items():
 		print(domain, 'mean distance from front:', str(np.mean(error_array)) + 'm', 'median:', str(np.median(error_array)) + 'm')
 		
-	
