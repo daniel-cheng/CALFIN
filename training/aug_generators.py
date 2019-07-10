@@ -138,7 +138,7 @@ def create_unaugmented_data_from_rgb_image(img, mask):
 	if mask is None:
 		mask_resize = None
 	else:
-		mask_resize = mask[np.newaxis,:,:,:]
+		mask_resize = mask[np.newaxis,:,:,np.newaxis]
 	
 	return img_resize, mask_resize
 def imgaug_generator_old(batch_size = 4, img_size=256):
@@ -373,16 +373,14 @@ def imgaug_generator_padded_512(batch_size = 1, img_size=512):
 				dat = augs(image=img_3_uint8, mask=mask_3_uint8)
 				img_aug_uint8 = np.mean(dat['image'], axis=2) #np.uint8 [0, 255]
 				mask_aug_uint8 = np.mean(dat['mask'], axis=2) #np.uint8 [0, 255]
-				mask_aug_f32 = np.where(mask_aug_uint8 > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
-
+				mask_final_f32 = np.where(mask_aug_uint8 > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 				img_final_3_f32 = np.stack((img_aug_uint8,)*3, axis=-1).astype('float32')
-				mask_final_3_f32 = np.stack((mask_aug_f32,)*3, axis=-1).astype('float32')
 
-				patches, maskPatches = create_unaugmented_data_from_rgb_image(img_final_3_f32, mask_final_3_f32)
+				patches, maskPatches = create_unaugmented_data_from_rgb_image(img_final_3_f32, mask_final_f32)
 				
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
-#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,:]+1)/2*255).astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
 				
 				#Add to batches
 				if batch_img is not None:

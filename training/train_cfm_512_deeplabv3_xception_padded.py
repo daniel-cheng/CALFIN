@@ -59,7 +59,7 @@ if __name__ == '__main__':
 	print('Creating and compiling model...')
 	print('-'*30)
 	img_shape = (img_size, img_size, 3)
-	model = Deeplabv3(input_shape=img_shape, classes=1, backbone='xception')
+	model = Deeplabv3(input_shape=img_shape, classes=1, weights=None, backbone='xception')
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
 	#model.load_weights('cfm_weights_512_e05_iou0.0096.h5')
