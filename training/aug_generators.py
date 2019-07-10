@@ -1,4 +1,4 @@
-from albumentations import *
+from albumentations import LongestMaxSize, PadIfNeeded, Compose, OneOf, CLAHE, IAASharpen, IAAEmboss, IAAAdditiveGaussianNoise, GaussNoise, RandomRotate90, Flip, Transpose, RandomBrightnessContrast, ShiftScaleRotate, RandomContrast, RandomBrightness, HueSaturationValue
 import cv2, glob, os
 import numpy as np
 from skimage.io import imsave, imread
@@ -12,9 +12,9 @@ def aug_validation(prob=1.0, img_size=224):
 		PadIfNeeded(min_height=img_size, min_width=img_size, border_mode=cv2.BORDER_CONSTANT),
 	], p=prob)
 
-def aug_resize(prob=1.0, img_size=224):
+def aug_resize(prob=1.0, img_size=224, interpolation=0):
 	return Compose([
-		LongestMaxSize(max_size=img_size)
+		LongestMaxSize(max_size=img_size, interpolation=interpolation)
 	], p=prob)
 	
 def aug_pad(prob=1.0, img_size=224):
@@ -129,6 +129,18 @@ def create_unagumented_data_from_image(img, mask):
 	
 	return img_resize, mask_resize
  
+def create_unagumented_data_from_rgb_image(img, mask):	
+	#Normalize inputs.
+	img_pre = img.astype('float32')
+	img_pre = preprocess_input(img_pre)
+	
+	img_resize = img_pre[np.newaxis,:,:,:]
+	if mask is None:
+		mask_resize = None
+	else:
+		mask_resize = mask[np.newaxis,:,:,:]
+	
+	return img_resize, mask_resize
 def imgaug_generator_old(batch_size = 4, img_size=256):
 	train_data_path = 'data/train'
 	temp_path = 'temp/train'
@@ -365,9 +377,9 @@ def imgaug_generator_padded_512(batch_size = 1, img_size=512):
 
 				patches, maskPatches = create_unagumented_data_from_image(img_aug_uint8, mask_aug_uint8)
 				
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_aug.astype(np.uint8))
+#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
 				
 				#Add to batches
 				if batch_img is not None:
@@ -396,6 +408,6 @@ if __name__ == '__main__':
 	train_generator = imgaug_generator_padded_512(2, 512)
 	for i in range(25):
 		next(train_generator)
-	train_generator = imgaug_generator(2, 512)
-	for i in range(25):
-		next(train_generator)
+#	train_generator = imgaug_generator(2, 512)
+#	for i in range(25):
+#		next(train_generator)
