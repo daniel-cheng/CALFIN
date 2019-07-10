@@ -129,7 +129,7 @@ def create_unagumented_data_from_image(img, mask):
 	
 	return img_resize, mask_resize
  
-def create_unagumented_data_from_rgb_image(img, mask):	
+def create_unaugmented_data_from_rgb_image(img, mask):	
 	#Normalize inputs.
 	img_pre = img.astype('float32')
 	img_pre = preprocess_input(img_pre)
@@ -378,7 +378,7 @@ def imgaug_generator_padded_512(batch_size = 1, img_size=512):
 				img_final_3_f32 = np.stack((img_aug_uint8,)*3, axis=-1).astype('float32')
 				mask_final_3_f32 = np.stack((mask_aug_f32,)*3, axis=-1).astype('float32')
 
-				patches, maskPatches = create_unagumented_data_from_image(img_final_3_f32, mask_final_3_f32)
+				patches, maskPatches = create_unaugmented_data_from_rgb_image(img_final_3_f32, mask_final_3_f32)
 				
 #				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
 #				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
