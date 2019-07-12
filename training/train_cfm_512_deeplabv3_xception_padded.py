@@ -1,19 +1,11 @@
-from __future__ import print_function
-
 import numpy as np
 import matplotlib.pyplot as plt
-from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import plot_model
-from keras.models import Model, Input, load_model
-from keras.layers import Concatenate, Conv2D, MaxPooling2D, Conv2DTranspose, Dropout, UpSampling2D, BatchNormalization, RepeatVector, Reshape, Permute, Flatten
+from keras.models import Model, Input
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
-from keras.regularizers import l1, l2, l1_l2
 from keras.activations import relu, sigmoid
 from keras.layers import Activation
 from keras import backend as K
-from tensorflow.python.client import device_lib
-from keras.applications import imagenet_utils
 from segmentation_models.losses import bce_jaccard_loss, jaccard_loss, binary_crossentropy
 from segmentation_models.metrics import iou_score
 
@@ -54,6 +46,12 @@ if __name__ == '__main__':
 #		clr_triangular,
 		model_checkpoint
 	]
+	
+	SMOOTH = 1e-12
+	def bce_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
+		bce = K.mean(binary_crossentropy(gt, pr))
+		loss = bce_weight * bce - np.ln(jaccard_loss(gt, pr, smooth=smooth, per_image=per_image))
+		return loss
 	
 	print('-'*30)
 	print('Creating and compiling model...')
