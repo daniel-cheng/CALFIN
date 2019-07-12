@@ -8,8 +8,6 @@ import numpy as np
 import os, shutil, glob
 from skimage.io import imsave, imread
 import csv
- 
-
 
 source_path = r'C:\Users\Daniel\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\calvingfrontmachine\landsat_raw'
 dest_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024'
@@ -52,7 +50,7 @@ for d in range(domains_count):
 		yearly_counts[year - 1972, d] += 1
 		
 	if domain in core_domains:
-		print(domain, core_index)
+#		print(domain, core_index)
 		core_yearly_counts[:, core_index] = yearly_counts[:, d]
 		core_index += 1
 		

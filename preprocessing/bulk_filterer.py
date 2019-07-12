@@ -10,7 +10,7 @@ from skimage.io import imsave, imread
 
 source_path = r'C:\Users\Daniel\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\calvingfrontmachine\landsat_raw'
 dest_path = r'C:\Users\Daniel\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\calvingfrontmachine\dumpster'
-
+mean_threshold = 65535 * 0.05
 for domain in os.listdir(source_path):
 	for file_path in glob.glob(os.path.join(source_path, domain, '*B[0-9].png')):
 		img = imread(file_path, as_gray=True)
@@ -22,6 +22,6 @@ for domain in os.listdir(source_path):
 		img_mean = np.mean(img)
 		img_max = img.max()
 		img_std = np.std(img)
-		if img_max == 0 or img_mean < 655 or img_std < 65:
+		if img_max == 0 or img_mean < mean_threshold or img_std < 65:
 			print(file_path, ' moving into dumpster fire')
 			shutil.move(file_path, os.path.join(dest_path, os.path.basename(file_path)))
