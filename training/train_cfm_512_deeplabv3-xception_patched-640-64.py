@@ -26,7 +26,7 @@ from random import shuffle
 
 from data_cfm_patched import load_validation_data
 from albumentations import *
-from aug_generators import aug_daniel, imgaug_generator_padded
+from aug_generators import aug_daniel, imgaug_generator_patched
 
 full_size = 640
 img_size = 512
@@ -53,12 +53,12 @@ if __name__ == '__main__':
 	SMOOTH = 1e-12
 	def bce_ln_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
 		bce = K.mean(binary_crossentropy(gt, pr))
-		loss = bce_weight * bce - np.log(max(iou_score(gt, pr, smooth=smooth, per_image=per_image), smooth)
+		loss = bce_weight * bce -K.log(jaccard_loss(gt, pr, smooth=smooth, per_image=per_image))
 		return loss
 	
-	def ln_jaccard_score(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
-		-np.log(max(iou_score(gt, pr, smooth=smooth, per_image=per_image), smooth)
-		return loss
+	def ln_iou_score(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
+		score = -K.log(iou_score(gt, pr, smooth=smooth, per_image=per_image))
+		return score
 	
 	print('-'*30)
 	print('Creating and compiling model...')
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 	out = Activation('sigmoid')(last_linear)
 	
 	model = Model(inputs, out)
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_jaccard_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
 	model.summary()
 #	model.load_weights('cfm_weights_padded_512_e04_iou0.2133.h5')
 	
