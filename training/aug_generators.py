@@ -105,8 +105,8 @@ def aug_daniel_prepadded(prob=0.8):
 			#GaussNoise()
 		], p=0.5),
 		HueSaturationValue(p=0.5),
-		ShiftScaleRotate(shift_limit=.0625, scale_limit=0.0, rotate_limit=40, border_mode=cv2.BORDER_CONSTANT, p=.75),
-		], p=prob)
+		ShiftScaleRotate(shift_limit=.1625, scale_limit=0.0, rotate_limit=45, border_mode=cv2.BORDER_REFLECT, p=.75)
+	], p=prob)
 def preprocess_input(x):
 	"""Preprocesses a numpy array encoding a batch of images.
 	# Arguments
@@ -116,7 +116,7 @@ def preprocess_input(x):
 	"""
 	return imagenet_utils.preprocess_input(x, mode='tf')
 
-def create_unagumented_data_from_image(img, mask):	
+def create_unaugmented_data_from_image(img, mask):	
 	#Normalize inputs.
 	img_pre = img.astype('float32')
 	img_pre = preprocess_input(img_pre)
@@ -198,7 +198,7 @@ def imgaug_generator_old(batch_size = 4, img_size=256):
 				mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
 				mask_edge = np.where(mask_edge > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 				
-				patches, maskPatches = create_unagumented_data_from_image(img_aug, mask_edge)
+				patches, maskPatches = create_unaugmented_data_from_image(img_aug, mask_edge)
 				
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
@@ -293,7 +293,7 @@ def imgaug_generator(batch_size = 4, img_size=256):
 				mask_aug_edge = np.mean(dat['mask'], axis=2) #np.uint8 [0, 255]
 				mask_aug_edge = np.where(mask_aug_edge > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 
-				patches, maskPatches = create_unagumented_data_from_image(img_aug, mask_aug_edge)
+				patches, maskPatches = create_unaugmented_data_from_image(img_aug, mask_aug_edge)
 				
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
@@ -323,9 +323,9 @@ def imgaug_generator(batch_size = 4, img_size=256):
 			returnCount += batch_size
 			yield (batch_image_return, batch_mask_return)
 
-def imgaug_generator_padded_512(batch_size = 1, img_size=512):
-	train_data_path = 'data/train_padded_512'
-	temp_path = 'temp/train_padded_512'
+def imgaug_generator_padded(batch_size = 1, img_size=512):
+	train_data_path = 'data/train_padded_' + str(img_size)
+	temp_path = 'temp/train_padded_' + str(img_size)
 	images = glob.glob(train_data_path + '/*[0-9].png')
 	shuffle(images)
 	source_counter = 0
@@ -374,9 +374,8 @@ def imgaug_generator_padded_512(batch_size = 1, img_size=512):
 				img_aug_uint8 = np.mean(dat['image'], axis=2) #np.uint8 [0, 255]
 				mask_aug_uint8 = np.mean(dat['mask'], axis=2) #np.uint8 [0, 255]
 				mask_final_f32 = np.where(mask_aug_uint8 > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
-				img_final_3_f32 = np.stack((img_aug_uint8,)*3, axis=-1).astype('float32')
 
-				patches, maskPatches = create_unaugmented_data_from_rgb_image(img_final_3_f32, mask_final_f32)
+				patches, maskPatches = create_unaugmented_data_from_image(img_aug_uint8, mask_final_f32)
 				
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,:]+1)/2*255).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
@@ -406,7 +405,7 @@ def imgaug_generator_padded_512(batch_size = 1, img_size=512):
 			returnCount += batch_size
 			yield (batch_image_return, batch_mask_return)
 if __name__ == '__main__':
-	train_generator = imgaug_generator_padded_512(2, 512)
+	train_generator = imgaug_generator_padded(2, 512)
 	for i in range(25):
 		next(train_generator)
 #	train_generator = imgaug_generator(2, 512)
