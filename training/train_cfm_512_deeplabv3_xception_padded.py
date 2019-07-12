@@ -23,9 +23,9 @@ from skimage.io import imsave, imread
 from skimage.transform import resize, rotate, rescale
 from random import shuffle
 
-from data_cfm_512_padded import load_validation_data
+from data_cfm_padded import load_validation_data
 from albumentations import *
-from aug_generators import aug_daniel, imgaug_generator_padded_512
+from aug_generators import aug_daniel, imgaug_generator_padded
 
 img_size = 512
 data_path = 'data/'
@@ -56,18 +56,28 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Creating and compiling model...')
 	print('-'*30)
-	img_shape = (img_size, img_size, 3)
-	model = Deeplabv3(input_shape=img_shape, classes=1, weights=None, backbone='xception')
+	img_shape = (img_size, img_size, 1)
+	flatten_shape = (img_size * img_size,)
+	target_shape = (img_size, img_size, 3)
+	inputs = Input(shape=img_shape)
+	r1 = Reshape(flatten_shape)(inputs)
+	r2 = RepeatVector(3)(r1)
+	r3 = Reshape(target_shape)(r2)
+	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, OS=16, backbone='xception')
+	last_linear = base_model(r3)
+	out = Activation('sigmoid')(last_linear)
+	
+	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	#model.load_weights('cfm_weights_512_e05_iou0.0096.h5')
+	model.load_weights('cfm_weights_padded_512_e04_iou0.2133.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator_padded_512(1, img_size)
+	train_generator = imgaug_generator_padded(1, img_size)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=8000,
+				steps_per_epoch=4000,
 				epochs=80,
 				validation_data=validation_data,
 				verbose=1,

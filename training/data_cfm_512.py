@@ -6,7 +6,7 @@ import numpy as np
 from skimage.transform import resize
 from skimage.io import imsave, imread
 from random import shuffle
-from aug_generators import aug_daniel, create_unagumented_data_from_image
+from aug_generators import aug_daniel, create_unaugmented_data_from_image
 
 data_path = 'data/'
 temp_path = 'temp/'
@@ -87,7 +87,7 @@ def create_validation_data_from_directory(img_size):
 		mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1)
 		mask_edge = np.where(mask_edge > 127, 1.0, 0.0).astype('float32') #np.float32 [0.0, 1.0]
 		
-		patches, maskPatches = create_unagumented_data_from_image(img_uint8, mask_edge)
+		patches, maskPatches = create_unaugmented_data_from_image(img_uint8, mask_edge)
 		
 		imsave(os.path.join(temp_path, image_name), np.round((patches[0,:,:,0] + 1) / 2 * 255).astype(np.uint8))
 		imsave(os.path.join(temp_path, image_mask_name), (255 * maskPatches[0,:,:,0]).astype(np.uint8))

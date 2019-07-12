@@ -7,7 +7,8 @@ from skimage.morphology import skeletonize
 from skimage.transform import resize
 from skimage.io import imsave, imread
 from random import shuffle
-from aug_generators import aug_daniel, aug_pad, aug_resize, create_unagumented_data_from_image, create_unaugmented_data_from_rgb_image
+from aug_generators import aug_daniel, aug_pad, aug_resize, create_unaugmented_data_from_image
+
 import sys
 sys.path.insert(0, '../postprocessing')
 from poisson_line import ordered_line_from_unordered_points_tree
@@ -114,9 +115,9 @@ def create_data_from_directory(input_train_data_path, output_train_data_path, im
 			
 			#Pad image if needed
 			dat = augs_pad(image=img_aug_3_uint8, mask=mask_edge_3_uint8)
-			img_final_3_uint8 = dat['image'] #np.uint8 [0, 255]
-			mask_final_3_uint8 = dat['mask'] #np.uint8 [0, 255]
-			mask_final_3_uint8 = np.where(mask_final_3_uint8 > 127, 1, 0).astype(np.uint8) #np.uint8 [0, 1]
+			img_final_uint8 = np.mean(dat['image'], axis=2) #np.uint8 [0, 255]
+			mask_final_uint8 = np.mean(dat['mask'], axis=2) #np.uint8 [0, 255]
+			mask_final_uint8 = np.where(mask_final_uint8 > 127, 1, 0).astype(np.uint8) #np.uint8 [0, 1]
 #		else: 
 #		#If upscaling image, resample edge
 #		else:
@@ -169,7 +170,7 @@ def create_data_from_directory(input_train_data_path, output_train_data_path, im
 #				img_final_3_uint8 = dat['image'] #np.uint8 [0, 255]
 #				mask_final_3_uint8 = np.zeros(img_final_3_uint8.shape).astype(np.uint8)
 			
-			patches, maskPatches = create_unaugmented_data_from_rgb_image(img_final_3_uint8, mask_final_3_uint8)
+			patches, maskPatches = create_unaugmented_data_from_image(img_final_uint8, mask_final_uint8)
 			
 			imsave(os.path.join(output_train_data_path, image_name), np.round((patches[0,:,:,:] + 1) / 2 * 255).astype(np.uint8))
 			imsave(os.path.join(output_train_data_path, image_name.split('.')[0] + '_mask.png'), (255 * maskPatches[0,:,:,:]).astype(np.uint8))
