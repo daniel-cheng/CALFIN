@@ -7,3 +7,4 @@ testing
 *.pyc
 *.h5
 /training/temp
+/processing/landsat_raw

@@ -63,14 +63,14 @@ if __name__ == '__main__':
 	r1 = Reshape(flatten_shape)(inputs)
 	r2 = RepeatVector(3)(r1)
 	r3 = Reshape(target_shape)(r2)
-	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, OS=16, backbone='xception')
+	base_model = Deeplabv3(input_shape=(img_size, img_size,3), classes=1, OS=8, backbone='xception')
 	last_linear = base_model(r3)
 	out = Activation('sigmoid')(last_linear)
 	
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_224_e20_iou0.5660.h5')
+	model.load_weights('landsat_weights_with_boundary_224_deeplabv3_xception_e20_iou0.8794.h5')
 
 	print('-'*30)
 	print('Predicting masks on test data...')
@@ -79,6 +79,8 @@ if __name__ == '__main__':
 	test_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_core'
 
 	for domain in os.listdir(test_path):
+		if (domain != 'Rink-Isbrae'):
+			continue
 		source_domain_path = os.path.join(test_path, domain)
 		output_domain_path = os.path.join(pred_path, domain)
 		if not os.path.exists(output_domain_path):

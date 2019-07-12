@@ -377,8 +377,8 @@ def imgaug_generator_padded(batch_size = 1, img_size=512):
 
 				patches, maskPatches = create_unaugmented_data_from_image(img_aug_uint8, mask_final_f32)
 				
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,:]+1)/2*255).astype(np.uint8))
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,:]+1)/2*255).astype(np.uint8))
+				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
 				
 				#Add to batches
