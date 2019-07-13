@@ -8,7 +8,7 @@ from keras.activations import relu, sigmoid
 from keras.layers import Activation
 from keras import backend as K
 from segmentation_models.losses import bce_jaccard_loss, jaccard_loss, binary_crossentropy
-from segmentation_models.metrics import iou_score
+from segmentation_models.metrics import iou_score, jaccard_score
 
 import sys
 sys.path.insert(0, 'keras-deeplab-v3-plus')
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 	SMOOTH = 1e-12
 	def bce_ln_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
 		bce = K.mean(binary_crossentropy(gt, pr))
-		loss = bce_weight * bce -K.log(jaccard_loss(gt, pr, smooth=smooth, per_image=per_image))
+		loss = bce_weight * bce - K.log(jaccard_score(gt, pr, smooth=smooth, per_image=per_image))
 		return loss
 	
 	def ln_iou_score(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):

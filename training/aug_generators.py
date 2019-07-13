@@ -463,7 +463,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 	augs_per_image = 4
 
 	augs = aug_daniel_prepadded()
-
+	counter = 0
 	while True:
 		returnCount = 0
 		batch_img = None
@@ -508,16 +508,17 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 				
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
 				
 				#Add to batches
 				if batch_img is not None:
 					batch_img = np.concatenate((batch_img, patches)) #np.float32 [-1.0, 1.0], imagenet mean (~0.45)
 					batch_mask = np.concatenate((batch_mask, maskPatches))  #np.float32 [0.0, 1.0]
+					counter += 1
+					print(counter)
 				else:
 					batch_img = patches
 					batch_mask = maskPatches
-
+					
 		#Should have total of augs_per_image * images_per_metabatch to randomly choose from
 		totalPatches = len(batch_img)
 		#Now, return up <batch_size> number of patches, or generate new ones if exhausting curent patches
@@ -536,7 +537,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 
 if __name__ == '__main__':
 	train_generator = imgaug_generator_patched(1, img_size=640, patch_size=512, patch_stride=64)
-	for i in range(10):
+	for i in range(1):
 		next(train_generator)
 #	train_generator = imgaug_generator(2, 512)
 #	for i in range(25):
