@@ -506,8 +506,8 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 
 				patches, maskPatches = create_unaugmented_data_patches_from_image(img_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size), stride=patch_stride)
 				
-				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_mask.png'), mask_3_uint8.astype(np.uint8))
 				
 				#Add to batches
@@ -523,8 +523,8 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 		#Now, return up <batch_size> number of patches, or generate new ones if exhausting curent patches
 		#Shuffle
 		idx = np.random.permutation(len(batch_img))
-		if (len(batch_img) is not len(batch_mask)):
-			#print('batch img/mask mismatch!')
+		if (len(batch_img) != len(batch_mask)):
+			print('batch img/mask mismatch!')
 			continue
 		batch_img = batch_img[idx]
 		batch_mask = batch_mask[idx]
