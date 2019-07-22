@@ -80,7 +80,7 @@ def create_data_from_directory(input_train_data_path, output_train_data_path, im
 			mask_aug_uint8 = np.mean(dat['mask'], axis=2).astype(np.uint8) #np.uint8 [0, 255]
 			
 			#Calculate edge from original resolution mask
-			kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+			kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
 			mask_edge = cv2.Canny(mask_aug_uint8, 250, 255 * 2) #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
 			mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1).astype(np.uint8)
 			mask_edge_3_uint8 = np.stack((mask_edge,)*3, axis=-1)

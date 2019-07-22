@@ -17,7 +17,7 @@ from clr_callback import CyclicLR
 from AdamAccumulate import AdamAccumulate
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 import cv2, glob
 from skimage.io import imsave, imread
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
 	model.summary()
-#	model.load_weights('cfm_weights_padded_512_e04_iou0.2133.h5')
+	model.load_weights('cfm_weights_padded_512_e25_iou0.0224.h5')
 	
 	print('-'*30)
 	print('Fitting model...')

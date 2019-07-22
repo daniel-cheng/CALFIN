@@ -106,7 +106,7 @@ def aug_daniel_prepadded(prob=0.8):
 			#GaussNoise()
 		], p=0.5),
 		HueSaturationValue(p=0.5),
-		ShiftScaleRotate(shift_limit=.1, scale_limit=0.0, rotate_limit=22.5, border_mode=cv2.BORDER_CONSTANT, p=.75)
+		ShiftScaleRotate(shift_limit=.0625, scale_limit=0.0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT, p=.75)
 	], p=prob)
 
 def preprocess_input(x):
@@ -514,7 +514,6 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 					batch_img = np.concatenate((batch_img, patches)) #np.float32 [-1.0, 1.0], imagenet mean (~0.45)
 					batch_mask = np.concatenate((batch_mask, maskPatches))  #np.float32 [0.0, 1.0]
 					counter += 1
-					print(counter)
 				else:
 					batch_img = patches
 					batch_mask = maskPatches
