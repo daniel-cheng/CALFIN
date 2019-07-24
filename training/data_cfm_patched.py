@@ -116,9 +116,14 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			
 #			imsave(os.path.join(output_path, image_name), np.round((patches[0,:,:,0] + 1) / 2 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_name.split('.')[0] + '_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+			
+#			imsave(os.path.join(output_path, image_name), img_final_f32.astype(np.uint8))
+#			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
+#			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
+			
 			imsave(os.path.join(output_path, image_name), img_final_f32.astype(np.uint8))
-			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
-			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
+			imsave(os.path.join(output_path, image_mask_name), (mask_final_f32 * 255).astype(np.uint8))
+#			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			
 			if return_images:
 				if (imgs is not None):
