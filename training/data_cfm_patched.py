@@ -39,11 +39,11 @@ def load_validation_data(full_size, img_size, stride, regen=False):
 
 def create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride):
 	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride)
-	imgs, imgs_mask = create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
+	imgs, imgs_mask = create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, return_images=True)
 	np.save('cfm_validation_imgs_patched_' + id_str + '.npy', imgs)
 	np.save('cfm_validation_masks_patched_' + id_str + '.npy', imgs_mask)
 	
-def create_data_from_directory(input_path, output_path, full_size, img_size, stride):
+def create_data_from_directory(input_path, output_path, full_size, img_size, stride, return_images=False):
 	keep_aspect_ratio = False
 	images = glob.glob(input_path + '/*[0-9].png')
 	total = len(images)
@@ -61,6 +61,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 	print('-'*30)
 	for image_path in images:
 		image_name = image_path.split(os.path.sep)[-1]
+		image_edge_name = image_name.split('.')[0] + '_edge.png'
 		image_mask_name = image_name.split('.')[0] + '_mask.png'
 		img_uint16 = imread(os.path.join(input_path, image_name), as_gray=True) #np.uint16 [0, 65535]
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
@@ -116,16 +117,18 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 #			imsave(os.path.join(output_path, image_name), np.round((patches[0,:,:,0] + 1) / 2 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_name.split('.')[0] + '_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
 			imsave(os.path.join(output_path, image_name), img_final_f32.astype(np.uint8))
-			imsave(os.path.join(output_path, image_mask_name), (mask_final_f32 * 255).astype(np.uint8))
+			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
+			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			
-			if (imgs is not None):
-				imgs = np.concatenate((imgs, patches))
-				imgs_mask = np.concatenate((imgs_mask, maskPatches))
-				if (imgs.shape[0] != imgs_mask.shape[0]):
-					raise ValueError()
-			else:
-				imgs = patches
-				imgs_mask = maskPatches
+			if return_images:
+				if (imgs is not None):
+					imgs = np.concatenate((imgs, patches))
+					imgs_mask = np.concatenate((imgs_mask, maskPatches))
+					if (imgs.shape[0] != imgs_mask.shape[0]):
+						raise ValueError()
+				else:
+					imgs = patches
+					imgs_mask = maskPatches
 
 		i += 1
 		print('Done: {0}/{1} images'.format(i, total))
