@@ -98,14 +98,10 @@ def aug_daniel_prepadded(prob=0.8):
 			CLAHE(clip_limit=2),
 			IAASharpen(),
 			IAAEmboss(),
-			OneOf([
-				RandomContrast(),
-				RandomBrightness(),
-			]),
+            RandomBrightnessContrast(brightness_limit=0.15, contrast_limit=0.15)
 			#Blur(),
 			#GaussNoise()
 		], p=0.5),
-		HueSaturationValue(p=0.5),
 		ShiftScaleRotate(shift_limit=.0625, scale_limit=0.0, rotate_limit=0, border_mode=cv2.BORDER_CONSTANT, p=.75)
 	], p=prob)
 
