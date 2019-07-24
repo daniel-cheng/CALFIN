@@ -28,8 +28,8 @@ from data_cfm_patched import load_validation_data
 from albumentations import *
 from aug_generators import aug_daniel, imgaug_generator_patched
 
-full_size = 256
-img_size = 224
+full_size = 512
+img_size = 448
 stride = 32
 data_path = 'data/'
 pred_path = 'preds/'
@@ -94,16 +94,16 @@ if __name__ == '__main__':
 	out = Activation('sigmoid')(densely_connected_fc_full_model)
 	
 	model = Model(inputs, out)
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=16), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_patched_224_e12_iou0.2851.h5')
+	#model.load_weights('cfm_weights_patched_224_e12_iou0.2851.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator_patched(8, img_size=full_size, patch_size=img_size, patch_stride=stride)
+	train_generator = imgaug_generator_patched(1, img_size=full_size, patch_size=img_size, patch_stride=stride)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=2000,
+				steps_per_epoch=16000,
 				epochs=80,
 				validation_data=validation_data,
 				verbose=1,

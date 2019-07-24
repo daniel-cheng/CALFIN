@@ -28,9 +28,9 @@ from data_cfm_patched import load_validation_data
 from albumentations import *
 from aug_generators import aug_daniel, imgaug_generator_patched
 
-full_size = 256
-img_size = 224
-stride = 32
+full_size = 512
+img_size = 448
+stride = 64
 data_path = 'data/'
 pred_path = 'preds/'
 temp_path = 'temp/'
