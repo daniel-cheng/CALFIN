@@ -226,9 +226,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 				img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 			if (mask_max != 0.0):
 				mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
-			# Adaptive Equalization
-			img_adapteq_uint8 = exposure.equalize_adapthist(img_uint8, clip_limit=0.03)
-			img_3_uint8 = np.stack((img_adapteq_uint8,)*3, axis=-1)
+			img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
 			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
 
 			#Run each image through 8 random augmentations per image

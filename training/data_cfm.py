@@ -6,6 +6,7 @@ import numpy as np
 from skimage.morphology import skeletonize
 from skimage.transform import resize
 from skimage.io import imsave, imread
+from skimage.exposure import equalize_adapthist
 from random import shuffle
 from aug_generators import aug_daniel, aug_pad, aug_resize, create_unaugmented_data_from_image
 
@@ -45,6 +46,7 @@ def create_data_from_directory(input_train_data_path, output_train_data_path, im
 	imgs_mask = None
 	i = 0
     thickness = np.floor(3.0 / 224.0 * img_size).astype(int)
+    print('Front thickness: ', thickness)
 	augs_pad = aug_pad(img_size=img_size)
 	augs_resize_img = aug_resize(img_size=img_size, interpolation=1)
 	augs_resize_mask = aug_resize(img_size=img_size, interpolation=0)
@@ -69,6 +71,9 @@ def create_data_from_directory(input_train_data_path, output_train_data_path, im
 			mask_uint8 = np.floor(mask_uint16 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
 		else:
 			mask_uint8 = mask_uint16.astype(np.uint8)
+
+        # Adaptive Equalization
+        img_uint8 = equalize_adapthist(img_uint8, clip_limit=0.03)
 			
 		#If downsizing image, proceed normally
 		if img_uint8.shape[0] > img_size and img_uint8.shape[1] > img_size:

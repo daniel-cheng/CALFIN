@@ -77,7 +77,10 @@ if __name__ == '__main__':
 	model = Model(inputs, out)
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_patched_224_e06_iou0.4831.h5')
+	model.load_weights('cfm_weights_patched_224_e11_iou0.2408.h5')
+
+
+    fc_head_1 = Dense(32, input_shape=(16,))
 	
 	print('-'*30)
 	print('Fitting model...')
