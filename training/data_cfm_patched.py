@@ -8,7 +8,9 @@ from skimage.transform import resize
 from skimage.io import imsave, imread
 from skimage.exposure import equalize_adapthist
 from random import shuffle
-from aug_generators import aug_daniel, aug_pad, aug_resize, create_unaugmented_data_patches_from_image
+from aug_generators import aug_daniel, aug_pad, aug_resize, create_unaugmented_data_patches_from_rgb_image
+from iphigen_hdr import iphigen_hdr
+import matplotlib.pyplot as plt
 
 import sys
 sys.path.insert(0, '../postprocessing')
@@ -59,15 +61,34 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 	print('-'*30)
 	print('Creating images...')
 	print('-'*30)
+	
+	
+	path = r"D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024\Rink-Isbrae\Rink-Isbrae_LE07_L1TP_2006-09-28_012-009_T1_B4.png"
+	test_path = r"D:\Daniel\Documents\Github\singleLDR2HDR\test.png"
+	img_uint16 = imread(path, as_gray=True) #np.uint16 [0, 65535]
+	img_f64 = img_uint16
+	img_max = img_f64.max()
+	if img_max != 0.0:
+		img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
+	else:
+		img_uint8 = img_f64.astype(np.uint8)
+	img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
+	imsave(test_path, img_3_uint8)
+	
 	for image_path in images:
 		image_name = image_path.split(os.path.sep)[-1]
-		image_edge_name = image_name.split('.')[0] + '_edge.png'
-		image_mask_name = image_name.split('.')[0] + '_mask.png'
+		image_name_base = image_name.split('.')[0]
+		image_name_r = image_name_base + '_r.png'
+		image_name_g = image_name_base + '_g.png'
+		image_name_b = image_name_base + '_b.png'
+		image_edge_name = image_name_base + '_edge.png'
+		image_mask_name = image_name_base + '_mask.png'
 		img_uint16 = imread(os.path.join(input_path, image_name), as_gray=True) #np.uint16 [0, 65535]
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
 		img_f64 = resize(img_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 		mask_f64 = resize(mask_uint16, (full_size, full_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
-		
+		if image_name == r"Jakobshavn_LT05_L1TP_1992-04-01_009-011_T1_B4.png":
+			print('wee woo')
 		#Convert greyscale to RGB greyscale
 		img_max = img_f64.max()
 		mask_max = mask_f64.max()
@@ -79,8 +100,13 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
 		else:
 			mask_uint8 = mask_f64.astype(np.uint8)
-		# Adaptive Equalization
-		img_uint8 = (equalize_adapthist(img_uint8, clip_limit=0.01) * 255.0).astype(np.uint8)
+		
+		# Adaptive Equalization Image
+		img_adapteq_uint8 = (equalize_adapthist(img_uint8, clip_limit=0.01) * 255.0).astype(np.uint8)
+		
+		#HDR Image
+		img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
+		img_hdr_uint8 = np.mean(iphigen_hdr(img_3_uint8), axis=2).astype(np.uint8)
 		
 		#Ensure squishing is not too extreme
 		aspect_ratio = 1
@@ -92,7 +118,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		
 		#If image is within bounds, save it.
 		if img_uint8.shape[0] >= full_size and img_uint8.shape[1] >= full_size and aspect_ratio >= 0.825:
-			img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
+			img_3_uint8 = np.stack((img_adapteq_uint8, img_hdr_uint8, img_uint8), axis=-1)
 			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1).astype(np.uint8)
 			
 			#Resize image while preserving aspect ratio (Useless right now)
@@ -108,11 +134,11 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			
 			#Pad image if needed (Useless right now)
 			dat = augs_pad(image=img_aug_3_uint8, mask=mask_edge_3_uint8)
-			img_final_f32 = np.mean(dat['image'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
+			img_final_f32 = dat['image'].astype('float32') #np.float32 [0.0, 255.0]
 			mask_final_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
 			mask_final_f32 = np.where(mask_final_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 			
-			patches, maskPatches = create_unaugmented_data_patches_from_image(img_final_f32, mask_final_f32, window_shape=(img_size, img_size), stride=stride)
+			patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, mask_final_f32, window_shape=(img_size, img_size, 3), stride=stride)
 			
 #			imsave(os.path.join(output_path, image_name), np.round((patches[0,:,:,0] + 1) / 2 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_name.split('.')[0] + '_mask.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
@@ -121,7 +147,12 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 #			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			
-			imsave(os.path.join(output_path, image_name), img_final_f32.astype(np.uint8))
+			img_final_uint8 = img_final_f32.astype(np.uint8)
+			
+			imsave(os.path.join(output_path, image_name), img_final_uint8)
+			imsave(os.path.join(output_path, image_name_r), img_final_uint8[:,:,0])
+			imsave(os.path.join(output_path, image_name_g), img_final_uint8[:,:,1])
+			imsave(os.path.join(output_path, image_name_b), img_final_uint8[:,:,2])
 			imsave(os.path.join(output_path, image_mask_name), (mask_final_f32 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			

@@ -7,6 +7,7 @@ from keras.applications import imagenet_utils
 from skimage.transform import resize
 from random import shuffle
 from skimage import exposure
+import matplotlib.pyplot as plt
 
 def aug_validation(prob=1.0, img_size=224):
 	return Compose([
@@ -142,6 +143,35 @@ def extract_patches(img, window_shape=(512, 512), stride=64):
 	patches = np.reshape(patches, (nWindow, H, W))
 	return patches
 
+def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=64):
+	#In order to extract patches, determine the resolution of the image needed to extract regular patches
+	#Pad image if necessary
+	nr = img.shape[0] #rows/y
+	nc = img.shape[1] #cols/x
+	nd = img.shape[2] #color depth
+
+	#If image is smaller than window size, pad to fit.
+	#else, pad to the least integer multiple of stride
+	#Window shape is assumed to multiple of stride.
+	#Find the smallest multiple of stride that is greater than image dimensions
+	leastRowStrideMultiple = (np.ceil(nr / stride) * stride).astype(np.uint16)
+	leastColStrideMultiple = (np.ceil(nc / stride) * stride).astype(np.uint16)
+	#If image is smaller than window, pad to window shape. Else, pad to least stride multiple.
+	nrPad = max(window_shape[0], leastRowStrideMultiple) - nr
+	ncPad = max(window_shape[1], leastColStrideMultiple) - nc
+	#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
+	stridePadding = int(stride / 2)
+	paddingRow = (stridePadding, nrPad + stridePadding)
+	paddingCol = (stridePadding, ncPad + stridePadding)
+	padding = (paddingRow, paddingCol, (0, 0))
+	imgPadded = np.pad(img, padding, 'constant')
+
+	patches = skimage.util.view_as_windows(imgPadded, window_shape, stride)
+	nR, nC, nD, H, W, D = patches.shape
+	nWindow = nR * nC * nD
+	patches = np.reshape(patches, (nWindow, H, W, D))
+	return patches
+
 def create_unaugmented_data_from_image(img, mask):	
 	#Normalize inputs.
 	img_pre = img.astype('float32')
@@ -169,20 +199,21 @@ def create_unaugmented_data_patches_from_image(img, mask, window_shape=(512, 512
 	
 	return img_reshaped, mask_reshaped
 
-def create_unaugmented_data_from_rgb_image(img, mask):	
+def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512, 512, 3), stride=64):	
 	#Normalize inputs.
-	img_pre = img.astype('float32')
-	img_pre = preprocess_input(img_pre)
+	img_patches = extract_rgb_patches(img.astype('float32'), window_shape, stride)
+	img_pre = preprocess_input(img_patches)
+	img_reshaped = img_pre[:,:,:,:]
 	
-	img_resize = img_pre[np.newaxis,:,:,:]
 	if mask is None:
-		mask_resize = None
+		mask_reshaped = None
 	else:
-		mask_resize = mask[np.newaxis,:,:,np.newaxis]
+		mask_patches = extract_patches(mask.astype('float32'), (window_shape[0], window_shape[1]), stride)
+		mask_reshaped = mask_patches[:,:,:,np.newaxis]
 	
-	return img_resize, mask_resize
+	return img_reshaped, mask_reshaped
 
-def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64):
+def imgaug_generator_patched_gray(batch_size=1, img_size=640, patch_size=512, patch_stride=64):
 	id_str = str(img_size) + '_' + str(patch_size) + '_' + str(patch_stride)
 	train_data_path = 'data/train_patched_' + id_str
 	temp_path = 'temp/train_patched_' + id_str
@@ -267,6 +298,91 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			returnCount += batch_size
 			yield (batch_image_return, batch_mask_return)
 
+def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64):
+	id_str = str(img_size) + '_' + str(patch_size) + '_' + str(patch_stride)
+	train_data_path = 'data/train_patched_' + id_str
+	temp_path = 'temp/train_patched_' + id_str
+	if not os.path.exists(temp_path):
+		os.mkdir(temp_path)
+	images = glob.glob(train_data_path + '/*[0-9].png')
+	shuffle(images)
+	source_counter = 0
+	source_limit = len(images)
+	images_per_metabatch = 16
+	augs_per_image = 4
+
+	augs = aug_daniel_prepadded()
+	counter = 0
+	while True:
+		returnCount = 0
+		batch_img = None
+		batch_mask = None
+
+		#Process up to <images_per_metabatch> images in one batch to maitain randomness
+		for i in range(images_per_metabatch):
+			#Load images, resetting source "iterator" when reaching the end
+			if source_counter == source_limit:
+				images = glob.glob(train_data_path + '/*[0-9].png')
+				shuffle(images)
+				source_counter = 0
+				source_limit = len(images)
+			image_name = images[source_counter].split(os.path.sep)[-1]
+			image_mask_name = image_name.split('.')[0] + '_mask.png'
+			img_uint16 = imread(os.path.join(train_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
+			mask_uint16 = imread(os.path.join(train_data_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
+			img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+			mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
+			
+			source_counter += 1
+
+			#Convert greyscale to RGB greyscale
+			img_max = img_f64.max()
+			mask_max = mask_f64.max()
+			if (img_max != 0.0):
+				img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+			if (mask_max != 0.0):
+				mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+			img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
+			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
+
+			#Run each image through 8 random augmentations per image
+			for j in range(augs_per_image):
+				#Augment image
+				dat = augs(image=img_3_uint8, mask=mask_3_uint8)
+				img_aug_f32 = np.mean(dat['image'], axis=2).astype('float32') #np.uint8 [0, 255]
+				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.uint8 [0, 255]
+				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
+
+				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=patch_stride)
+				
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+				
+				#Add to batches
+				if batch_img is not None:
+					batch_img = np.concatenate((batch_img, patches)) #np.float32 [-1.0, 1.0], imagenet mean (~0.45)
+					batch_mask = np.concatenate((batch_mask, maskPatches))  #np.float32 [0.0, 1.0]
+					counter += 1
+				else:
+					batch_img = patches
+					batch_mask = maskPatches
+					
+		#Should have total of augs_per_image * images_per_metabatch to randomly choose from
+		totalPatches = len(batch_img)
+		#Now, return up <batch_size> number of patches, or generate new ones if exhausting curent patches
+		#Shuffle
+		idx = np.random.permutation(len(batch_img))
+		if (len(batch_img) != len(batch_mask)):
+			print('batch img/mask mismatch!')
+			continue
+		batch_img = batch_img[idx]
+		batch_mask = batch_mask[idx]
+		while returnCount + batch_size < totalPatches:
+			batch_image_return = batch_img[returnCount:returnCount+batch_size,:,:,:]
+			batch_mask_return = batch_mask[returnCount:returnCount+batch_size,:,:,:]
+			returnCount += batch_size
+			yield (batch_image_return, batch_mask_return)
+			
 if __name__ == '__main__':
 	train_generator = imgaug_generator_patched(1, img_size=640, patch_size=512, patch_stride=64)
 	for i in range(1):
