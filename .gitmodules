@@ -4,3 +4,6 @@
 [submodule "processing/keras-deeplab-v3-plus"]
 	path = training/keras-deeplab-v3-plus
 	url = https://github.com/bonlime/keras-deeplab-v3-plus.git
+[submodule "training/iphigen"]
+	path = training/iphigen
+	url = https://github.com/ofgulban/iphigen.git
