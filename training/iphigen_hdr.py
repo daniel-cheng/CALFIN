@@ -27,7 +27,7 @@ def iphigen_hdr(data):
 	# Insert back the processed intensity image
 	
 	data = bary * inten[..., None]
-	print(data.max(), inten.max(), new_inten.max(), bary.max())
+	#print(data.max(), inten.max(), new_inten.max(), bary.max())
 	
 	#clip values
 	

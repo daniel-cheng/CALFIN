@@ -136,9 +136,9 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			img_final_uint8 = img_final_f32.astype(np.uint8)
 			
 			imsave(os.path.join(output_path, image_name), img_final_uint8)
-			imsave(os.path.join(output_path, image_name_r), img_final_uint8[:,:,0])
-			imsave(os.path.join(output_path, image_name_g), img_final_uint8[:,:,1])
-			imsave(os.path.join(output_path, image_name_b), img_final_uint8[:,:,2])
+			#imsave(os.path.join(output_path, image_name_r), img_final_uint8[:,:,0])
+			#imsave(os.path.join(output_path, image_name_g), img_final_uint8[:,:,1])
+			#imsave(os.path.join(output_path, image_name_b), img_final_uint8[:,:,2])
 			imsave(os.path.join(output_path, image_mask_name), (mask_final_f32 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			

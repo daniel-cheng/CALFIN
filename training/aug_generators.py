@@ -328,32 +328,31 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 				source_limit = len(images)
 			image_name = images[source_counter].split(os.path.sep)[-1]
 			image_mask_name = image_name.split('.')[0] + '_mask.png'
-			img_uint16 = imread(os.path.join(train_data_path, image_name), as_gray=True) #np.uint16 [0, 65535]
+			img_3_uint16 = imread(os.path.join(train_data_path, image_name)) #np.uint16 [0, 65535]
 			mask_uint16 = imread(os.path.join(train_data_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
-			img_f64 = resize(img_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+			img_3_f64 = resize(img_3_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 			mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 			
 			source_counter += 1
 
 			#Convert greyscale to RGB greyscale
-			img_max = img_f64.max()
+			img_max = img_3_f64.max()
 			mask_max = mask_f64.max()
 			if (img_max != 0.0):
-				img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+				img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 			if (mask_max != 0.0):
 				mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
-			img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
 			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
 
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image
 				dat = augs(image=img_3_uint8, mask=mask_3_uint8)
-				img_aug_f32 = np.mean(dat['image'], axis=2).astype('float32') #np.uint8 [0, 255]
+				img_3_aug_f32 = dat['image'].astype('float32') #np.uint8 [0, 255]
 				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.uint8 [0, 255]
 				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 
-				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=patch_stride)
+				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=patch_stride)
 				
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
 				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
