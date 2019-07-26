@@ -61,20 +61,6 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 	print('-'*30)
 	print('Creating images...')
 	print('-'*30)
-	
-	
-	path = r"D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024\Rink-Isbrae\Rink-Isbrae_LE07_L1TP_2006-09-28_012-009_T1_B4.png"
-	test_path = r"D:\Daniel\Documents\Github\singleLDR2HDR\test.png"
-	img_uint16 = imread(path, as_gray=True) #np.uint16 [0, 65535]
-	img_f64 = img_uint16
-	img_max = img_f64.max()
-	if img_max != 0.0:
-		img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
-	else:
-		img_uint8 = img_f64.astype(np.uint8)
-	img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
-	imsave(test_path, img_3_uint8)
-	
 	for image_path in images:
 		image_name = image_path.split(os.path.sep)[-1]
 		image_name_base = image_name.split('.')[0]
