@@ -73,8 +73,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
 		img_f64 = resize(img_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 		mask_f64 = resize(mask_uint16, (full_size, full_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
-		if image_name == r"Jakobshavn_LT05_L1TP_1992-04-01_009-011_T1_B4.png":
-			print('wee woo')
+		
 		#Convert greyscale to RGB greyscale
 		img_max = img_f64.max()
 		mask_max = mask_f64.max()
