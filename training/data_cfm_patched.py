@@ -23,12 +23,12 @@ temp_path = 'temp/'
 def load_validation_data(full_size, img_size, stride, regen=False):
 	#If patched validation/train images have not yet been generated, do so now
 	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride)
-	if not os.path.exists('data/validation_patched_' + id_str) or regen == True:
-		input_data_path = 'data/validation'
-		output_data_path = 'data/validation_patched_' + id_str 
-		if not os.path.exists('data/validation_patched_' + id_str):
-			os.mkdir(output_data_path)
-		create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
+#	if not os.path.exists('data/validation_patched_' + id_str) or regen == True:
+#		input_data_path = 'data/validation'
+#		output_data_path = 'data/validation_patched_' + id_str 
+#		if not os.path.exists('data/validation_patched_' + id_str):
+#			os.mkdir(output_data_path)
+#		create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
 	if not os.path.exists('data/train_patched_' + id_str) or regen == True:
 		input_data_path = 'data/train'
 		output_data_path = 'data/train_patched_' + id_str
@@ -146,7 +146,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 					imgs_mask = maskPatches
 
 		i += 1
-		print('Done: {0}/{1} images'.format(i, total))
+		print('Done {0}: {1}/{2} images'.format(image_name, i, total))
 	return imgs, imgs_mask
 
 if __name__ == '__main__':
