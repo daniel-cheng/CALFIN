@@ -11,6 +11,7 @@ from random import shuffle
 from aug_generators import aug_daniel, aug_pad, aug_resize, create_unaugmented_data_patches_from_rgb_image
 from iphigen_hdr import iphigen_hdr
 import matplotlib.pyplot as plt
+import numpngw
 
 import sys
 sys.path.insert(0, '../postprocessing')
@@ -79,7 +80,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		img_min = img_3_f64.min()
 		img_range = img_max - img_min
 		mask_max = mask_f64.max()
-		if (img_max != 0.0 and img_range < 255.0):
+		if (img_max != 0.0 and img_range < 256.0):
 			img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
 		else:
 			img_3_f32 = img_3_f64.astype(np.float32)
@@ -124,9 +125,10 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 #			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			
-			img_final_uint8 = img_final_f32.astype(np.uint8)
+			img_final_uint16 = img_final_f32.astype(np.uint16)
 			
-			imsave(os.path.join(output_path, image_name), img_final_uint8)
+			
+			numpngw.write_png(os.path.join(output_path, image_name), img_final_uint16)
 			#imsave(os.path.join(output_path, image_name_r), img_final_uint8[:,:,0])
 			#imsave(os.path.join(output_path, image_name_g), img_final_uint8[:,:,1])
 			#imsave(os.path.join(output_path, image_name_b), img_final_uint8[:,:,2])
