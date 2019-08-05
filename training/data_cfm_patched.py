@@ -69,59 +69,51 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		image_name_b = image_name_base + '_b.png'
 		image_edge_name = image_name_base + '_edge.png'
 		image_mask_name = image_name_base + '_mask.png'
-		img_uint16 = imread(os.path.join(input_path, image_name), as_gray=True) #np.uint16 [0, 65535]
+		img_3_uint16 = imread(os.path.join(input_path, image_name), as_gray=True) #np.uint16 [0, 65535]
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
-		img_f64 = resize(img_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+		img_3_f64 = resize(img_3_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 		mask_f64 = resize(mask_uint16, (full_size, full_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 		
 		#Convert greyscale to RGB greyscale
-		img_max = img_f64.max()
+		img_max = img_3_f64.max()
+		img_min = img_3_f64.min()
+		img_range = img_max - img_min
 		mask_max = mask_f64.max()
-		if img_max != 0.0:
-			img_uint8 = np.round(img_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
+		if (img_max != 0.0 and img_range < 255.0):
+			img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
 		else:
-			img_uint8 = img_f64.astype(np.uint8)
-		if mask_max != 0.0:
-			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255.0]
+			img_3_f32 = img_3_f64.astype(np.float32)
+		if (mask_max != 0.0):
+			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 		else:
 			mask_uint8 = mask_f64.astype(np.uint8)
+		mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
 		
-		# Adaptive Equalization Image
-		img_adapteq_uint8 = (equalize_adapthist(img_uint8, clip_limit=0.01) * 255.0).astype(np.uint8)
-		
-		#HDR Image
-		img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
-		img_hdr_uint8 = np.mean(iphigen_hdr(img_3_uint8), axis=2).astype(np.uint8)
+#		# Adaptive Equalization Image
+#		img_adapteq_uint8 = (equalize_adapthist(img_uint8, clip_limit=0.01) * 255.0).astype(np.uint8)
+#		
+#		#HDR Image
+#		img_3_uint8 = np.stack((img_uint8,)*3, axis=-1)
+#		img_hdr_uint8 = np.mean(iphigen_hdr(img_3_uint8), axis=2).astype(np.uint8)
 		
 		#Ensure squishing is not too extreme
 		aspect_ratio = 1
 		if keep_aspect_ratio == False:
-			if img_uint8.shape[0] > img_uint8.shape[1]:
-				aspect_ratio = img_uint8.shape[0] / img_uint8.shape[1]
+			if img_3_uint16.shape[0] > img_3_uint16.shape[1]:
+				aspect_ratio = img_3_uint16.shape[0] / img_3_uint16.shape[1]
 			else:
-				aspect_ratio = img_uint8.shape[1] / img_uint8.shape[0]
+				aspect_ratio = img_3_uint16.shape[1] / img_3_uint16.shape[0]
 		
 		#If image is within bounds, save it.
-		if img_uint8.shape[0] >= full_size and img_uint8.shape[1] >= full_size and aspect_ratio >= 0.825:
-			img_3_uint8 = np.stack((img_adapteq_uint8, img_hdr_uint8, img_uint8), axis=-1)
-			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1).astype(np.uint8)
-			
-			#Resize image while preserving aspect ratio (Useless right now)
-			dat = augs_resize_img(image=img_3_uint8, mask=mask_3_uint8)
-			img_aug_3_uint8 = dat['image'] #np.uint8 [0, 255]
-			mask_aug_uint8 = np.mean(dat['mask'], axis=2).astype(np.uint8) #np.uint8 [0, 255]
-			
+		if img_3_uint16.shape[0] >= full_size and img_3_uint16.shape[1] >= full_size and aspect_ratio >= 0.825:
 			#Calculate edge from original resolution mask
 			kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (thickness, thickness))
-			mask_edge = cv2.Canny(mask_aug_uint8, 250, 255 * 2) #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
-			mask_edge = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1).astype(np.uint8)
-			mask_edge_3_uint8 = np.stack((mask_edge,)*3, axis=-1)
+			mask_edge = cv2.Canny(mask_3_uint8, 250, 255 * 2) #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
+			mask_edge_f32 = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
 			
 			#Pad image if needed (Useless right now)
-			dat = augs_pad(image=img_aug_3_uint8, mask=mask_edge_3_uint8)
-			img_final_f32 = dat['image'].astype('float32') #np.float32 [0.0, 255.0]
-			mask_final_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
-			mask_final_f32 = np.where(mask_final_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
+			img_final_f32 = img_3_f32 #np.float32 [0.0, 255.0]
+			mask_final_f32 = np.where(mask_edge_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 			
 			patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, mask_final_f32, window_shape=(img_size, img_size, 3), stride=stride)
 			

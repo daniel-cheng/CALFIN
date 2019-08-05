@@ -91,13 +91,8 @@ def aug_daniel_prepadded(prob=0.8):
 		RandomRotate90(p=0.5),
 		Transpose(p=0.5),
 		Flip(p=0.5),
+		IAAAdditiveGaussianNoise(p=0.3),
 		OneOf([
-			IAAAdditiveGaussianNoise(),
-			GaussNoise(),
-			#Blur(),
-		], p=0.3),
-		OneOf([
-			CLAHE(clip_limit=2),
 			IAASharpen(),
 			IAAEmboss(),
             RandomBrightnessContrast(brightness_limit=0.15, contrast_limit=0.15)
@@ -337,17 +332,19 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 
 			#Convert greyscale to RGB greyscale
 			img_max = img_3_f64.max()
+			img_min = img_3_f64.min()
+			img_range = img_max - img_min
 			mask_max = mask_f64.max()
-			if (img_max != 0.0):
-				img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
+			if (img_max != 0.0 and img_range < 255.0):
+				img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
 			if (mask_max != 0.0):
-				mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
-			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
+				mask_f32 = np.floor(mask_f64 / mask_max * 255.0).astype(np.float32) #np.float32 [0, 255]
+			mask_3_f32 = np.stack((mask_f32,)*3, axis=-1)
 
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image
-				dat = augs(image=img_3_uint8, mask=mask_3_uint8)
+				dat = augs(image=img_3_f32, mask=mask_3_f32)
 				img_3_aug_f32 = dat['image'].astype('float32') #np.uint8 [0, 255]
 				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.uint8 [0, 255]
 				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
@@ -383,7 +380,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			yield (batch_image_return, batch_mask_return)
 			
 if __name__ == '__main__':
-	train_generator = imgaug_generator_patched(1, img_size=640, patch_size=512, patch_stride=64)
+	train_generator = imgaug_generator_patched(1, img_size=512, patch_size=448, patch_stride=32)
 	for i in range(1):
 		next(train_generator)
 #	train_generator = imgaug_generator(2, 512)
