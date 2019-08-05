@@ -46,7 +46,7 @@ if __name__ == '__main__':
 	clr_triangular = CyclicLR(mode='triangular2', step_size=4000, base_lr=6e-4, max_lr=6e-5)
 	callbacks_list = [
 		#EarlyStopping(patience=6, verbose=1, restore_best_weights=False),
-#		clr_triangular,
+		clr_triangular,
 		model_checkpoint
 	]
 	
@@ -94,9 +94,9 @@ if __name__ == '__main__':
 	out = Activation('sigmoid')(densely_connected_fc_full_model)
 	
 	model = Model(inputs, out)
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=8), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-5, accum_iters=8), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', ln_iou_score, iou_score, 'accuracy'])
 	model.summary()
-	#model.load_weights('cfm_weights_patched_224_e12_iou0.2851.h5')
+	model.load_weights('cfm_weights_patched_448_e59_iou0.4734.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
