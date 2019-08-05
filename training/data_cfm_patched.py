@@ -69,7 +69,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		image_name_b = image_name_base + '_b.png'
 		image_edge_name = image_name_base + '_edge.png'
 		image_mask_name = image_name_base + '_mask.png'
-		img_3_uint16 = imread(os.path.join(input_path, image_name), as_gray=True) #np.uint16 [0, 65535]
+		img_3_uint16 = imread(os.path.join(input_path, image_name)) #np.uint16 [0, 65535]
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
 		img_3_f64 = resize(img_3_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 		mask_f64 = resize(mask_uint16, (full_size, full_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
