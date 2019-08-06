@@ -250,10 +250,14 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			img_min = img_3_f64.min()
 			img_range = img_max - img_min
 			mask_max = mask_f64.max()
-			if (img_max != 0.0 and img_range < 255.0):
+			if (img_max != 0.0 and img_range < 256.0):
 				img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
+			else:
+				img_3_f32 = img_3_f64.astype(np.float32)
 			if (mask_max != 0.0):
-				mask_f32 = np.floor(mask_f64 / mask_max * 255.0).astype(np.float32) #np.float32 [0, 255]
+				mask_f32 = np.floor(mask_f64 / mask_max * 255.0).astype(np.float32) #np.float32 [0.0, 255.0]
+			else:
+				mask_f32 = mask_f64.astype(np.uint8)
 			mask_3_f32 = np.stack((mask_f32,)*3, axis=-1)
 
 			#Run each image through 8 random augmentations per image
