@@ -70,8 +70,24 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		image_name_b = image_name_base + '_b.png'
 		image_edge_name = image_name_base + '_edge.png'
 		image_mask_name = image_name_base + '_mask.png'
-		img_3_uint16 = imread(os.path.join(input_path, image_name)) #np.uint16 [0, 65535]
-		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
+		
+		#Work around for Unicode characters not being read by cv2 imread (works for skimage imageio)
+		img_stream = open(os.path.join(input_path, image_name), "rb")
+		img_bytes_array = bytearray(img_stream.read())
+		img_np_bytes_array = np.asarray(img_bytes_array, dtype=np.uint8)
+		img_3_uint16 = cv2.imdecode(img_np_bytes_array, cv2.IMREAD_UNCHANGED)[:,:,::-1]
+		img_stream.close()
+
+		mask_stream = open(os.path.join(input_path, image_mask_name), "rb")
+		mask_bytes_array = bytearray(mask_stream.read())
+		mask_np_bytes_array = np.asarray(mask_bytes_array, dtype=np.uint8)
+		mask_uint16 = cv2.imdecode(mask_np_bytes_array, cv2.IMREAD_UNCHANGED)
+		mask_stream.close()
+		
+#		img_3_uint16 = cv2.imread(os.path.join(input_path, image_name), -1) #np.uint16 [0, 65535]
+#		print(img_3_uint16.shape)
+#		img_3_uint16 = img_3_uint16[:,:,::-1]
+#		mask_uint16 = cv2.imread(os.path.join(input_path, image_mask_name), -1) #np.uint16 [0, 65535] #THis may be downcoverted automatically to uin8, but it doesn't matter that much
 		img_3_f64 = resize(img_3_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
 		mask_f64 = resize(mask_uint16, (full_size, full_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 		
@@ -80,10 +96,11 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		img_min = img_3_f64.min()
 		img_range = img_max - img_min
 		mask_max = mask_f64.max()
+		#Might want to experiemnt with no rounding?
 		if (img_max != 0.0 and img_range > 255.0):
-			img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
+			img_3_f32 = (img_3_f64 / img_max * 255.0).astype(np.float32) #np.float32 [0.0, 255.0] Keep range 0-255 to conform to imagenet standards, but keep dtype float32 to keep precision
 		else:
-			img_3_uint8 = img_3_f64.astype(np.uint8)
+			img_3_f32 = img_3_f64.astype(np.float32)
 		if (mask_max != 0.0):
 			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 		else:
@@ -113,7 +130,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			mask_edge_f32 = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
 			
 			#Pad image if needed (Useless right now)
-			img_final_f32 = img_3_uint8.astype(np.float32) #np.float32 [0.0, 255.0]
+			img_final_f32 = img_3_f32 #np.float32 [0.0, 255.0]
 			mask_final_f32 = np.where(mask_edge_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 			
 			patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, mask_final_f32, window_shape=(img_size, img_size, 3), stride=stride)
@@ -125,8 +142,9 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 #			imsave(os.path.join(output_path, image_edge_name), (mask_final_f32 * 255).astype(np.uint8))
 #			imsave(os.path.join(output_path, image_mask_name), (mask_uint8).astype(np.uint8))
 			
-			img_final_uint16 = img_final_f32.astype(np.uint16)
 			
+			#NOTE: using img_3_f64 insted of img_3_uint8 or img_3_uint16 is to bypass the different ranges in patches and the actual temporary data type of the storage of the image, while still retaining the resizing
+			img_final_uint16 = img_3_f64.astype(np.uint16)
 			
 			numpngw.write_png(os.path.join(output_path, image_name), img_final_uint16)
 			#imsave(os.path.join(output_path, image_name_r), img_final_uint8[:,:,0])
