@@ -138,7 +138,7 @@ def extract_patches(img, window_shape=(512, 512), stride=64):
 	patches = np.reshape(patches, (nWindow, H, W))
 	return patches
 
-def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=64):
+def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=32):
 	#In order to extract patches, determine the resolution of the image needed to extract regular patches
 	#Pad image if necessary
 	nr = img.shape[0] #rows/y
@@ -156,6 +156,8 @@ def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=64):
 	ncPad = max(window_shape[1], leastColStrideMultiple) - nc
 	#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
 	stridePadding = int(stride / 2)
+	#TEST: Turning off stride padding
+	stridePadding = 0
 	paddingRow = (stridePadding, nrPad + stridePadding)
 	paddingCol = (stridePadding, ncPad + stridePadding)
 	padding = (paddingRow, paddingCol, (0, 0))
@@ -250,28 +252,28 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			img_min = img_3_f64.min()
 			img_range = img_max - img_min
 			mask_max = mask_f64.max()
-			if (img_max != 0.0 and img_range < 256.0):
-				img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
+			if (img_max != 0.0 and img_range > 255.0):
+				img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
 			else:
-				img_3_f32 = img_3_f64.astype(np.float32)
+				img_3_uint8 = img_3_f64.astype(np.uint8)
 			if (mask_max != 0.0):
-				mask_f32 = np.floor(mask_f64 / mask_max * 255.0).astype(np.float32) #np.float32 [0.0, 255.0]
+				mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 			else:
-				mask_f32 = mask_f64.astype(np.uint8)
-			mask_3_f32 = np.stack((mask_f32,)*3, axis=-1)
+				mask_uint8 = mask_f64.astype(np.uint8)
+			mask_3_uint8 = np.stack((mask_uint8,)*3, axis=-1)
 
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image
-				dat = augs(image=img_3_f32, mask=mask_3_f32)
-				img_3_aug_f32 = dat['image'].astype('float32') #np.uint8 [0, 255]
-				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.uint8 [0, 255]
+				dat = augs(image=img_3_uint8, mask=mask_3_uint8)
+				img_3_aug_f32 = dat['image'].astype('float32') #np.float32 [0.0, 255.0]
+				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
 				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 
 				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=patch_stride)
 				
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
-				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png'), np.round((patches[0,:,:,0]+1)/2*255).astype(np.uint8))
+#				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
 				
 				#Add to batches
 				if batch_img is not None:

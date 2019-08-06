@@ -80,10 +80,10 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		img_min = img_3_f64.min()
 		img_range = img_max - img_min
 		mask_max = mask_f64.max()
-		if (img_max != 0.0 and img_range < 256.0):
-			img_3_f32 = np.round(img_3_f64 / img_max * 65535.0).astype(np.float32) #np.float32 [0, 65535.0]
+		if (img_max != 0.0 and img_range > 255.0):
+			img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
 		else:
-			img_3_f32 = img_3_f64.astype(np.float32)
+			img_3_uint8 = img_3_f64.astype(np.uint8)
 		if (mask_max != 0.0):
 			mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
 		else:
@@ -113,7 +113,7 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 			mask_edge_f32 = cv2.dilate(mask_edge.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
 			
 			#Pad image if needed (Useless right now)
-			img_final_f32 = img_3_f32 #np.float32 [0.0, 255.0]
+			img_final_f32 = img_3_uint8.astype(np.float32) #np.float32 [0.0, 255.0]
 			mask_final_f32 = np.where(mask_edge_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 			
 			patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, mask_final_f32, window_shape=(img_size, img_size, 3), stride=stride)
