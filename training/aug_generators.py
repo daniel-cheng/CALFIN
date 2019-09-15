@@ -1,4 +1,4 @@
-from albumentations import LongestMaxSize, PadIfNeeded, Compose, OneOf, CLAHE, IAASharpen, IAAEmboss, IAAAdditiveGaussianNoise, GaussNoise, RandomRotate90, Flip, Transpose, RandomBrightnessContrast, ShiftScaleRotate, RandomContrast, RandomBrightness, HueSaturationValue
+from albumentations import LongestMaxSize, PadIfNeeded, Compose, OneOf, CLAHE, IAASharpen, IAAEmboss, IAAAdditiveGaussianNoise, GaussNoise, RandomRotate90, Flip, Transpose, RandomBrightnessContrast, ShiftScaleRotate, RandomContrast, RandomBrightness, HueSaturationValue, ChannelShuffle, RandomCrop, CenterCrop
 import cv2, glob, os
 import numpy as np
 import skimage
@@ -87,21 +87,37 @@ def aug_daniel(prob=0.8):
 		HueSaturationValue(p=0.5)
 		], p=prob)
 
-def aug_daniel_prepadded(prob=0.8):
+def aug_daniel_prepadded(prob=1.0, image_size=448):
 	return Compose([
 		RandomRotate90(p=0.5),
 		Transpose(p=0.5),
 		Flip(p=0.5),
-		IAAAdditiveGaussianNoise(p=0.3),
 		OneOf([
-			IAASharpen(),
-			IAAEmboss(),
-#            RandomBrightnessContrast(brightness_limit=0.01, contrast_limit=0.01) # This causes a blackout for some reason
+			RandomCrop(height=image_size, width=image_size, p=0.3),
+			Compose([
+				#3.94 determined by largest angle possible rotatable without introducing nodata pixels into center crop area
+				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=5, border_mode=cv2.BORDER_CONSTANT, p=1.0),
+				CenterCrop(height=int(round(236/224*image_size)), width=int(round(236/224*image_size)), p=1.0),
+				RandomCrop(height=image_size, width=image_size, p=1.0)
+			], p=0.4),
+			Compose([
+				#3.94 determined by largest angle possible rotatable without introducing nodata pixels into center crop area
+				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=10, border_mode=cv2.BORDER_CONSTANT, p=1.0),
+				CenterCrop(height=image_size, width=image_size, p=1.0)
+			], p=0.3)
+		], p=1.0),
+		#OneOf([
+			#IAASharpen(),
+			#IAAEmboss(),
+#			RandomBrightnessContrast(brightness_limit=0.01, contrast_limit=0.01) # This causes a blackout for some reason
 			#Blur(),
 			#GaussNoise()
-		], p=0.5),
+		#], p=0.5),
+		IAASharpen(p=0.2),
+		IAAAdditiveGaussianNoise(p=0.2),
 #		HueSaturationValue(p=0.3)
-		ShiftScaleRotate(shift_limit=.1, scale_limit=0.0, rotate_limit=2, border_mode=cv2.BORDER_CONSTANT, p=.75)
+		#ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=2, border_mode=cv2.BORDER_CONSTANT, p=.75),
+		#ChannelShuffle(p=0.33)
 	], p=prob)
 
 def preprocess_input(x):
@@ -118,28 +134,33 @@ def extract_patches(img, window_shape=(512, 512), stride=64):
 	#Pad image if necessary
 	nr, nc = img.shape
 
-	#If image is smaller than window size, pad to fit.
-	#else, pad to the least integer multiple of stride
-	#Window shape is assumed to multiple of stride.
-	#Find the smallest multiple of stride that is greater than image dimensions
-	leastRowStrideMultiple = (np.ceil(nr / stride) * stride).astype(np.uint16)
-	leastColStrideMultiple = (np.ceil(nc / stride) * stride).astype(np.uint16)
-	#If image is smaller than window, pad to window shape. Else, pad to least stride multiple.
-	nrPad = max(window_shape[0], leastRowStrideMultiple) - nr
-	ncPad = max(window_shape[1], leastColStrideMultiple) - nc
-	#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
-	stridePadding = int(stride / 2)
-	#TEST: Turning off stride padding
-	stridePadding = 0
-	paddingRow = (stridePadding, nrPad + stridePadding)
-	paddingCol = (stridePadding, ncPad + stridePadding)
-	padding = (paddingRow, paddingCol)
-	imgPadded = np.pad(img, padding, 'constant')
+	if stride != 0:
+		#If image is smaller than window size, pad to fit.
+		#else, pad to the least integer multiple of stride
+		#Window shape is assumed to multiple of stride.
+		#Find the smallest multiple of stride that is greater than image dimensions
+		leastRowStrideMultiple = (np.ceil(nr / stride) * stride).astype(np.uint16)
+		leastColStrideMultiple = (np.ceil(nc / stride) * stride).astype(np.uint16)
+		#If image is smaller than window, pad to window shape. Else, pad to least stride multiple.
+		nrPad = max(window_shape[0], leastRowStrideMultiple) - nr
+		ncPad = max(window_shape[1], leastColStrideMultiple) - nc
+		#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
+		stridePadding = int(stride / 2)
+		#TEST: Turning off stride padding
+		stridePadding = 0
+		paddingRow = (stridePadding, nrPad + stridePadding)
+		paddingCol = (stridePadding, ncPad + stridePadding)
+		padding = (paddingRow, paddingCol)
+		imgPadded = np.pad(img, padding, 'constant')
 
-	patches = skimage.util.view_as_windows(imgPadded, window_shape, stride)
-	nR, nC, H, W = patches.shape
-	nWindow = nR * nC
-	patches = np.reshape(patches, (nWindow, H, W))
+		patches = skimage.util.view_as_windows(imgPadded, window_shape, stride)
+		nR, nC, H, W = patches.shape
+		nWindow = nR * nC
+		patches = np.reshape(patches, (nWindow, H, W))
+	else:
+		patches = np.reshape(img, (1, nr, nc))
+
+
 	return patches
 
 def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=32):
@@ -149,28 +170,32 @@ def extract_rgb_patches(img, window_shape=(512, 512, 3), stride=32):
 	nc = img.shape[1] #cols/x
 	nd = img.shape[2] #color depth
 
-	#If image is smaller than window size, pad to fit.
-	#else, pad to the least integer multiple of stride
-	#Window shape is assumed to multiple of stride.
-	#Find the smallest multiple of stride that is greater than image dimensions
-	leastRowStrideMultiple = (np.ceil(nr / stride) * stride).astype(np.uint16)
-	leastColStrideMultiple = (np.ceil(nc / stride) * stride).astype(np.uint16)
-	#If image is smaller than window, pad to window shape. Else, pad to least stride multiple.
-	nrPad = max(window_shape[0], leastRowStrideMultiple) - nr
-	ncPad = max(window_shape[1], leastColStrideMultiple) - nc
-	#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
-	stridePadding = int(stride / 2)
-	#TEST: Turning off stride padding
-	stridePadding = 0
-	paddingRow = (stridePadding, nrPad + stridePadding)
-	paddingCol = (stridePadding, ncPad + stridePadding)
-	padding = (paddingRow, paddingCol, (0, 0))
-	imgPadded = np.pad(img, padding, 'constant')
+	if stride != 0:
+		#If image is smaller than window size, pad to fit.
+		#else, pad to the least integer multiple of stride
+		#Window shape is assumed to multiple of stride.
+		#Find the smallest multiple of stride that is greater than image dimensions
+		leastRowStrideMultiple = (np.ceil(nr / stride) * stride).astype(np.uint16)
+		leastColStrideMultiple = (np.ceil(nc / stride) * stride).astype(np.uint16)
+		#If image is smaller than window, pad to window shape. Else, pad to least stride multiple.
+		nrPad = max(window_shape[0], leastRowStrideMultiple) - nr
+		ncPad = max(window_shape[1], leastColStrideMultiple) - nc
+		#Add Stride border around image, and nrPad/ncPad to image to make sure it is divisible by stride.
+		stridePadding = int(stride / 2)
+		#TEST: Turning off stride padding
+		stridePadding = 0
+		paddingRow = (stridePadding, nrPad + stridePadding)
+		paddingCol = (stridePadding, ncPad + stridePadding)
+		padding = (paddingRow, paddingCol, (0, 0))
+		imgPadded = np.pad(img, padding, 'constant')
 
-	patches = skimage.util.view_as_windows(imgPadded, window_shape, stride)
-	nR, nC, nD, H, W, D = patches.shape
-	nWindow = nR * nC * nD
-	patches = np.reshape(patches, (nWindow, H, W, D))
+		patches = skimage.util.view_as_windows(imgPadded, window_shape, stride)
+		nR, nC, nD, H, W, D = patches.shape
+		nWindow = nR * nC * nD
+		patches = np.reshape(patches, (nWindow, H, W, D))
+	else:
+		patches = np.reshape(img, (1, nr, nc, nd))
+
 	return patches
 
 def create_unaugmented_data_from_image(img, mask):	
@@ -227,7 +252,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 	images_per_metabatch = 16
 	augs_per_image = 4
 
-	augs = aug_daniel_prepadded()
+	augs = aug_daniel_prepadded(image_size=patch_size)
 	counter = 0
 	while True:
 		returnCount = 0
@@ -262,7 +287,7 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 			
 			source_counter += 1
-			print(source_counter, image_name)
+			#print(source_counter, image_name)
 
 			#Convert greyscale to RGB greyscale
 			img_max = img_3_f64.max()
@@ -287,13 +312,13 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
 				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
 
-				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=patch_stride)
+				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=0)
 				
-				patch_path = os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png')
-				patch_img = np.round((patches[0,:,:,:]+1)/2*65535).astype(np.uint16)
-				print(patch_img.max())
-				numpngw.write_png(patch_path, patch_img)
-				imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
+				#patch_path = os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png')
+				#patch_img = np.round((patches[0,:,:,:]+1)/2*65535).astype(np.uint16)
+				#print(patch_img.max())
+				#numpngw.write_png(patch_path, patch_img)
+				#imsave(os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '_edge.png'), (255 * maskPatches[0,:,:,0]).astype(np.uint8))
 				
 				#Add to batches
 				if batch_img is not None:
