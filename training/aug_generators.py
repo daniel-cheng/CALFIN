@@ -96,13 +96,13 @@ def aug_daniel_prepadded(prob=1.0, image_size=448):
 			RandomCrop(height=image_size, width=image_size, p=0.3),
 			Compose([
 				#3.94 determined by largest angle possible rotatable without introducing nodata pixels into center crop area
-				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=5, border_mode=cv2.BORDER_CONSTANT, p=1.0),
+				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=6, border_mode=cv2.BORDER_CONSTANT, p=1.0),
 				CenterCrop(height=int(round(236/224*image_size)), width=int(round(236/224*image_size)), p=1.0),
 				RandomCrop(height=image_size, width=image_size, p=1.0)
 			], p=0.4),
 			Compose([
 				#3.94 determined by largest angle possible rotatable without introducing nodata pixels into center crop area
-				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=10, border_mode=cv2.BORDER_CONSTANT, p=1.0),
+				ShiftScaleRotate(shift_limit=0.0, scale_limit=0.0, rotate_limit=12, border_mode=cv2.BORDER_CONSTANT, p=1.0),
 				CenterCrop(height=image_size, width=image_size, p=1.0)
 			], p=0.3)
 		], p=1.0),
