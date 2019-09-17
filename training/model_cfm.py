@@ -134,12 +134,12 @@ def SepConv_BN(x, filters, prefix, stride=1, kernel_size=3, rate=1, depth_activa
 	if not depth_activation:
 		x = Activation('relu')(x)
 	x = DepthwiseConv2D((kernel_size, kernel_size), strides=(stride, stride), dilation_rate=(rate, rate),
-						padding=depth_padding, use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name=prefix + '_depthwise')(x)
+						padding=depth_padding, use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name=prefix + '_depthwise')(x)
 	x = BatchNormalization(name=prefix + '_depthwise_BN', epsilon=epsilon)(x)
 	if depth_activation:
 		x = Activation('relu')(x)
 	x = Conv2D(filters, (1, 1), padding='same',
-			   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name=prefix + '_pointwise')(x)
+			   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name=prefix + '_pointwise')(x)
 	x = BatchNormalization(name=prefix + '_pointwise_BN', epsilon=epsilon)(x)
 	if depth_activation:
 		x = Activation('relu')(x)
@@ -164,7 +164,7 @@ def _conv2d_same(x, filters, prefix, stride=1, kernel_size=3, rate=1):
 					  strides=(stride, stride),
 					  padding='same', use_bias=False,
 					  dilation_rate=(rate, rate),
-					  kernel_regularizer=l1_l2(5e-7, 5e-7),
+					  kernel_regularizer=l1_l2(1e-6, 1e-6),
 					  name=prefix)(x)
 	else:
 		kernel_size_effective = kernel_size + (kernel_size - 1) * (rate - 1)
@@ -177,7 +177,7 @@ def _conv2d_same(x, filters, prefix, stride=1, kernel_size=3, rate=1):
 					  strides=(stride, stride),
 					  padding='valid', use_bias=False,
 					  dilation_rate=(rate, rate),
-					  kernel_regularizer=l1_l2(5e-7, 5e-7),
+					  kernel_regularizer=l1_l2(1e-6, 1e-6),
 					  name=prefix)(x)
 
 
@@ -245,7 +245,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id, ski
 		# Expand
 
 		x = Conv2D(expansion * in_channels, kernel_size=1, padding='same', 
-				   use_bias=False, activation=None, kernel_regularizer=l1_l2(5e-7, 5e-7),
+				   use_bias=False, activation=None, kernel_regularizer=l1_l2(1e-6, 1e-6),
 				   name=prefix + 'expand')(x)
 		x = BatchNormalization(epsilon=1e-3, momentum=0.999,
 							   name=prefix + 'expand_BN')(x)
@@ -254,7 +254,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id, ski
 		prefix = 'expanded_conv_'
 	# Depthwise
 	x = DepthwiseConv2D(kernel_size=3, strides=stride, activation=None,
-						use_bias=False, padding='same', dilation_rate=(rate, rate), kernel_regularizer=l1_l2(5e-7, 5e-7),
+						use_bias=False, padding='same', dilation_rate=(rate, rate), kernel_regularizer=l1_l2(1e-6, 1e-6),
 						name=prefix + 'depthwise')(x)
 	x = BatchNormalization(epsilon=1e-3, momentum=0.999,
 						   name=prefix + 'depthwise_BN')(x)
@@ -263,7 +263,7 @@ def _inverted_res_block(inputs, expansion, stride, alpha, filters, block_id, ski
 
 	# Project
 	x = Conv2D(pointwise_filters,
-			   kernel_size=1, padding='same', use_bias=False, activation=None, kernel_regularizer=l1_l2(5e-7, 5e-7),
+			   kernel_size=1, padding='same', use_bias=False, activation=None, kernel_regularizer=l1_l2(1e-6, 1e-6),
 			   name=prefix + 'project')(x)
 	x = BatchNormalization(epsilon=1e-3, momentum=0.999,
 						   name=prefix + 'project_BN')(x)
@@ -347,11 +347,11 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 			entry_block3_stride = 2
 			middle_block_rate = 1
 			exit_block_rates = (1, 2)
-			atrous_rates = (2, 3, 5, 10, 18)
+			atrous_rates = (2, 3, 5, 7, 9)
 #			atrous_rates = (2, 6, 12, 18)
 #			atrous_rates = (6, 12, 18)
 
-		x = Conv2D(32, (3, 3), strides=(2, 2), kernel_regularizer=l1_l2(5e-7, 5e-7),
+		x = Conv2D(32, (3, 3), strides=(2, 2), kernel_regularizer=l1_l2(1e-6, 1e-6),
 				   name='entry_flow_conv1_1', use_bias=False, padding='same')(img_input)
 		x = BatchNormalization(name='entry_flow_conv1_1_BN')(x)
 		x = Activation('relu')(x)
@@ -388,7 +388,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		x = Conv2D(first_block_filters,
 				   kernel_size=3,
 				   strides=(2, 2), padding='same',
-				   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='Conv')(img_input)
+				   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='Conv')(img_input)
 		x = BatchNormalization(
 			epsilon=1e-3, momentum=0.999, name='Conv_BN')(x)
 		x = Activation(relu6, name='Conv_Relu6')(x)
@@ -443,13 +443,13 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 	#out_shape = int(np.ceil(input_shape[0] / OS))
 	b4 = AveragePooling2D(pool_size=(int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(x)
 	b4 = Conv2D(256, (1, 1), padding='same',
-				use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='image_pooling')(b4)
+				use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='image_pooling')(b4)
 	b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
 	b4 = Activation('relu')(b4)
 	b4 = BilinearUpsampling((int(np.ceil(input_shape[0] / OS)), int(np.ceil(input_shape[1] / OS))))(b4)
 
 	# simple 1x1
-	b0 = Conv2D(256, (1, 1), padding='same', use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='aspp0')(x)
+	b0 = Conv2D(256, (1, 1), padding='same', use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='aspp0')(x)
 	b0 = BatchNormalization(name='aspp0_BN', epsilon=1e-5)(b0)
 	b0 = Activation('relu', name='aspp0_activation')(b0)
 
@@ -477,7 +477,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		x = Concatenate()([b4, b0])
 
 	x = Conv2D(256, (1, 1), padding='same',
-			   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='concat_projection')(x)
+			   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='concat_projection')(x)
 	x = BatchNormalization(name='concat_projection_BN', epsilon=1e-5)(x)
 	x = Activation('relu')(x)
 	x = Dropout(0.1)(x)
@@ -490,7 +490,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 8)),
 											int(np.ceil(input_shape[1] / 8))))(x)
 		dec_skip0 = Conv2D(96, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='feature_projection0')(skip2)
+						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection0')(skip2)
 		dec_skip0 = BatchNormalization(
 			name='feature_projection0_BN', epsilon=1e-5)(dec_skip0)
 		dec_skip0 = Activation('relu')(dec_skip0)
@@ -505,7 +505,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
 											int(np.ceil(input_shape[1] / 4))))(x)
 		dec_skip1 = Conv2D(64, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='feature_projection1')(skip1)
+						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection1')(skip1)
 		dec_skip1 = BatchNormalization(
 			name='feature_projection1_BN', epsilon=1e-5)(dec_skip1)
 		dec_skip1 = Activation('relu')(dec_skip1)
@@ -520,7 +520,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 2)),
 											int(np.ceil(input_shape[1] / 2))))(x)
 		dec_skip2 = Conv2D(48, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='feature_projection2')(skip0)
+						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection2')(skip0)
 		dec_skip2 = BatchNormalization(
 			name='feature_projection2_BN', epsilon=1e-5)(dec_skip2)
 		dec_skip2 = Activation('relu')(dec_skip2)
@@ -536,7 +536,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 	else:
 		last_layer_name = 'custom_logits_semantic'
 
-	x = Conv2D(classes, (1, 1), padding='same', kernel_regularizer=l1_l2(5e-7, 5e-7), name=last_layer_name)(x)
+	x = Conv2D(classes, (1, 1), padding='same', kernel_regularizer=l1_l2(1e-6, 1e-6), name=last_layer_name)(x)
 	x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)
 
 	feature_maps = _xception_block(x, [32, 32, 32], 'exit_flow_block3',
@@ -551,7 +551,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 	feature_maps_2 = Activation('relu')(feature_maps_2)
 	feature_maps_2 = Dropout(0.1)(feature_maps_2)
 	
-	ef_skip1 = Conv2D(32, (1, 1), padding='same', use_bias=False, kernel_regularizer=l1_l2(5e-7, 5e-7), name='ex_flow_feature_projection0')(x)
+	ef_skip1 = Conv2D(32, (1, 1), padding='same', use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='ex_flow_feature_projection0')(x)
 	ef_skip1 = BatchNormalization(
 		name='ex_flow_feature_projection0_BN', epsilon=1e-5)(ef_skip1)
 	ef_skip1 = Activation('relu')(ef_skip1)
@@ -564,7 +564,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		inputs = img_input
 
 	concatenated_feature_maps = Concatenate(name='exit_flow_concatenated_feature_maps')([inputs, feature_maps, feature_maps_2, ef_skip1])
-	densely_connected_fc_full_model = Conv2D(1, (1, 1), padding='same', kernel_regularizer=l1_l2(5e-7, 5e-7), name='exit_flow_last_depthwise')(concatenated_feature_maps)
+	densely_connected_fc_full_model = Conv2D(1, (1, 1), padding='same', kernel_regularizer=l1_l2(1e-6, 1e-6), name='exit_flow_last_depthwise')(concatenated_feature_maps)
 	out = Activation('sigmoid')(densely_connected_fc_full_model)
 
 	model = Model(inputs, out, name='deeplabv3plus')
