@@ -226,7 +226,7 @@ def create_unaugmented_data_patches_from_image(img, mask, window_shape=(512, 512
 	
 	return img_reshaped, mask_reshaped
 
-def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512, 512, 3), stride=64):	
+def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512, 512, 3), stride=64, mask_channels=3):
 	#Normalize inputs.
 	img_patches = extract_rgb_patches(img.astype('float32'), window_shape, stride)
 	img_pre = preprocess_input(img_patches)
@@ -235,15 +235,15 @@ def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512,
 	if mask is None:
 		mask_reshaped = None
 	else:
-		mask_patches = extract_patches(mask.astype('float32'), (window_shape[0], window_shape[1]), stride)
-		mask_reshaped = mask_patches[:,:,:,np.newaxis]
+		mask_patches = extract_rgb_patches(mask.astype('float32'), window_shape, stride)
+		mask_reshaped = mask_patches[:,:,:,0:mask_channels]
 	
 	return img_reshaped, mask_reshaped
 
 def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64):
 	id_str = str(img_size) + '_' + str(patch_size) + '_' + str(patch_stride)
-	train_data_path = 'data/train_patched_' + id_str
-	temp_path = 'temp/train_patched_' + id_str
+	train_data_path = 'data/train_patched_dual_' + id_str
+	temp_path = 'temp/train_patched_dual_' + id_str
 	if not os.path.exists(temp_path):
 		os.mkdir(temp_path)
 	images = glob.glob(train_data_path + '/*[0-9].png')
@@ -268,18 +268,9 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 				shuffle(images)
 				source_counter = 0
 				source_limit = len(images)
-			image_name = images[source_counter].split(os.path.sep)[-1]
+			image_name = images[source_counter]
+			image_name = image_name.split(os.path.sep)[-1]
 			image_mask_name = image_name.split('.')[0] + '_mask.png'
-			
-			#For now, skip images with scan line error.
-			image_name_parts = image_name.split('_')
-			if len(image_name_parts) > 2:
-				satellite = image_name_parts[1]
-				date = parse(image_name_parts[3])
-				date_cutoff = parse('2003-05-31')
-				if satellite == 'LE07' and date > date_cutoff:
-					source_counter += 1
-					continue
 			
 			#Work around for Unicode characters not being read by cv2 imread (works for skimage imageio)
 			img_stream = open(os.path.join(train_data_path, image_name), "rb")
@@ -291,11 +282,11 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			mask_stream = open(os.path.join(train_data_path, image_mask_name), "rb")
 			mask_bytes_array = bytearray(mask_stream.read())
 			mask_np_bytes_array = np.asarray(mask_bytes_array, dtype=np.uint8)
-			mask_uint16 = cv2.imdecode(mask_np_bytes_array, cv2.IMREAD_UNCHANGED)
+			mask_3_uint16 = cv2.imdecode(mask_np_bytes_array, cv2.IMREAD_UNCHANGED)
 			mask_stream.close()
 		
 			img_3_f64 = resize(img_3_uint16, (img_size, img_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
-			mask_f64 = resize(mask_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
+			mask_3_f64 = resize(mask_3_uint16, (img_size, img_size), order=0, preserve_range=True) #np.float64 [0.0, 65535.0]
 			
 			source_counter += 1
 			#print(source_counter, image_name)
@@ -304,26 +295,25 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			img_max = img_3_f64.max()
 			img_min = img_3_f64.min()
 			img_range = img_max - img_min
-			mask_max = mask_f64.max()
+			mask_max = mask_3_f64.max()
 			if (img_max != 0.0 and img_range > 255.0):
 				img_3_f32 = (img_3_f64 / img_max * 255.0).astype(np.float32) #np.float32 [0.0, 255.0] Keep range 0-255 to conform to imagenet standards, but keep dtype float32 to keep precision
 			else:
 				img_3_f32 = img_3_f64.astype(np.float32)
 			if (mask_max != 0.0):
-				mask_f32 = np.floor(mask_f64 / mask_max * 255.0).astype(np.float32) #np.uint8 [0, 255]
+				mask_3_f32 = np.floor(mask_3_f64 / mask_max * 255.0).astype(np.float32) #np.uint8 [0, 255]
 			else:
-				mask_f32 = mask_f64.astype(np.float32)
-			mask_3_f32 = np.stack((mask_f32,)*3, axis=-1)
+				mask_3_f32 = mask_3_f64.astype(np.float32)
 
 			#Run each image through 8 random augmentations per image
 			for j in range(augs_per_image):
 				#Augment image
 				dat = augs(image=img_3_f32, mask=mask_3_f32)
 				img_3_aug_f32 = dat['image'].astype('float32') #np.float32 [0.0, 255.0]
-				mask_aug_f32 = np.mean(dat['mask'], axis=2).astype('float32') #np.float32 [0.0, 255.0]
-				mask_final_f32 = np.where(mask_aug_f32 > 127.0, 1.0, 0.0) #np.float32 [0.0, 1.0]
+				mask_3_aug_f32 = dat['mask'].astype('float32') #np.float32 [0.0, 255.0]
+				mask_final_f32 = mask_3_aug_f32 / 255.0 #np.float32 [0.0, 1.0]
 
-				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=0)
+				patches, maskPatches = create_unaugmented_data_patches_from_rgb_image(img_3_aug_f32, mask_final_f32, window_shape=(patch_size, patch_size, 3), stride=0, mask_channels=2)
 				
 				#patch_path = os.path.join(temp_path, image_name.split('.')[0] + "_" + str(j) + '.png')
 				#patch_img = np.round((patches[0,:,:,:]+1)/2*65535).astype(np.uint16)

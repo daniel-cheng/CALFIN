@@ -13,7 +13,7 @@ from segmentation_models.metrics import iou_score, jaccard_score
 
 import sys
 sys.path.insert(0, 'keras-deeplab-v3-plus')
-from model_cfm import Deeplabv3, _xception_block
+from model_cfm_dual import Deeplabv3, _xception_block
 from clr_callback import CyclicLR
 from AdamAccumulate import AdamAccumulate
 
@@ -25,9 +25,9 @@ from skimage.io import imsave, imread
 from skimage.transform import resize, rotate, rescale
 from random import shuffle
 
-from data_cfm_patched import load_validation_data
+from data_cfm_patched_dual import load_validation_data
 from albumentations import *
-from aug_generators import aug_daniel, imgaug_generator_patched
+from aug_generators_dual import aug_daniel, imgaug_generator_patched
 
 full_size = 256
 img_size = 224
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	validation_data = load_validation_data(full_size, img_size, stride) 
 	
-	model_checkpoint = ModelCheckpoint('cfm_weights_patched_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
+	model_checkpoint = ModelCheckpoint('cfm_weights_patched_no_sce_' + str(img_size) + '_e{epoch:02d}_iou{val_weighted_iou_score:.4f}.h5', monitor='val_weighted_iou_score', save_best_only=False)
 	clr_triangular = CyclicLR(mode='triangular2', step_size=12000, base_lr=6e-5, max_lr=6e-4)
 	callbacks_list = [
 		#EarlyStopping(patience=6, verbose=1, restore_best_weights=False),
@@ -53,14 +53,23 @@ if __name__ == '__main__':
 	
 	SMOOTH = 1e-12
 	def bce_ln_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
-		bce = K.mean(binary_crossentropy(gt, pr))
-		loss = bce_weight * bce - K.log(jaccard_score(gt, pr, smooth=smooth, per_image=per_image))
+		bce = K.mean(binary_crossentropy(gt[:,:,:,0], pr[:,:,:,0]))*25/26 + K.mean(binary_crossentropy(gt[:,:,:,1], pr[:,:,:,1]))/26
+		loss = bce_weight * bce - K.log(jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image))*25/26 - K.log(jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image))/26
 		return loss
 	
-	def ln_iou_score(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
-		score = -K.log(iou_score(gt, pr, smooth=smooth, per_image=per_image))
-		return score
-	
+	def weighted_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+		edge_iou_score = jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image)
+		mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
+		return (edge_iou_score * 25 + mask_iou_score)/26
+
+	def edge_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+		edge_iou_score = jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image)
+		return edge_iou_score
+
+	def mask_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+		mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
+		return mask_iou_score
+
 	print('-'*30)
 	print('Creating and compiling model...')
 	print('-'*30)
@@ -68,14 +77,14 @@ if __name__ == '__main__':
 	inputs = Input(shape=img_shape)
 	model = Deeplabv3(input_shape=(img_size, img_size,3), classes=16, OS=16, backbone='xception', weights=None)
 	
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', weighted_iou_score, edge_iou_score, mask_iou_score, 'accuracy'])
 	model.summary()
-	#model.load_weights('cfm_weights_patched_224_e05_iou0.5038.h5')
+	model.load_weights('cfm_weights_patched_no_sce_224_e05_iou0.3325.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator_patched(8, img_size=full_size, patch_size=img_size, patch_stride=stride)
+	train_generator = imgaug_generator_patched(4, img_size=full_size, patch_size=img_size, patch_stride=stride)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=8000,
 				epochs=80,

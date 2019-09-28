@@ -43,7 +43,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	validation_data = load_validation_data(full_size, img_size, stride) 
 	
-	model_checkpoint = ModelCheckpoint('cfm_weights_patched_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
+	model_checkpoint = ModelCheckpoint('cfm_weights_patched_no_sce_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
 	clr_triangular = CyclicLR(mode='triangular2', step_size=12000, base_lr=6e-5, max_lr=6e-4)
 	callbacks_list = [
 		#EarlyStopping(patience=6, verbose=1, restore_best_weights=False),
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 	
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_patched_224_e03_iou0.4651.h5')
+	model.load_weights('cfm_weights_patched_224_e03_iou0.4676.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
