@@ -13,12 +13,12 @@ from segmentation_models.metrics import iou_score, jaccard_score
 
 import sys
 sys.path.insert(0, 'keras-deeplab-v3-plus')
-from model_cfm_dual import Deeplabv3, _xception_block
+from model_cfm_dual_wide import Deeplabv3, _xception_block
 from clr_callback import CyclicLR
 from AdamAccumulate import AdamAccumulate
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 import cv2, glob
 from skimage.io import imsave, imread
@@ -79,7 +79,7 @@ if __name__ == '__main__':
 	
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', weighted_iou_score, edge_iou_score, mask_iou_score, 'accuracy'])
 	model.summary()
-	model.load_weights('cfm_weights_patched_no_sce_224_e08_iou0.5221.h5')
+	#model.load_weights('cfm_weights_patched_no_sce_224_e05_iou0.3325.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
