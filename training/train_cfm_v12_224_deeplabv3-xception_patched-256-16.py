@@ -13,9 +13,10 @@ from segmentation_models.metrics import iou_score, jaccard_score
 
 import sys
 sys.path.insert(0, 'keras-deeplab-v3-plus')
-from model_cfm_dual_wide import Deeplabv3, _xception_block
+from model_cfm_dual_wide_deep_x65 import Deeplabv3, _xception_block
 from clr_callback import CyclicLR
 from AdamAccumulate import AdamAccumulate
+from AdditionalValidationSets import AdditionalValidationSets
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
@@ -41,58 +42,26 @@ if __name__ == '__main__':
 	print('-'*30)
 	print('Loading validation data...')
 	print('-'*30)
-	validation_data = load_validation_data(full_size, img_size, stride) 
+	validation_data, validation_targets = load_validation_data(full_size, img_size, stride) 
 	
-	model_checkpoint = ModelCheckpoint('cfm_weights_patched_no_sce_' + str(img_size) + '_e{epoch:02d}_iou{val_weighted_iou_score:.4f}.h5', monitor='val_weighted_iou_score', save_best_only=False)
+	model_checkpoint = ModelCheckpoint('cfm_weights_patched_dual_wide_x65_' + str(img_size) + '_e{epoch:02d}_iou{val_iou_score:.4f}.h5', monitor='val_iou_score', save_best_only=False)
 	clr_triangular = CyclicLR(mode='triangular2', step_size=12000, base_lr=6e-5, max_lr=6e-4)
+	additional = AdditionalValidationSets([(validation_data[1], validation_targets[1], 'Upernavik'), (validation_data[2], validation_targets[2], 'Jakobshavn'), (validation_data[3], validation_targets[3], 'Kong-Oscar'), (validation_data[4], validation_targets[4], 'Kangiata-Nunaata'), (validation_data[5], validation_targets[5], 'Hayes'), (validation_data[6], validation_targets[6], 'Rink-Isbrae'), (validation_data[7], validation_targets[7], 'Kangerlussuaq'), (validation_data[8], validation_targets[8], 'Helheim')])
 	callbacks_list = [
 		#EarlyStopping(patience=6, verbose=1, restore_best_weights=False),
 		#clr_triangular,
+		additional,
 		model_checkpoint
 	]
 	
 	SMOOTH = 1e-12
-	def iou_score(gt, pr, class_weights=1., class_indexes=None, smooth=SMOOTH, per_image=False, threshold=None, **kwargs):
-		r""" The `Jaccard index`_, also known as Intersection over Union and the Jaccard similarity coefficient
-		(originally coined coefficient de communauté by Paul Jaccard), is a statistic used for comparing the
-		similarity and diversity of sample sets. The Jaccard coefficient measures similarity between finite sample sets,
-		and is defined as the size of the intersection divided by the size of the union of the sample sets:
-		.. math:: J(A, B) = \frac{A \cap B}{A \cup B}
-		Args:
-			gt: ground truth 4D keras tensor (B, H, W, C) or (B, C, H, W)
-			pr: prediction 4D keras tensor (B, H, W, C) or (B, C, H, W)
-			class_weights: 1. or list of class weights, len(weights) = C
-			class_indexes: Optional integer or list of integers, classes to consider, if ``None`` all classes are used.
-			smooth: value to avoid division by zero
-			per_image: if ``True``, metric is calculated as mean over images in batch (B),
-				else over whole batch
-			threshold: value to round predictions (use ``>`` comparison), if ``None`` prediction will not be round
-		Returns:
-			IoU/Jaccard score in range [0, 1]
-		.. _`Jaccard index`: https://en.wikipedia.org/wiki/Jaccard_index
-		"""
-
-		backend = kwargs['backend']
-
-		gt, pr = gather_channels(gt, pr, indexes=class_indexes, **kwargs)
-		pr = round_if_needed(pr, threshold, **kwargs)
-		axes = get_reduce_axes(per_image, **kwargs)
-
-		# score calculation
-		intersection = backend.sum(gt * pr, axis=axes)
-		union = backend.sum(gt + pr, axis=axes) - intersection
-
-		score = (intersection + smooth) / (union + smooth)
-		score = average(score, per_image, class_weights, **kwargs)
-
-		return score
-
+	SMOOTH2 = 1e-1
 	def bce_ln_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
 		bce = K.mean(binary_crossentropy(gt[:,:,:,0], pr[:,:,:,0]))*25/26 + K.mean(binary_crossentropy(gt[:,:,:,1], pr[:,:,:,1]))/26
 		loss = bce_weight * bce - K.log(jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image))*25/26 - K.log(jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image))/26
 		return loss
 	
-	def weighted_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+	def iou_score(gt, pr, smooth=SMOOTH, per_image=True):
 		edge_iou_score = jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image)
 		mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
 		return (edge_iou_score * 25 + mask_iou_score)/26
@@ -105,6 +74,13 @@ if __name__ == '__main__':
 		mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
 		return mask_iou_score
 
+	def deviation(gt, pr, smooth=SMOOTH2, per_image=True):
+		mismatch = K.sum(K.abs(gt[:,:,:,1] - pr[:,:,:,1]), axis=[1, 2]) #(B)
+		length = K.sum(gt[:,:,:,0], axis=[1, 2]) #(B)
+		deviation = mismatch / (length + smooth) #(B)
+		mean_deviation = K.mean(deviation) / 3.0 #- (account for line thickness of 3 at 224)
+		return mean_deviation
+
 	print('-'*30)
 	print('Creating and compiling model...')
 	print('-'*30)
@@ -112,18 +88,19 @@ if __name__ == '__main__':
 	inputs = Input(shape=img_shape)
 	model = Deeplabv3(input_shape=(img_size, img_size,3), classes=16, OS=16, backbone='xception', weights=None)
 	
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', weighted_iou_score, edge_iou_score, mask_iou_score, 'accuracy'])
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=4), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, edge_iou_score, mask_iou_score, deviation])
 	model.summary()
-	#model.load_weights('cfm_weights_patched_no_sce_224_e05_iou0.3325.h5')
+	#model.load_weights('cfm_weights_patched_dual_wide_x71224_e02_iou0.3631.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
 	print('-'*30)
-	train_generator = imgaug_generator_patched(4, img_size=full_size, patch_size=img_size, patch_stride=stride)
+	steps_per_epoch = 8000
+	train_generator = imgaug_generator_patched(4, img_size=full_size, patch_size=img_size, patch_stride=stride, steps_per_epoch=steps_per_epoch)
 	history = model.fit_generator(train_generator,
-				steps_per_epoch=8000,
+				steps_per_epoch=steps_per_epoch,
 				epochs=80,
-				validation_data=validation_data,
+				validation_data=(validation_data[0], validation_targets[0]),
 				verbose=1,
 #				max_queue_size=64,
 #				use_multiprocessing=True,

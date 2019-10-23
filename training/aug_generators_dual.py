@@ -240,16 +240,18 @@ def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512,
 	
 	return img_reshaped, mask_reshaped
 
-def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64):
+def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64, steps_per_epoch=8000):
 	id_str = str(img_size) + '_' + str(patch_size) + '_' + str(patch_stride)
 	train_data_path = 'data/train_patched_dual_' + id_str
 	temp_path = 'temp/train_patched_dual_' + id_str
 	if not os.path.exists(temp_path):
 		os.mkdir(temp_path)
-	images = glob.glob(train_data_path + '/*[0-9].png')
-	shuffle(images)
+	curriculum = ["Kangerlussuaq", "Kangiata-Nunaata", "Rink-Isbrae", "Upernavik", "Kong-Oscar", "Jakobshavn", "Hayes", ""] #ordered in terms of difficulty/iou_score
+	curriculum = [""] #curriculum not really working
+	curriculum_max_length = len(curriculum) - 1
 	source_counter = 0
-	source_limit = len(images)
+	source_limit = 0
+	images_per_epoch = batch_size * steps_per_epoch
 	images_per_metabatch = 16
 	augs_per_image = 4
 
@@ -264,7 +266,8 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 		for i in range(images_per_metabatch):
 			#Load images, resetting source "iterator" when reaching the end
 			if source_counter == source_limit:
-				images = glob.glob(train_data_path + '/*[0-9].png')
+				curriculum_index = int(min(np.floor(float(returnCount) / float(images_per_epoch)), curriculum_max_length))
+				images = glob.glob(train_data_path + '/' + curriculum[curriculum_index] + '*[0-9].png')
 				shuffle(images)
 				source_counter = 0
 				source_limit = len(images)

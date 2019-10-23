@@ -37,8 +37,10 @@ from keras.layers import Dropout
 from keras.layers import BatchNormalization
 from keras.layers import Conv2D
 from keras.layers import DepthwiseConv2D
+from keras.layers import Lambda
 from keras.layers import ZeroPadding2D
 from keras.layers import AveragePooling2D
+from keras.layers import MaxPooling2D
 from keras.engine import Layer
 from keras.engine import InputSpec
 from keras.engine.topology import get_source_inputs
@@ -196,15 +198,17 @@ def _xception_block(inputs, depth_list, prefix, skip_connection_type, stride,
 			"""
 	#Reavle this block - turn itno actual inception block?
 	residual = inputs
-	depth_num = len(depth_list)
-	for i in range(depth_num):
+	if rate == 1:
+		rate = [1, 1, 1]
+
+	for i in range(3):
 		residual = SepConv_BN(residual,
 							  depth_list[i],
 							  prefix + '_separable_conv{}'.format(i + 1),
-							  stride=stride if i==depth_num-1 else 1,
-							  rate=rate, #Multi-grid (1, 2, 1)?
+							  stride=stride if i==2 else 1,
+							  rate=rate[i], #Multi-grid (1, 2, 4)
 							  depth_activation=depth_activation)
-		if i == depth_num-2:
+		if i == 1:
 			skip = residual
 	if skip_connection_type == 'conv':
 		shortcut = _conv2d_same(inputs, depth_list[-1], prefix + '_shortcut',
@@ -345,46 +349,34 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 			exit_block_rates = (2, 4)
 			atrous_rates = (12, 24, 36)
 		else:
-			entry_block3_stride = 2
+			entry_block3_stride = 1 #2
 			middle_block_rate = 1
-			exit_block_rates = (1, 2)
-			atrous_rates = (2, 3, 5, 9)
+			exit_block_rates = (2, 1)
+			multi_grid = (1, 2, 4)
+			atrous_rates = (1, 2, 3, 4, 5)
 #			atrous_rates = (2, 6, 12, 18)
 #			atrous_rates = (6, 12, 18)
 
-		x, skipIn  = _xception_block(img_input, [32, 64], 'entry_flow_block0',
+		x, skip1  = _xception_block(img_input, [128, 128, 128], 'entry_flow_block1', #224-112
 							skip_connection_type='conv', stride=2,
 							depth_activation=False, return_skip=True)
-		#x = _conv2d_same(img_input, 32, 'entry_flow_conv1_1', kernel_size=3, stride=1)
-		#x = Conv2D(32, (3, 3), strides=(2, 2), kernel_regularizer=l1_l2(1e-6, 1e-6),
-				   #name='entry_flow_conv1_1', use_bias=False, padding='same')(img_input)
-		#x = BatchNormalization(name='entry_flow_conv1_1_BN')(x)
-		#x = Activation('elu')(x)
-
-		#x = _conv2d_same(x, 64, 'entry_flow_conv1_2', kernel_size=3, stride=1)
-		#x = BatchNormalization(name='entry_flow_conv1_2_BN')(x)
-		#x = Activation('elu')(x)
-
-		x, skip0  = _xception_block(x, [128, 128, 128], 'entry_flow_block1',
-							skip_connection_type='conv', stride=2,
-							depth_activation=False, return_skip=True)
-		x, skip1 = _xception_block(x, [256, 256, 256], 'entry_flow_block2',
+		x, skip2 = _xception_block(x, [256, 256, 256], 'entry_flow_block2',#112-56
 								   skip_connection_type='conv', stride=2,
 								   depth_activation=False, return_skip=True)
-
-		x, skip2 = _xception_block(x, [728, 728, 728], 'entry_flow_block3',
-							skip_connection_type='conv', stride=entry_block3_stride,
+		x, skip3 = _xception_block(x, [728, 728, 728], 'entry_flow_block3',#56-28
+							skip_connection_type='conv', stride=2,
 							depth_activation=False, return_skip=True)
-		for i in range(4):
+		skip6 = x #28
+		for i in range(8):
 			x = _xception_block(x, [728, 728, 728], 'middle_flow_unit_{}'.format(i + 1),
-								skip_connection_type='sum', stride=1, rate=middle_block_rate,
+								skip_connection_type='sum', stride=1, rate=1,
 								depth_activation=False)
 
 		x = _xception_block(x, [728, 1024, 1024], 'exit_flow_block1',
-							skip_connection_type='conv', stride=1, rate=exit_block_rates[0],
+							skip_connection_type='conv', stride=2, rate=1,
 							depth_activation=False)
 		x = _xception_block(x, [1536, 1536, 2048], 'exit_flow_block2',
-							skip_connection_type='none', stride=1, rate=exit_block_rates[1],
+							skip_connection_type='none', stride=1, rate=multi_grid,
 							depth_activation=True)
 
 	else:
@@ -442,15 +434,17 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 
 	# end of feature extractor
 
-	# branching for Atrous Spatial Pyramid Pooling
+	# branching for Atrous Spatial Pyrami>>>d Pooling
 
 	# Image Feature branch
 	#out_shape = int(np.ceil(input_shape[0] / OS))
+	size_before = x.shape
 	b4 = MaxPooling2D(pool_size=(2, 2))(x)
 	b4 = Conv2D(256, (1, 1), padding='same',
 				use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='image_pooling')(b4)
 	b4 = BatchNormalization(name='image_pooling_BN', epsilon=1e-5)(b4)
 	b4 = Activation('elu')(b4)
+	#b4 = Lambda(lambda xx: K.tf.image.resize(xx, size_before[1:3], method='bilinear', align_corners=True))(b4)
 	b4 = BilinearUpsampling((2,2))(b4)
 
 	# simple 1x1
@@ -472,9 +466,12 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		# rate = 10
 		b5 = SepConv_BN(x, 256, 'aspp4',
 						rate=atrous_rates[3], depth_activation=True, epsilon=1e-5)
+		# rate = 18
+		b6 = SepConv_BN(x, 256, 'aspp5',
+						rate=atrous_rates[4], depth_activation=True, epsilon=1e-5)
 
 		# concatenate ASPP branches & project
-		x = Concatenate()([b4, b0, b1, b2, b3, b5])
+		x = Concatenate()([b4, b0, b1, b2, b3, b5, b6])
 	else:
 		x = Concatenate()([b4, b0])
 
@@ -489,82 +486,33 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 	if backbone == 'xception':
 		# Feature projection
 		# x4 (x2) block
-		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 8)),
-											int(np.ceil(input_shape[1] / 8))))(x)
-		dec_skip0 = Conv2D(96, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection0')(skip2)
-		dec_skip0 = BatchNormalization(
-			name='feature_projection0_BN', epsilon=1e-5)(dec_skip0)
-		dec_skip0 = Activation('elu')(dec_skip0)
-		x = Concatenate()([x, dec_skip0])
-		x = SepConv_BN(x, 512, 'decoder_conv0_0',
-					   depth_activation=True, epsilon=1e-5)
-		x = SepConv_BN(x, 512, 'decoder_conv0_1',
-					   depth_activation=True, epsilon=1e-5)
-		
-		# Feature projection
-		# x4 (x2) block
+		#x = Lambda(lambda xx: K.tf.image.resize(xx, skip3.shape[1:3], method='bilinear', align_corners=True))(x)
 		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 4)),
 											int(np.ceil(input_shape[1] / 4))))(x)
-		dec_skip1 = Conv2D(64, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection1')(skip1)
+		dec_skip1 = Conv2D(48, (1, 1), padding='same',
+						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection1')(skip3)
 		dec_skip1 = BatchNormalization(
 			name='feature_projection1_BN', epsilon=1e-5)(dec_skip1)
 		dec_skip1 = Activation('elu')(dec_skip1)
 		x = Concatenate()([x, dec_skip1])
-		x = SepConv_BN(x, 340, 'decoder_conv1_0',
+		x = SepConv_BN(x, 256, 'decoder_conv1_0',
 					   depth_activation=True, epsilon=1e-5)
-		x = SepConv_BN(x, 340, 'decoder_conv1_1',
+		x = SepConv_BN(x, 256, 'decoder_conv1_1',
 					   depth_activation=True, epsilon=1e-5)
 		
 
-		# Feature projection
-		# x4 (x2) block
-		x = BilinearUpsampling(output_size=(int(np.ceil(input_shape[0] / 2)),
-											int(np.ceil(input_shape[1] / 2))))(x)
-		dec_skip2 = Conv2D(48, (1, 1), padding='same',
-						   use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection2')(skip0)
-		dec_skip2 = BatchNormalization(
-			name='feature_projection2_BN', epsilon=1e-5)(dec_skip2)
-		dec_skip2 = Activation('elu')(dec_skip2)
-		x = Concatenate()([x, dec_skip2])
-		x = SepConv_BN(x, 256, 'decoder_conv2_0',
-					   depth_activation=True, epsilon=1e-5)
-		x = SepConv_BN(x, 256, 'decoder_conv2_1',
-					   depth_activation=True, epsilon=1e-5)
+	# you can use it with arbitary number of classes
+	if classes == 21:
+		last_layer_name = 'logits_semantic'
+	else:
+		last_layer_name = 'custom_logits_semantic'
 
+	x = Conv2D(2, (1, 1), padding='same', kernel_regularizer=l1_l2(1e-6, 1e-6), name=last_layer_name)(x)
 	x = BilinearUpsampling(output_size=(input_shape[0], input_shape[1]))(x)
+	#size_before3 = img_input.shape
+	#x = Lambda(lambda xx: tf.backend.resize_images(xx, size_before3[1:3], method='bilinear', align_corners=True))(x)
 
-	dec_skip3 = Conv2D(32, (1, 1), padding='same',
-						use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='feature_projection3')(skipIn)
-	dec_skip3 = BatchNormalization(
-		name='feature_projection3_BN', epsilon=1e-5)(dec_skip3)
-	dec_skip3 = Activation('elu')(dec_skip3)
-	x = Concatenate()([x, dec_skip3])
-	x = SepConv_BN(x, 180, 'decoder_conv3_0',
-					depth_activation=True, epsilon=1e-5)
-	x = SepConv_BN(x, 180, 'decoder_conv3_1',
-					depth_activation=True, epsilon=1e-5)
-
-	mask_map = Conv2D(1, (1, 1), padding='same', kernel_regularizer=l1_l2(1e-6, 1e-6), name='exit_flow_mask_last_depthwise')(x)
-	mask_activated = Activation('sigmoid')(mask_map)
-
-	feature_maps = _xception_block(x, [32, 32, 32], 'exit_flow_block3',
-					skip_connection_type='conv', stride=1, rate=1, depth_activation=True)
-	feature_maps = BatchNormalization(name='exit_flow_block3_BN', epsilon=1e-5)(feature_maps)
-	feature_maps = Activation('elu')(feature_maps)
-	feature_maps = Dropout(0.1)(feature_maps)
-	
-	feature_maps_2 = _xception_block(feature_maps, [32, 32, 32], 'exit_flow_block4',
-					skip_connection_type='conv', stride=1, rate=1, depth_activation=True)
-	feature_maps_2 = BatchNormalization(name='exit_flow_block4_BN', epsilon=1e-5)(feature_maps_2)
-	feature_maps_2 = Activation('elu')(feature_maps_2)
-	feature_maps_2 = Dropout(0.1)(feature_maps_2)
-	
-	ef_skip1 = Conv2D(32, (1, 1), padding='same', use_bias=False, kernel_regularizer=l1_l2(1e-6, 1e-6), name='ex_flow_feature_projection0')(x)
-	ef_skip1 = BatchNormalization(
-		name='ex_flow_feature_projection0_BN', epsilon=1e-5)(ef_skip1)
-	ef_skip1 = Activation('elu')(ef_skip1)
+	out = Activation('sigmoid')(x)
 
 	# Ensure that the model takes into account
 	# any potential predecessors of `input_tensor`.
@@ -572,13 +520,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 		inputs = get_source_inputs(input_tensor)
 	else:
 		inputs = img_input
-
-	concatenated_feature_maps = Concatenate(name='exit_flow_concatenated_feature_maps')([inputs, x, feature_maps, feature_maps_2, ef_skip1])
-	edge_map = Conv2D(1, (1, 1), padding='same', kernel_regularizer=l1_l2(1e-6, 1e-6), name='exit_flow_edge_last_depthwise')(concatenated_feature_maps)
-
-	edge_activated = Activation('sigmoid')(edge_map)
-	out = Concatenate(name='exit_flow_concatenated_edge_mask_maps')([edge_activated, mask_activated])
-
+	
 	model = Model(inputs, out, name='deeplabv3plus')
 
 	# load weights

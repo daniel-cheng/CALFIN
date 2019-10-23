@@ -24,12 +24,15 @@ temp_path = 'temp/'
 def load_validation_data(full_size, img_size, stride, regen=False):
 	#If patched validation/train images have not yet been generated, do so now
 	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride)
+	domains = ['Upernavik', 'Jakobshavn', 'Kong-Oscar', 'Kangiata-Nunaata', 'Hayes', 'Rink-Isbrae', 'Kangerlussuaq', 'Helheim']
 	if not os.path.exists('cfm_validation_imgs_patched_dual_' + id_str + '.npy') or regen == True:
 		input_data_path = 'data/validation'
 		output_data_path = 'data/validation_patched_dual_' + id_str 
 		if not os.path.exists('data/validation_patched_dual_' + id_str):
 			os.mkdir(output_data_path)
-		create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
+		create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, '')
+		for domain in domains:
+			create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, domain)
 	if not os.path.exists('data/train_patched_dual_' + id_str) or regen == True:
 		input_data_path = 'data/train'
 		output_data_path = 'data/train_patched_dual_' + id_str
@@ -37,19 +40,23 @@ def load_validation_data(full_size, img_size, stride, regen=False):
 			os.mkdir(output_data_path)
 		create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
 
-	imgs_validation = np.load('cfm_validation_imgs_patched_dual_' + id_str + '.npy').astype(np.float32)
-	imgs_mask_validation = np.load('cfm_validation_masks_patched_dual_' + id_str + '.npy').astype(np.float32)
+	imgs_validation = [np.load('cfm_validation_imgs_patched_dual_' + id_str + '.npy').astype(np.float32)]
+	imgs_mask_validation = [np.load('cfm_validation_masks_patched_dual_' + id_str + '.npy').astype(np.float32)]
+	for domain in domains:
+		domain_id_str = id_str + '_' + domain
+		imgs_validation.append(np.load('cfm_validation_imgs_patched_dual_' + domain_id_str + '.npy').astype(np.float32))
+		imgs_mask_validation.append(np.load('cfm_validation_masks_patched_dual_' + domain_id_str + '.npy').astype(np.float32))
 	return imgs_validation, imgs_mask_validation
 
-def create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride):
-	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride)
-	imgs, imgs_mask = create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, return_images=True)
+def create_validation_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, prefix):
+	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride) + '_' + prefix
+	imgs, imgs_mask = create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride, prefix=prefix + '*', return_images=True)
 	np.save('cfm_validation_imgs_patched_dual_' + id_str + '.npy', imgs)
 	np.save('cfm_validation_masks_patched_dual_' + id_str + '.npy', imgs_mask)
 	
-def create_data_from_directory(input_path, output_path, full_size, img_size, stride, return_images=False):
+def create_data_from_directory(input_path, output_path, full_size, img_size, stride, prefix='*', return_images=False):
 	keep_aspect_ratio = False
-	images = glob.glob(input_path + '/*[0-9].png')
+	images = glob.glob(input_path + '/' + prefix + '[0-9].png')
 	total = len(images)
 	imgs = None
 	imgs_mask = None
