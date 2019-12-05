@@ -66,10 +66,17 @@
 #python download_landsat_scene.py -o liste -l scenes/kangerlussuaq_L8_3.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kangerlussuaq"
 #python download_landsat_scene.py -o liste -l scenes/kangerlussuaq_L8_4.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kangerlussuaq"
 
+python download_landsat_scene.py -o liste -l scenes/petermann_L15.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"
+python download_landsat_scene.py -o liste -l scenes/petermann_L45.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"
+python download_landsat_scene.py -o liste -l scenes/petermann_L7_1.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"
+python download_landsat_scene.py -o liste -l scenes/petermann_L7_2.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"
+python download_landsat_scene.py -o liste -l scenes/petermann_L8.txt -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"
+
 #python download_landsat_scene_cleanup.py -o liste -l scenes/upernavik* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Upernavik"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/jakobshavn* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Jakobshavn"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/hayes* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Hayes"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/rink-isbrae* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Rink-Isbrae"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/kong-oscar* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kong-Oscar"
 #python download_landsat_scene_cleanup.py -o liste -l scenes/helheim* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Helheim"
-python download_landsat_scene_cleanup.py -o liste -l scenes/kangerlussuaq* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kangerlussuaq"
+#python download_landsat_scene_cleanup.py -o liste -l scenes/kangerlussuaq* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Kangerlussuaq"
+python download_landsat_scene_cleanup.py -o liste -l scenes/petermann* -u usgs.txt --output "D:/Daniel/Documents/Github/CALFIN Repo/downloader/rasters/Landsat/Greenland/zipped/Petermann"

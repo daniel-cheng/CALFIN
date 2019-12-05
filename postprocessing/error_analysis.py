@@ -7,26 +7,22 @@ Created on Thu May 30 09:28:22 2019
 import numpy as np
 import os, glob, cv2, shutil
 import matplotlib.pyplot as plt
-from scipy.misc import imresize
-from scipy.ndimage import distance_transform_edt
-from redistribute_points import redistribute_points
 from skimage.morphology import skeletonize
 import skimage
 import meshcut
-from scipy import ndimage
-from ordered_line_from_unordered_points import ordered_line_from_unordered_points, ordered_line_from_unordered_points_tree
+from ordered_line_from_unordered_points import ordered_line_from_unordered_points_tree
 from PIL import Image
-from cv2 import VideoWriter, VideoWriter_fourcc, imread, resize
+from cv2 import VideoWriter, VideoWriter_fourcc, resize
 from collections import defaultdict
 plt.ioff()
 
 steps = ['1', '2', '3', '4']
 #steps = ['2']
 #steps = ['3']
-steps = ['4']
-steps = ['2', '4']
-steps = ['A']
-steps = ['production']
+#steps = ['4']
+#steps = ['2', '4']
+#steps = ['A']
+#steps = ['production']
 
 """Load domain to process"""
 def landsat_sort(file_path):
@@ -45,7 +41,7 @@ def step_1(root, domain):
 	mask_paths =  get_paths(root, domain, '_pred')
 	return raw_paths, mask_paths
 
-if '1' in steps:
+if __name__ == '__main__' and '1' in steps:
 	#For testing - performs step 1 with default parameters.
 	root = r'D:\Daniel\Documents\Github\CALFIN Repo\postprocessing'
 	domain = 'testing_calfin'
@@ -56,36 +52,21 @@ if '1' in steps:
 """Front Extraction"""
 def extract_front_indicators(raw_img, mask_img, index, resolution):
 	"""Extracts an ordered polyline from the processed mask. Also returns an overlay of the extracted polyline and the raw image. Draws to the indexed figure and specified resolution."""
-	width = resolution[0]
-	height = resolution[1]
 	minimum_points = 4
 	
 	#Extract known masks
-	raw_rgb_img = cv2.cvtColor(raw_img, cv2.COLOR_GRAY2RGB)
-	#edges = cv2.Canny(mask_img,100,200)
-	edge_bianry = np.where(mask_img > 127, 1, 0)
+	edge_bianry = np.where(mask_img > 63, 1, 0)
 	skeleton = skeletonize(edge_bianry)
 	front_pixels = np.nonzero(skeleton)
 	
 	#Require a minimum number of points
 	if len(front_pixels[0]) < minimum_points:
 		return None
-	
-	#Prepare figure for direct image output/saving
-	dpi = 80
-	fig = plt.figure(0, figsize=(width/dpi, height/dpi), dpi=dpi)
-	plt.clf()
-	plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, 
-	            hspace = 0, wspace = 0)
-	plt.imshow(raw_rgb_img)
-	ax = plt.gca()
-	ax.axis('tight')
-	ax.axis('off')
-	ax.set_xlim(0.0, width)
-	ax.set_ylim(height, 0.0)
-	
+		
 	#Perform mask to polyline extraction.
-	front_line = np.array(ordered_line_from_unordered_points_tree(front_pixels, raw_img.shape, minimum_points))
+	results = ordered_line_from_unordered_points_tree(front_pixels, raw_img.shape, minimum_points)
+	overlay = results[2]
+	front_line = np.array((results[0], results[1]))
 	number_of_points = front_line.shape[1]
 	front_normals = np.zeros((2, number_of_points))
 	
@@ -130,11 +111,8 @@ def extract_front_indicators(raw_img, mask_img, index, resolution):
 #		for i in range(len(front_line[0])):
 #			raw_rgb_img[front_line[0, i], front_line[1, i]] = [front_normals[0,i] / 2 + 0.5, front_normals[1,i] / 2 + 0.5, 0.5]
 	
-	#Save figure as image matrix.
-	fig.canvas.draw()
-	data = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
-	overlay = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
-
+#	pts = np.vstack((fitx,ploty)).astype(np.int32).T
+	
 	return overlay, front_line, front_normals
 
 
@@ -159,7 +137,9 @@ def step_2(raw_paths, mask_paths, reprocessing_path, source_root_path):
 		raw_path = raw_paths[i]
 		mask_path = mask_paths[i]
 		print(i, mask_path)
-		
+		width = resolution[0]
+		height = resolution[1]
+			
 		raw_img = np.array(Image.fromarray(cv2.imread(raw_path, 0)).resize((width, height), Image.BICUBIC)).astype('uint8')
 		mask_img = np.array(Image.fromarray(cv2.imread(mask_path, 0)).resize((width, height), Image.BICUBIC)).astype('uint8')
 	
@@ -187,9 +167,11 @@ def step_2(raw_paths, mask_paths, reprocessing_path, source_root_path):
 			shutil.copy2(os.path.join(source_path, raw_name), os.path.join(domain_path, mask_name))
 	return overlays, fronts_lines, fronts_normals, processed_paths
 
-if '2' in steps:
+if __name__ == '__main__' and '2' in steps:
 	#For testing - performs step 2 with default parameters.
-	overlays, fronts_lines, fronts_normals, processed_paths = step_2(raw_paths, mask_paths)
+	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_full'
+	source_root_path = r'D:\Daniel\Pictures\CALFIN Imagery\test_full'
+	overlays, fronts_lines, fronts_normals, processed_paths = step_2(raw_paths, mask_paths, reprocessing_path, source_root_path)
 	
 	
 """Endpoint determination and Shapefile output"""
@@ -225,7 +207,7 @@ def step_3(fronts_lines, processed_paths, reprocessing_path, source_root_path):
 	
 	return median_start_point, median_end_point
 
-if '3' in steps:
+if __name__ == '__main__' and '3' in steps:
 	#For testing - performs step 3 with default parameters.
 	median_start_point, median_end_point = step_3(fronts_lines)
 	
@@ -315,7 +297,7 @@ def step_4(overlays, processed_paths, output_path, name):
 	make_video(overlays, processed_paths, file_path, fps=1.0)
 	return yearly_bins, monthly_bins
 
-if '4' in steps:
+if __name__ == '__main__' and '4' in steps:
 	#For testing - performs step 4 with default parameters.
 	output_path = '.'
 	name = "Upernavik-NE"
@@ -347,7 +329,7 @@ def load_domain(domain):
 	yearly_bins = data['yearly_bins']
 	monthly_bins = data['monthly_bins']
 
-if 'A' in steps:
+if __name__ == '__main__' and 'A' in steps:
 	#For testing - performs all steps with default parameters.
 	root_path = r'D:\Daniel\Pictures\CALFIN Imagery\landsat_preds'
 	output_path = r'D:\Daniel\Documents\Github\CALFIN Repo\postprocessing\videos'
@@ -370,7 +352,7 @@ if 'A' in steps:
 	np.savez_compressed('time-bins.npz', yearly_bins_all=yearly_bins_all, monthly_bins_all=monthly_bins_all)
 	#automatically save all images that don't have detections, and create masks
 
-if 'production' in steps:
+if __name__ == '__main__' and 'production' in steps:
 	preds_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds_core'
 	masks_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation'
 	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\production'
@@ -483,7 +465,7 @@ if 'production' in steps:
 	for domain, error_array in mean_errors.items():
 		print(domain, 'mean distance from front:', str(np.mean(error_array)) + 'm', 'median:', str(np.median(error_array)) + 'm')
 		
-if 'production' in steps:
+if __name__ == '__main__' and 'production' in steps:
 	preds_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds_core'
 	masks_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\all'
 	reprocessing_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\production'
@@ -578,7 +560,7 @@ if 'production' in steps:
 		error_area = np.sum(intersection)
 		mean_error_per_unit = error_area / line_length
 		
-		x_scale = resolution_original[0] / resolution[0]
+		x_scale = resolution_original[0] / resolutioxn[0]
 		y_scale = resolution_original[1] / resolution[1]
 		norm_scale = np.sqrt(x_scale * x_scale + y_scale * y_scale)
 		landsat_resolution = 30

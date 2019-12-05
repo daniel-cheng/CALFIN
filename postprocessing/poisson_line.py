@@ -13,7 +13,7 @@ from redistribute_points import redistribute_points
 from skimage.morphology import skeletonize
 import meshcut
 from scipy import ndimage
-from ordered_line_from_unordered_points import ordered_line_from_unordered_points, ordered_line_from_unordered_points_tree
+from ordered_line_from_unordered_points import ordered_line_from_unordered_points_tree
 from PIL import Image
 from cv2 import VideoWriter, VideoWriter_fourcc, imread, resize
 from collections import defaultdict

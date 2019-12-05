@@ -14,6 +14,10 @@ raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_raw
 temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_temp"
 dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_processed"
 
+raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_raw"
+temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_temp"
+dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_processed" 
+
 for base_name in os.listdir(raw_path):		
 	raw_path = os.path.join(temp_path, base_name)
 	hdr_path = os.path.join(temp_path, base_name[0:-4] + '_hdr.png')
@@ -28,9 +32,11 @@ for base_name in os.listdir(raw_path):
 	hdr_max = hdr_img.max()
 	sh_max = sh_img.max()
 	print(raw_max, hdr_max, sh_max, raw_img.dtype)
-	if (raw_img.dtype == np.uint8):
+	if (raw_img.dtype != np.uint16):
 		raw_img = np.round(raw_img / raw_max * 65535.0).astype(np.uint16) #np.uint16 [0, 65535]
-	if (sh_img.dtype == np.uint8):
+	if (hdr_img.dtype != np.uint16):
+		hdr_img = np.round(hdr_img / hdr_max * 65535.0).astype(np.uint16) #np.uint16 [0, 65535]
+	if (sh_img.dtype != np.uint16):
 		sh_img = np.round(sh_img / sh_max * 65535.0).astype(np.uint16) #np.uint16 [0, 65535]
 #	if (mask_max != 0.0):
 #		mask_uint8 = np.floor(mask_f64 / mask_max * 255.0).astype(np.uint8) #np.uint8 [0, 255]
