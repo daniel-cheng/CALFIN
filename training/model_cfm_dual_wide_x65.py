@@ -353,7 +353,7 @@ def Deeplabv3(weights='pascal_voc', input_tensor=None, input_shape=(512, 512, 3)
 			middle_block_rate = 1
 			exit_block_rates = (2, 1)
 			multi_grid = (1, 2, 4)
-			atrous_rates = (1, 2, 3, 4, 5)
+			atrous_rates = (1, 2, 3, 4, 5) #TODO: 1 is the same as branch0 , CHANGE!
 #			atrous_rates = (2, 6, 12, 18)
 #			atrous_rates = (6, 12, 18)
 

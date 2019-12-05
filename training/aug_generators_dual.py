@@ -233,12 +233,12 @@ def create_unaugmented_data_patches_from_rgb_image(img, mask, window_shape=(512,
 	img_reshaped = img_pre[:,:,:,:]
 	
 	if mask is None:
-		mask_reshaped = None
+		return img_reshaped
 	else:
 		mask_patches = extract_rgb_patches(mask.astype('float32'), window_shape, stride)
 		mask_reshaped = mask_patches[:,:,:,0:mask_channels]
 	
-	return img_reshaped, mask_reshaped
+		return img_reshaped, mask_reshaped
 
 def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_stride=64, steps_per_epoch=8000):
 	id_str = str(img_size) + '_' + str(patch_size) + '_' + str(patch_stride)

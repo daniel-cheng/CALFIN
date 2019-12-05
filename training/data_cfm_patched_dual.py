@@ -61,9 +61,6 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 	imgs = None
 	imgs_mask = None
 	i = 0
-	augs_pad = aug_pad(img_size=full_size)
-	augs_resize_img = aug_resize(img_size=full_size, interpolation=1)
-	augs_resize_mask = aug_resize(img_size=full_size, interpolation=0)
 	thickness = np.floor(3.0 / 224.0 * img_size).astype(int)
 	print('Front thickness: ', thickness)
 	
@@ -73,22 +70,8 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 	for image_path in images:
 		image_name = image_path.split(os.path.sep)[-1]
 		image_name_base = image_name.split('.')[0]
-		image_name_r = image_name_base + '_r.png'
-		image_name_g = image_name_base + '_g.png'
-		image_name_b = image_name_base + '_b.png'
-		image_edge_name = image_name_base + '_edge.png'
 		image_mask_name = image_name_base + '_mask.png'
-
-		#For now, skip images with scan line error.
-		image_name_parts = image_name.split('_')
-		if len(image_name_parts) > 2:
-			satellite = image_name_parts[1]
-			date = parse(image_name_parts[3])
-			date_cutoff = parse('2003-05-31')
-			#if satellite == 'LE07' and date > date_cutoff:
-			#	print('skipping...')
-			#	continue
-
+				
 		img_3_uint16 = imread(os.path.join(input_path, image_name)) #np.uint16 [0, 65535]
 		mask_uint16 = imread(os.path.join(input_path, image_mask_name), as_gray=True) #np.uint16 [0, 65535]
 		img_3_f64 = resize(img_3_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
@@ -170,6 +153,57 @@ def create_data_from_directory(input_path, output_path, full_size, img_size, str
 		i += 1
 		print('Done {0}: {1}/{2} images'.format(image_name, i, total))
 	return imgs, imgs_mask
+
+def create_test_data_from_directory(input_path, output_path, full_size, img_size, stride, prefix='*', return_images=False):
+	keep_aspect_ratio = False
+	images = glob.glob(input_path + '/' + prefix + '[0-9].png')
+	total = len(images)
+	imgs = None
+	imgs_mask = None
+	i = 0
+	thickness = np.floor(3.0 / 224.0 * img_size).astype(int)
+	print('Front thickness: ', thickness)
+	
+	print('-'*30)
+	print('Creating images...')
+	print('-'*30)
+	for image_path in images:
+		image_name = image_path.split(os.path.sep)[-1]
+		image_name_base = image_name.split('.')[0]
+		
+		img_3_uint16 = imread(os.path.join(input_path, image_name)) #np.uint16 [0, 65535]
+		img_3_f64 = resize(img_3_uint16, (full_size, full_size), preserve_range=True)  #np.float64 [0.0, 65535.0]
+		
+		#Convert greyscale to RGB greyscale
+		img_max = img_3_f64.max()
+		img_min = img_3_f64.min()
+		img_range = img_max - img_min
+		if (img_max != 0.0 and img_range > 255.0):
+			img_3_uint8 = np.round(img_3_f64 / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
+		else:
+			img_3_uint8 = img_3_f64.astype(np.uint8)
+		
+		#If image is within bounds, save it.
+		if img_3_f64.shape[0] >= full_size and img_3_f64.shape[1] >= full_size:
+			#Pad image if needed (Useless right now)
+			img_final_f32 = img_3_uint8.astype(np.float32) #np.float32 [0.0, 255.0]
+			
+			patches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, window_shape=(img_size, img_size, 3), stride=stride)
+			
+			img_final_uint16 = img_final_f32.astype(np.uint16)
+			numpngw.write_png(os.path.join(output_path, image_name), img_final_uint16)
+			
+			if return_images:
+				if (imgs is not None):
+					imgs = np.concatenate((imgs, patches))
+					if (imgs.shape[0] != imgs_mask.shape[0]):
+						raise ValueError()
+				else:
+					imgs = patches
+
+		i += 1
+		print('Done {0}: {1}/{2} images'.format(image_name, i, total))
+	return imgs
 
 if __name__ == '__main__':
 	full_size = 256
