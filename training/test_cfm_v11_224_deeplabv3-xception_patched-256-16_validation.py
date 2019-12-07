@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from keras import backend as K
+from collections import defaultdict
 
-import sys, os, cv2, glob, shutil
+import sys, os, cv2, glob, shutil, gdal
 sys.path.insert(1, 'keras-deeplab-v3-plus')
 sys.path.insert(2, '../postprocessing')
 from model_cfm_dual_wide_x65 import Deeplabv3
@@ -116,15 +117,16 @@ def predict(model, img_3_uint8, mask_uint8, fjord_boundary, pred_norm_image, ful
 	return raw_image_final_f32, pred_image_final_f32, mask_final_f32, fjord_boundary_final_f32
 
 
-def plot_validation_results(image_name_base, raw_image, pred_image, polyline_image, empty_image, distances, mask_image, index, dest_path, saving, scaling, edge_iou, fjord_boundary_image):
+def plot_validation_results(image_name_base, raw_image, original_raw, pred_image, polyline_image, empty_image, distances_meters, mask_image, index, dest_path, saving, scaling, edge_iou, fjord_boundary_image):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
 	#Set figure size for 1600x900 resolution, tight layout
 	plt.rcParams["figure.figsize"] = (16,9)
 	
 	#Initialize plots
 	hist_bins = 20
-	f, axarr = plt.subplots(2, 3, num=index + 1)
+	f, axarr = plt.subplots(2, 3, num=index)
 	f.suptitle(image_name_base, fontsize=18, weight='bold')
+	original_raw_gray = np.stack((original_raw[:,:,0], original_raw[:,:,0], original_raw[:,:,0]), axis=-1)
 	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
 	
 	#Create the color key for each subplots' legends	
@@ -138,7 +140,7 @@ def plot_validation_results(image_name_base, raw_image, pred_image, polyline_ima
 					     Line2D([0], [0], color='#00ff00', lw=4)]
 	
 	#Begin plotting the 2x3 validation results output
-	axarr[0,0].imshow(np.clip(raw_image_gray, 0.0, 1.0))
+	axarr[0,0].imshow(np.clip(original_raw_gray, 0.0, 1.0))
 	axarr[0,0].set_title(r'$\bf{a)}$ Raw Subset')
 	
 	axarr[0,1].imshow(np.clip(raw_image, 0.0, 1.0))
@@ -163,9 +165,8 @@ def plot_validation_results(image_name_base, raw_image, pred_image, polyline_ima
 	axarr[1,1].tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off', labelleft='off') # labels along the bottom edge are off
 	
 	# which = both major and minor ticks are affected
-	scaled_distances = distances * scaling
-	axarr[1,2].hist(scaled_distances, bins=hist_bins, range=[0.0, 20.0 * scaling])
-	axarr[1,2].set_xlabel('Distance to nearest point (mean=' + '{:.2f}m)'.format(mean_deviation * scaling))
+	axarr[1,2].hist(distances_meters, bins=hist_bins, range=[0.0, 20.0 * scaling])
+	axarr[1,2].set_xlabel('Distance to nearest point (mean=' + '{:.2f}m)'.format(np.mean(distances_meters)))
 	axarr[1,2].set_ylabel('Number of points')
 	axarr[1,2].set_title(r'$\bf{f)}$ Per-pixel Pairwise Error (meters)')
 	
@@ -180,18 +181,17 @@ def plot_validation_results(image_name_base, raw_image, pred_image, polyline_ima
 		plt.savefig(os.path.join(dest_path, image_name_base + '_validation.png'))
 
 
-def plot_histogram(distances, index, dest_path, saving, scaling):
+def plot_histogram(distances, name, dest_path, saving, scaling):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
 	#Initialize plots
 	hist_bins = 20
-	f, axarr = plt.subplots(1, 1, num=index + 1)
+	f, axarr = plt.subplots(1, 1, num=name)
 	f.suptitle('Validation Set: Per-point Distance from True Front', fontsize=16)
 	
-	scaled_distances = distances * scaling
-	axarr.hist(scaled_distances, bins=hist_bins, range=[0.0, 20.0 * scaling])
+	axarr.hist(distances, bins=hist_bins, range=[0.0, 20.0 * scaling])
 	axarr.set_xlabel('Distance to nearest point (meters)')
 	axarr.set_ylabel('Number of points')
-	plt.figtext(0.5, 0.01, r'Mean Distance = {:.2f}m'.format(np.mean(scaled_distances)), wrap=True, horizontalalignment='center', fontsize=14, weight='bold')
+	plt.figtext(0.5, 0.01, r'Mean Distance = {:.2f}m'.format(np.mean(distances)), wrap=True, horizontalalignment='center', fontsize=14, weight='bold')
 		
 	#Set figure size for 1600x900 resolution, tight layout
 	plt.rcParams["figure.figsize"] = (8,4.5)
@@ -203,10 +203,33 @@ def plot_histogram(distances, index, dest_path, saving, scaling):
 	
 	#Save figure
 	if saving:
-		plt.savefig(os.path.join(dest_path, 'validation_mean_deviations_intercomp.png'))
+		plt.savefig(os.path.join(dest_path, name + '.png'))
+		
+
+def plot_scatter(data, name, dest_path, saving):
+	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
+	#Initialize plots
+	f, axarr = plt.subplots(1, 1, num=name)
+	f.suptitle('Validation Set: Per-point Distance from True Front', fontsize=16)
+	
+	axarr.scatter(data[:,0], data[:,1])
+	axarr.set_xlabel('Resolution (meters per pixel)')
+	axarr.set_ylabel('Average Mean Distance')
+		
+	#Set figure size for 1600x900 resolution, tight layout
+	plt.rcParams["figure.figsize"] = (8,4.5)
+	plt.subplots_adjust(top = 0.90, bottom = 0.15, right = 0.90, left = 0.1, hspace = 0.25, wspace = 0.25)
+	
+	#Refresh plot if necessary
+	f.canvas.draw()
+	f.canvas.flush_events()
+	
+	#Save figure
+	if saving:
+		plt.savefig(os.path.join(dest_path, name + '.png'))
 
 
-def removeSmallComponents(image:np.ndarray):
+def remove_small_components(image:np.ndarray):
 	image = image.astype('uint8')
 	#find all your connected components (white blobs in your image)
 	nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
@@ -216,18 +239,27 @@ def removeSmallComponents(image:np.ndarray):
 	#print(sizes, ordering)
 	
 	min_size_floor = output.size * 0.0001
-	min_size = sizes[ordering[1]] * 0.25
+	if len(ordering) > 1:
+		min_size = sizes[ordering[1]] * 0.5
 	# print(min_size)
 	#your answer image
 	largeComponents = np.zeros((output.shape))
 	#for every component in the image, you keep it only if it's above min_size
 	#Skip first, since it's the background color
+	bounding_boxes = [[0, 0, image.shape[0], image.shape[1]]]
 	for i in range(1, len(sizes)):
 		# print(sizes, ordering[i])
 		if sizes[ordering[i]] >= min_size_floor and sizes[ordering[i]] >= min_size:
 			mask_indices = output == ordering[i]
+			x, y = np.nonzero(mask_indices)
+			min_x = min(x)
+			delta_x = max(x) - min_x
+			min_y = min(y)
+			delta_y = max(y) - min_y
+			bounding_boxes.append([min_x, min_y, delta_x, delta_y])
 			largeComponents[mask_indices] = image[mask_indices]
-	return largeComponents.astype(np.float32)
+#			bounding_boxes = 
+	return largeComponents.astype(np.float32), bounding_boxes
 
 
 def mask_fjord_boundary(fjord_boundary_final_f32, kernel, iterations, raw_image_gray_uint8, pred_image_gray_uint8, mask=True):
@@ -243,8 +275,10 @@ def mask_fjord_boundary(fjord_boundary_final_f32, kernel, iterations, raw_image_
 		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
 		if not results_polyline is None:
 			polyline_image = (results_polyline[0] / 255.0)
+			bounding_boxes = [[0, 0, full_size, full_size]]
 		else:
 			polyline_image = np.zeros((full_size, full_size, 3))
+			bounding_boxes = [[0, 0, full_size, full_size]]
 		
 		#Determine number of masked pixels
 		x1, y2 = np.nonzero(polyline_image[:,:,0])
@@ -252,21 +286,21 @@ def mask_fjord_boundary(fjord_boundary_final_f32, kernel, iterations, raw_image_
 	else:
 		results_polyline = error_analysis.extract_front_indicators(raw_image_gray_uint8, pred_image_gray_uint8, 0, [256, 256])
 		
-		
 		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
 		if not results_polyline is None:
 			polyline_image = (results_polyline[0] / 255.0)
 			polyline_image[:,:,0] *= fjord_boundary_eroded_f32.astype(np.uint8)
-			polyline_image[:,:,0] = removeSmallComponents(polyline_image[:,:,0])
+			polyline_image[:,:,0], bounding_boxes = remove_small_components(polyline_image[:,:,0])
 		else:
 			polyline_image = np.zeros((full_size, full_size, 3))
+			bounding_boxes = [[0, 0, full_size, full_size]]
 		
 		#Determine number of masked pixels
 		x1, y2 = np.nonzero(polyline_image[:,:,0])
 		num_masked_pixels = x1.shape[0]
-	return num_masked_pixels, polyline_image, fjord_boundary_eroded_f32
+	return num_masked_pixels, polyline_image, fjord_boundary_eroded_f32, bounding_boxes
 
-def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, kernel):
+def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, kernel, recursion=True):
 	""" Perform optimiation on fjord boundaries.
 		Continuously erode fjord boundary mask until fjord edges are masked.
 		This is detected by looking for large increases in pixels being masked,
@@ -300,9 +334,27 @@ def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, kernel):
 	results_masking = mask_fjord_boundary(fjord_boundary_final_f32, kernel, maximal_erosions, raw_gray_uint8, pred_gray_uint8, mask=False)
 	polyline_image = results_masking[1]
 	fjord_boundary_eroded = results_masking[2]
+	bounding_boxes = results_masking[3]
 	
-	return polyline_image, fjord_boundary_eroded
+	return polyline_image, fjord_boundary_eroded, bounding_boxes
 
+def mask_bounding_box(bounding_boxes, image):
+	bounding_box = bounding_boxes[1]
+	sub_x1 = max(bounding_box[0] - 8, 0)
+	sub_x2 = min(sub_x1 + bounding_box[2] + 8, image.shape[0])
+	sub_y1 = max(bounding_box[1] - 8, 0)
+	sub_y2 = min(sub_y1 + bounding_box[3] + 8, image.shape[1])
+	
+	mask = np.zeros((image.shape[0], image.shape[1]))
+	mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
+	
+	masked_image = None
+	if len(image.shape) > 2:
+		masked_image = image * np.stack((mask, mask, mask), axis=-1)
+	else:
+		masked_image = image * mask
+	
+	return masked_image
 
 def compile_model():
 	"""Compile the CALFIN Neural Network model and loads pretrained weights."""
@@ -344,6 +396,7 @@ if __name__ == '__main__':
 		results = []
 		validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation\*B[0-9].png")
 		fjord_boundaries_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries"
+		tif_source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\CalvingFronts\tif"
 		dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\validation"
 		save_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds"
 		total = len(validation_files)
@@ -351,11 +404,27 @@ if __name__ == '__main__':
 		imgs_mask = None
 		i = 0
 		return_images = True
-		mean_deviations = np.array([])
+		mean_deviations_pixels = np.array([])
+		mean_deviations_meters = np.array([])
 		empty_image = np.zeros((full_size, full_size))
-		validation_distances = np.array([])
+		validation_distances_pixels = np.array([])
+		validation_distances_meters = np.array([])
 		validation_ious = np.array([])
 		scaling = 96.3 / 1.97
+		domain_scalings = dict()
+		domain_mean_deviations_pixels = defaultdict(lambda: np.array([]))
+		domain_mean_deviations_meters = defaultdict(lambda: np.array([]))
+		domain_validation_distances_pixels = defaultdict(lambda: np.array([]))
+		domain_validation_distances_meters = defaultdict(lambda: np.array([]))
+		domain_validation_ious = defaultdict(lambda: np.array([]))
+		domain_validation_skips = defaultdict(lambda: np.array([]))
+		domain_validation_total = defaultdict(lambda: np.array([]))
+		resolution_deviation_array = np.zeros((0,2))
+		resolution_iou_array = np.zeros((0,2))
+		no_detection_skip_count = 0
+		confidence_skip_count = 0
+		front_count = 0
+		image_skip_count = 0
 		
 		#Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
 		#and ensure confident predictions. To normalize this when overlaying patches back together, 
@@ -374,17 +443,23 @@ if __name__ == '__main__':
 		#Begin processing validation images
 		for i in range(0, len(validation_files)):
 #		for i in range(110,112):
+#		for i in range(147, 152):
 			image_path = validation_files[i]
 			image_dir = os.path.dirname(image_path) 
 			image_name = os.path.basename(image_path)
 			image_name_base = os.path.splitext(image_name)[0]
+			image_name_base_parts = image_name_base.split('_')
+			domain = image_name_base_parts[0]
+			date = image_name_base_parts[3]
+			year = date.split('-')[0]
+			
+			#initialize paths
 			mask_path = os.path.join(image_dir, image_name_base + '_mask.png')
+			tif_path = os.path.join(tif_source_path, domain, year, image_name_base + '.tif')
 			raw_save_path = os.path.join(save_path, image_name_base + '_raw.png')
 			mask_save_path = os.path.join(save_path, image_name_base + '_mask.png')
 			pred_save_path = os.path.join(save_path, image_name_base + '_pred.png')
-			domain = image_name_base.split('_')[0]
 			fjord_boundary_path = os.path.join(fjord_boundaries_path, domain + "_fjord_boundaries.png")
-			
 			
 			#Read in raw/mask image pair
 			img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
@@ -392,6 +467,25 @@ if __name__ == '__main__':
 			fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
 			if img_3_uint8.shape[2] != 3:
 				img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+			
+			#Retrieve pixel to meter scaling ratiio
+#			if domain not in domain_scalings:
+			geotiff = gdal.Open(tif_path)
+	
+			#Get bounds
+			geoTransform = geotiff.GetGeoTransform()
+			xMin = geoTransform[0]
+			yMax = geoTransform[3]
+			xMax = xMin + geoTransform[1] * geotiff.RasterXSize
+			yMin = yMax + geoTransform[5] * geotiff.RasterYSize
+			
+			#Transform vertices
+			top_left = np.array([xMin, yMax])
+			scale = np.array([xMax - xMin, yMin - yMax])
+			meters_per_native_pixel = (np.abs(geoTransform[1]) + np.abs(geoTransform[5])) / 2
+			resolution_1024 = (img_3_uint8.shape[0] + img_3_uint8.shape[1])/2
+			resolution_native = (geotiff.RasterXSize + geotiff.RasterYSize) / 2
+			meters_per_1024_pixel = resolution_native / resolution_1024 * meters_per_native_pixel
 			
 			#Predict front using compiled model and retrieve results
 			result = predict(model, img_3_uint8, mask_uint8, fjord_boundary, pred_norm_image, full_size, img_size, stride)
@@ -401,6 +495,10 @@ if __name__ == '__main__':
 			fjord_boundary_final_f32 = result[3]
 			overlay = raw_image*0.75 + pred_image *0.25
 			
+			#recalculate scaling
+			resolution_256 = (raw_image.shape[0] + raw_image.shape[1])/2
+			meters_per_256_pixel = resolution_1024 / resolution_256  * meters_per_1024_pixel
+				
 			#Save out images to training/landsat_preds
 			shutil.copy2(image_path, raw_save_path)
 			shutil.copy2(mask_path, mask_save_path)
@@ -415,44 +513,213 @@ if __name__ == '__main__':
 			results_pred = mask_polyline(raw_image, pred_image[:,:,0], fjord_boundary_final_f32, kernel)
 			results_mask = mask_polyline(raw_image, mask_image, fjord_boundary_final_f32, kernel)
 			polyline_image = results_pred[0]
+			bounding_boxes = results_pred[2]
 			mask_final_f32 = results_mask[0][:,:,0]
 			fjord_boundary_eroded_f32 = results_mask[1]
 			
 			#Calculate and save mean deviation, distances, and IoU metrics based on new masked polyline
 			mean_deviation, distances = calculate_mean_deviation(polyline_image[:,:,0], mask_final_f32)
-			mean_deviations = np.append(mean_deviations, mean_deviation)
-			validation_distances = np.append(validation_distances, distances)
-			print("mean_deviation:", mean_deviation)
+			print("mean_deviation (pixels):", mean_deviation, "mean_deviation (meters):", mean_deviation * meters_per_256_pixel)
 			
 			#Dilate masks for easier visualization and IoU metric calculation.
-			thickness = 3
-			kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (thickness, thickness))
-			polyline_image = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
-			mask_final_f32 = cv2.dilate(mask_final_f32.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+			polyline_image_dilated = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+			mask_final_dilated_f32 = cv2.dilate(mask_final_f32.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
 			
 			#Calculate and save IoU metric
-			pred_patch_4d = np.expand_dims(polyline_image[:,:,0], axis=0)
-			mask_patch_4d = np.expand_dims(mask_final_f32, axis=0)
+			pred_patch_4d = np.expand_dims(polyline_image_dilated[:,:,0], axis=0)
+			mask_patch_4d = np.expand_dims(mask_final_dilated_f32, axis=0)
 			edge_iou_score = calculate_edge_iou(mask_patch_4d, pred_patch_4d)
-			validation_ious = np.append(validation_ious, edge_iou_score)
 			print("edge_iou_score:", edge_iou_score)
 			
-			#Plot results
-			if plotting == True:
-				plot_validation_results(image_name_base, raw_image, pred_image, polyline_image, empty_image, distances, mask_final_f32, i, dest_path, saving, scaling, edge_iou_score, fjord_boundary_eroded_f32)
+			original_raw = raw_image
 			
+			#For each calving front, subset the image AGAIN and predict. This helps accuracy for
+			#inputs with large scaling/downsampling ratios
+			box_counter = 0
+			
+			found_front = False
+			if len(bounding_boxes) > 1:
+				for bounding_box in bounding_boxes[1:]:
+					box_counter += 1
+					fractional_bounding_box = np.array(bounding_box) / full_size
+	#				if fractional_bounding_box[2] < 0.66 and fractional_bounding_box[3] < 0.66:
+					#Try to get nearest square subset with padding equal to size of initial front
+					print(bounding_box, fractional_bounding_box)
+					sub_width = fractional_bounding_box[2] * img_3_uint8.shape[0]
+					sub_height = fractional_bounding_box[3] * img_3_uint8.shape[1]
+					sub_length = max(sub_width, sub_height)
+					sub_x1 = fractional_bounding_box[0] * img_3_uint8.shape[0]
+					sub_x2 = sub_x1 + sub_width
+					sub_y1 = fractional_bounding_box[1] * img_3_uint8.shape[1]
+					sub_y2 = sub_y1 + sub_height
+					
+					sub_center_x = (sub_x1 + sub_x2) / 2
+					sub_center_y = (sub_y1 + sub_y2) / 2
+					
+					#Ensure subset will be within image bounds
+					sub_padding_ratio = 2.5
+					half_sub_padding_ratio = sub_padding_ratio / 2
+					sub_padding = sub_length * half_sub_padding_ratio
+	#					sub_padding = sub_length / 2 + 128
+					
+					#Ensure subset is at least of dimensions (full_size, full_size) and at most the size of the raw image
+					if sub_padding < full_size / 2:
+						sub_padding = full_size / 2
+					elif sub_padding * 2 > img_3_uint8.shape[0] or sub_padding * 2 > img_3_uint8.shape[1]:
+						sub_padding = np.floor(min(img_3_uint8.shape[0], img_3_uint8.shape[1]) / 2)
+						
+					if sub_center_x + sub_padding > img_3_uint8.shape[0]:
+						sub_center_x = img_3_uint8.shape[0] - sub_padding
+					elif sub_center_x - sub_padding < 0:
+						sub_center_x = 0 + sub_padding
+					if sub_center_y + sub_padding > img_3_uint8.shape[1]:
+						sub_center_y = img_3_uint8.shape[1] - sub_padding
+					elif sub_center_y - sub_padding < 0:
+						sub_center_y = 0 + sub_padding
+						
+					#calculate new subset x/y bounds, which are guarenteed to be of sufficient size and
+					#to be within the bounds of the image
+					sub_x1 = int(sub_center_x - sub_padding)
+					sub_x2 = int(sub_center_x + sub_padding)
+					sub_y1 = int(sub_center_y - sub_padding)
+					sub_y2 = int(sub_center_y + sub_padding)
+					
+					#Perform subsetting
+					resolution_subset = sub_padding * 2 #not simplified for clarity - just find average dimensions	
+					meters_per_subset_pixel = meters_per_1024_pixel
+					img_3_subset_uint8 = img_3_uint8[sub_x1:sub_x2, sub_y1:sub_y2, :]
+					mask_subset_uint8 = mask_uint8[sub_x1:sub_x2, sub_y1:sub_y2]
+					fjord_subset_boundary = fjord_boundary[sub_x1:sub_x2, sub_y1:sub_y2]
+					
+					#Repredict
+					result = predict(model, img_3_subset_uint8, mask_subset_uint8, fjord_subset_boundary, pred_norm_image, full_size, img_size, stride)
+					raw_image = result[0]
+					pred_image = result[1]
+					mask_image = result[2]
+					fjord_boundary_final_f32 = result[3]
+					overlay = raw_image*0.75 + pred_image *0.25
+					
+					edge_confidence_strength_indices = np.nan_to_num(pred_image[:,:,0]) > 0.05
+					edge_confidence_strength = np.mean(np.abs(0.5 - np.nan_to_num(pred_image[:,:,0][edge_confidence_strength_indices])))
+					mask_confidence_strength_indices = np.nan_to_num(pred_image[:,:,1]) > 0.05
+					mask_confidence_strength = np.mean(np.abs(0.5 - np.nan_to_num(pred_image[:,:,1][mask_confidence_strength_indices])))
+					
+					print("edge_confidence_strength", edge_confidence_strength, "mask_confidence_strength", mask_confidence_strength)
+	#				if mask_confidence_strength * 2 < 0.8 or edge_confidence_strength * 2 < 0.6:
+	#				if mask_confidence_strength * 2 < 0.7 or edge_confidence_strength * 2 < 0.6:
+					if mask_confidence_strength * 2 < 0.65 or edge_confidence_strength * 2 < 0.55:
+						print("not confident, skipping")
+						confidence_skip_count += 1
+						continue
+	#edge_confidence_strength 0.36093274 mask_confidence_strength 0.48205513
+	#edge_confidence_strength 0.2558244 mask_confidence_strength 0.38819787
+					#recalculate scaling
+					meters_per_subset_pixel = resolution_subset / resolution_256  * meters_per_1024_pixel
+					if domain not in domain_scalings:
+						domain_scalings[domain] = meters_per_subset_pixel
+					
+					#Redo masking
+					results_pred = mask_polyline(raw_image, pred_image[:,:,0], fjord_boundary_final_f32, kernel)
+					results_mask = mask_polyline(raw_image, mask_image, fjord_boundary_final_f32, kernel)
+					polyline_image = results_pred[0]
+					bounding_boxes_pred = results_pred[2]
+					mask_final_f32 = results_mask[0][:,:,0]
+					bounding_boxes_mask = results_mask[2]
+					fjord_boundary_eroded_f32 = results_mask[1]
+	#				polyline_image[:,:,0], bounding_boxes = remove_small_components(polyline_image[:,:,0])
+	#				mask_final_f32, bounding_boxes = remove_small_components(mask_final_f32)
+		
+					#mask out largest front
+					if len(bounding_boxes_pred) < 2:
+						print("no front detected, skipping")
+						no_detection_skip_count += 1
+						continue
+					polyline_image = mask_bounding_box(bounding_boxes_pred, polyline_image)
+					mask_final_f32 = mask_bounding_box(bounding_boxes_pred, mask_final_f32)
+					
+					#Save out images to training/landsat_preds
+#					shutil.copy2(image_path, raw_save_path)
+#					shutil.copy2(mask_path, mask_save_path)
+#					imsave(pred_save_path, pred_image)
+			
+	#					#If not performing subsetting, set scaling equal to default 256 ratio
+	#					if domain not in domain_scalings:
+	#						domain_scalings[domain] = meters_per_256_pixel
+						
+					#Calculate and save mean deviation, distances, and IoU metrics based on new masked polyline
+					mean_deviation_subset, distances = calculate_mean_deviation(polyline_image[:,:,0], mask_final_f32)
+					mean_deviation_subset_meters = mean_deviation_subset * meters_per_subset_pixel
+					mean_deviations_pixels = np.append(mean_deviations_pixels, mean_deviation_subset)
+					mean_deviations_meters = np.append(mean_deviations_meters, mean_deviation_subset_meters)
+					validation_distances_pixels = np.append(validation_distances_pixels, distances)
+					validation_distances_meters = np.append(validation_distances_meters, distances * meters_per_subset_pixel)
+					domain_mean_deviations_pixels[domain] = np.append(domain_mean_deviations_pixels[domain], mean_deviation_subset)
+					domain_mean_deviations_meters[domain] = np.append(domain_mean_deviations_meters[domain], mean_deviation_subset_meters)
+					domain_validation_distances_pixels[domain] = np.append(domain_validation_distances_pixels[domain], distances)
+					domain_validation_distances_meters[domain] = np.append(domain_validation_distances_meters[domain], distances * meters_per_subset_pixel)
+					resolution_deviation_array = np.concatenate((resolution_deviation_array, np.array([[meters_per_subset_pixel, mean_deviation_subset_meters]])))
+					print("mean_deviation_subset (pixels):", mean_deviation_subset, "mean_deviation_subset (meters):", mean_deviation_subset * meters_per_subset_pixel)
+					print("mean_deviation_difference (pixels) (- = good):", mean_deviation_subset - mean_deviation, "mean_deviation_difference (meters) (- = good):", mean_deviation_subset * meters_per_subset_pixel - mean_deviation * meters_per_256_pixel)
+					
+					#Dilate masks for easier visualization and IoU metric calculation.
+					polyline_image_dilated = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+					mask_final_dilated_f32 = cv2.dilate(mask_final_f32.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+					
+					#Calculate and save IoU metric
+					pred_patch_4d = np.expand_dims(polyline_image_dilated[:,:,0], axis=0)
+					mask_patch_4d = np.expand_dims(mask_final_dilated_f32, axis=0)
+					edge_iou_score_subset = calculate_edge_iou(mask_patch_4d, pred_patch_4d)
+					validation_ious = np.append(validation_ious, edge_iou_score)
+					domain_validation_ious[domain] = np.append(domain_validation_ious[domain], edge_iou_score)
+					resolution_iou_array = np.concatenate((resolution_iou_array, np.array([[meters_per_subset_pixel, edge_iou_score]])))
+					print("edge_iou_score_subset:", edge_iou_score_subset, "edge_iou_score change (+ = good):", edge_iou_score_subset - edge_iou_score)
+					
+					#Plot results
+					if plotting == True:
+						distance_meters = distances * meters_per_subset_pixel
+						plot_validation_results(image_name_base, raw_image, original_raw, pred_image, polyline_image_dilated, empty_image, distance_meters, mask_final_dilated_f32, str(i + 1) + '-'  + str(box_counter), dest_path, saving, scaling, edge_iou_score_subset, fjord_boundary_eroded_f32)
+						front_count += 1
+						found_front = True
+			if not found_front:
+				image_skip_count += 1
 			print('Done {0}: {1}/{2} images'.format(image_name, i + 1, total))
-#			break
-		mean_deviation_points = np.nanmean(validation_distances)
-		mean_deviation_images = np.nanmean(mean_deviations)
+#					break
+					
+		for domain in domain_mean_deviations_pixels.keys():
+			domain_scaling = domain_scalings[domain]
+			domain_mean_deviation_points_pixels = np.nanmean(domain_validation_distances_pixels[domain])
+			domain_mean_deviation_points_meters = np.nanmean(domain_validation_distances_meters[domain])
+			domain_mean_deviation_images_pixels = np.nanmean(domain_mean_deviations_pixels[domain])
+			domain_mean_deviation_images_meters = np.nanmean(domain_mean_deviations_meters[domain])
+			domain_mean_edge_iou_score = np.nanmean(domain_validation_ious[domain])
+			print(domain + " mean deviation (averaged over points): " + "{:.2f}".format(domain_mean_deviation_points_meters) + ' meters')
+			print(domain + " mean deviation (averaged over images): " + "{:.2f}".format(domain_mean_deviation_images_meters) + ' meters')
+			print(domain + " mean deviation (averaged over points): " + "{:.2f}".format(domain_mean_deviation_points_pixels) + ' pixels')
+			print(domain + " mean deviation (averaged over images): " + "{:.2f}".format(domain_mean_deviation_images_pixels) + ' pixels')
+			print(domain + " mean Jaccard index (Intersection over Union): " + "{:.4f}".format(domain_mean_edge_iou_score))
+			plot_histogram(domain_validation_distances_meters[domain], domain + "_mean_deviations_meters", dest_path, saving, domain_scaling)
+			
+		mean_deviation_points_pixels = np.nanmean(validation_distances_pixels)
+		mean_deviation_points_meters = np.nanmean(validation_distances_meters)
+		mean_deviation_images_pixels = np.nanmean(mean_deviations_pixels)
+		mean_deviation_images_meters = np.nanmean(mean_deviations_meters)
 		mean_edge_iou_score = np.nanmean(validation_ious)
-		print("mean deviation (averaged over points): " + "{:.2f}".format(mean_deviation_points * scaling) + ' meters')
-		print("mean deviation (averaged over images): " + "{:.2f}".format(mean_deviation_images * scaling) + ' meters')
-		print("mean deviation (averaged over points): " + "{:.2f}".format(mean_deviation_points) + ' pixels')
-		print("mean deviation (averaged over images): " + "{:.2f}".format(mean_deviation_images) + ' pixels')
+		print("mean deviation (averaged over points): " + "{:.2f}".format(mean_deviation_points_meters) + ' meters')
+		print("mean deviation (averaged over images): " + "{:.2f}".format(mean_deviation_images_meters) + ' meters')
+		print("mean deviation (averaged over points): " + "{:.2f}".format(mean_deviation_points_pixels) + ' pixels')
+		print("mean deviation (averaged over images): " + "{:.2f}".format(mean_deviation_images_pixels) + ' pixels')
 		print("mean Jaccard index (Intersection over Union): " + "{:.4f}".format(mean_edge_iou_score))
 		
+		
 		#Print histogram of all distance errors
-		plot_histogram(validation_distances, total, dest_path, saving, scaling)
+		plot_histogram(validation_distances_meters, "all_mean_deviations_meters", dest_path, saving, scaling)
+		
+		#Print scatterplot of resolution errors
+		plot_scatter(resolution_deviation_array, "Validation Resolution vs Deviations", dest_path, saving)
+		plot_scatter(resolution_iou_array, "Validation Resolution vs IoU", dest_path, saving)
 		
 		plt.show()
+		
+		print('image_skip_count:', image_skip_count, 'front skip count:', no_detection_skip_count + confidence_skip_count, 'no_detection_skip_count:', no_detection_skip_count, "confidence_skip_count:", confidence_skip_count)
+		print('total fronts:', front_count)
+		print('% images with fronts: ' + "{:.2f}".format((1 - image_skip_count / len(validation_files))* 100))
