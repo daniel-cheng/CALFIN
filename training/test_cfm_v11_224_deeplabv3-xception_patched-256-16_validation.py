@@ -126,8 +126,6 @@ def plot_validation_results(image_name_base, raw_image, original_raw, pred_image
 	hist_bins = 20
 	f, axarr = plt.subplots(2, 3, num=index)
 	f.suptitle(image_name_base, fontsize=18, weight='bold')
-	original_raw_gray = np.stack((original_raw[:,:,0], original_raw[:,:,0], original_raw[:,:,0]), axis=-1)
-	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
 	
 	#Create the color key for each subplots' legends	
 	preprocess_legend = [Line2D([0], [0], color='#ff0000', lw=4),
@@ -140,25 +138,31 @@ def plot_validation_results(image_name_base, raw_image, original_raw, pred_image
 					     Line2D([0], [0], color='#00ff00', lw=4)]
 	
 	#Begin plotting the 2x3 validation results output
+	original_raw_gray = np.stack((original_raw[:,:,0], original_raw[:,:,0], original_raw[:,:,0]), axis=-1)
+	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
 	axarr[0,0].imshow(np.clip(original_raw_gray, 0.0, 1.0))
 	axarr[0,0].set_title(r'$\bf{a)}$ Raw Subset')
 	
-	axarr[0,1].imshow(np.clip(raw_image, 0.0, 1.0))
+	raw_image = np.clip(raw_image, 0.0, 1.0)
+	axarr[0,1].imshow(raw_image)
 	axarr[0,1].set_title(r'$\bf{b)}$ Preprocessed Input')
 	axarr[0,1].legend(preprocess_legend, ['Raw', 'HDR', 'S/H'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=3)
 	axarr[0,1].axis('off')
 	
-	axarr[0,2].imshow(np.clip(pred_image, 0.0, 1.0))
+	pred_image = np.clip(pred_image, 0.0, 1.0)
+	axarr[0,2].imshow(pred_image)
 	axarr[0,2].set_title(r'$\bf{c)}$ NN Output')
 	axarr[0,2].legend(nn_legend, ['Land/Ice', 'Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=2)
 	axarr[0,2].axis('off')
 	
-	axarr[1,0].imshow(np.clip(np.stack((polyline_image[:,:,0], empty_image, empty_image), axis=-1) + raw_image_gray * 0.80, 0.0, 1.0))
+	extracted_front = np.clip(np.stack((polyline_image[:,:,0], empty_image, empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
+	axarr[1,0].imshow(extracted_front)
 	axarr[1,0].set_title(r'$\bf{d)}$ Extracted Front')
 	axarr[1,0].legend(front_legend, ['Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=1)
 	axarr[1,0].axis('off')
 	
-	axarr[1,1].imshow(np.clip(np.stack((polyline_image[:,:,0], mask_image, empty_image), axis=-1) + raw_image_gray * 0.80, 0.0, 1.0))
+	overlay = np.clip(np.stack((polyline_image[:,:,0], mask_image, empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
+	axarr[1,1].imshow(overlay)
 	axarr[1,1].set_title(r'$\bf{e)}$ NN vs Ground Truth Front')
 	axarr[1,1].set_xlabel('Jaccard Index: {:.4f}'.format(edge_iou))
 	axarr[1,1].legend(comparison_legend, ['NN', 'GT'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=3)
@@ -178,7 +182,14 @@ def plot_validation_results(image_name_base, raw_image, original_raw, pred_image
 	
 	#Save figure
 	if saving:
-		plt.savefig(os.path.join(dest_path, image_name_base + '_validation.png'))
+		plt.savefig(os.path.join(dest_path, image_name_base + '_' + index + '_validation.png'))
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_original_raw.png'), original_raw_gray)
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_subset_raw.png'), raw_image)
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_pred.png'), pred_image)
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_front_only.png'), polyline_image)
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_overlay_front.png'), extracted_front)
+		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_overlay_comparison.png'), overlay)
+		
 
 
 def plot_histogram(distances, name, dest_path, saving, scaling):
@@ -341,11 +352,11 @@ def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, kernel, recur
 def mask_bounding_box(bounding_boxes, image):
 	bounding_box = bounding_boxes[1]
 	sub_x1 = max(bounding_box[0] - 8, 0)
-	sub_x2 = min(sub_x1 + bounding_box[2] + 8, image.shape[0])
+	sub_x2 = min(bounding_box[0] + bounding_box[2] + 8, image.shape[0])
 	sub_y1 = max(bounding_box[1] - 8, 0)
-	sub_y2 = min(sub_y1 + bounding_box[3] + 8, image.shape[1])
+	sub_y2 = min(bounding_box[1] + bounding_box[3] + 8, image.shape[1])
 	
-	mask = np.zeros((image.shape[0], image.shape[1]))
+	mask = np.zeros((image.shape[0], image.shape[1])) 
 	mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
 	
 	masked_image = None
@@ -425,6 +436,8 @@ if __name__ == '__main__':
 		confidence_skip_count = 0
 		front_count = 0
 		image_skip_count = 0
+		mask_confidence_strength_threshold = 0.8
+		edge_confidence_strength_threshold = 0.6
 		
 		#Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
 		#and ensure confident predictions. To normalize this when overlaying patches back together, 
@@ -441,9 +454,9 @@ if __name__ == '__main__':
 				pred_norm_image[x_start:x_end, y_start:y_end, 0:2] += pred_norm_patch
 			
 		#Begin processing validation images
-		for i in range(0, len(validation_files)):
+#		for i in range(0, len(validation_files)):
 #		for i in range(110,112):
-#		for i in range(147, 152):
+		for i in range(22,23):
 			image_path = validation_files[i]
 			image_dir = os.path.dirname(image_path) 
 			image_name = os.path.basename(image_path)
@@ -533,6 +546,8 @@ if __name__ == '__main__':
 			
 			original_raw = raw_image
 			
+			plot_validation_results(image_name_base, raw_image, original_raw, pred_image, polyline_image_dilated, empty_image, mean_deviation * meters_per_256_pixel, mask_final_dilated_f32, str(i + 1) + '-0', dest_path, saving, scaling, edge_iou_score, fjord_boundary_eroded_f32)
+			
 			#For each calving front, subset the image AGAIN and predict. This helps accuracy for
 			#inputs with large scaling/downsampling ratios
 			box_counter = 0
@@ -604,10 +619,10 @@ if __name__ == '__main__':
 					mask_confidence_strength_indices = np.nan_to_num(pred_image[:,:,1]) > 0.05
 					mask_confidence_strength = np.mean(np.abs(0.5 - np.nan_to_num(pred_image[:,:,1][mask_confidence_strength_indices])))
 					
-					print("edge_confidence_strength", edge_confidence_strength, "mask_confidence_strength", mask_confidence_strength)
-	#				if mask_confidence_strength * 2 < 0.8 or edge_confidence_strength * 2 < 0.6:
+					print("edge_confidence_strength", edge_confidence_strength * 2, "mask_confidence_strength", mask_confidence_strength * 2)
+					if mask_confidence_strength * 2 < mask_confidence_strength_threshold or edge_confidence_strength * 2 < edge_confidence_strength_threshold:
 	#				if mask_confidence_strength * 2 < 0.7 or edge_confidence_strength * 2 < 0.6:
-					if mask_confidence_strength * 2 < 0.65 or edge_confidence_strength * 2 < 0.55:
+#					if mask_confidence_strength * 2 < 0.7 or edge_confidence_strength * 2 < 0.6:
 						print("not confident, skipping")
 						confidence_skip_count += 1
 						continue
@@ -720,6 +735,7 @@ if __name__ == '__main__':
 		
 		plt.show()
 		
+		print('mask_confidence_strength_threshold', mask_confidence_strength_threshold, 'edge_confidence_strength_threshold', edge_confidence_strength_threshold)
 		print('image_skip_count:', image_skip_count, 'front skip count:', no_detection_skip_count + confidence_skip_count, 'no_detection_skip_count:', no_detection_skip_count, "confidence_skip_count:", confidence_skip_count)
 		print('total fronts:', front_count)
-		print('% images with fronts: ' + "{:.2f}".format((1 - image_skip_count / len(validation_files))* 100))
+		print('% images with fronts: ' + "{:.2f}".format((1 - image_skip_count / len(validation_files))* 100), '(' + str(len(validation_files) - image_skip_count) + '/' + str(len(validation_files)) + ')')

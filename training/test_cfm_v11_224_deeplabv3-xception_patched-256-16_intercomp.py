@@ -279,9 +279,11 @@ def compile_model():
 
 
 if __name__ == '__main__':
-	initialized = True
-	if initialized == False:
-		model = compile_model()
+	#initialize once, run many times
+	try:
+	    model
+	except NameError:
+	    model = compile_model()
 	
 	processing = False
 	plotting = True
