@@ -75,7 +75,6 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #	nx.draw_networkx(kneighbors_graph_nx, pos=node_positions, with_labels=False, node_size = 15)
 #	plt.show()
 	
-	
 	mst = minimum_spanning_tree(distances)
 	
 	
