@@ -15,7 +15,7 @@ def plot_validation_results(settings, metrics):
 	empty_image = settings['empty_image']
 	scaling = settings['scaling']
 	saving = settings['saving']
-	dest_path = settings['dest_path']
+	dest_path_qa = settings['dest_path_qa']
 	image_settings = settings['image_settings']
 	
 	image_name_base = image_settings['image_name_base']
@@ -94,13 +94,13 @@ def plot_validation_results(settings, metrics):
 	
 	#Save figure
 	if saving:
-		plt.savefig(os.path.join(dest_path, image_name_base + '_' + index + '_validation.png'))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_original_raw.png'), (original_raw_gray * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
+		plt.savefig(os.path.join(dest_path_qa, image_name_base + '_' + index + '_validation.png'))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_original_raw.png'), (original_raw_gray * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
 
 
 def plot_histogram(distances, name, dest_path, saving, scaling):

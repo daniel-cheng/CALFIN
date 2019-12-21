@@ -7,12 +7,13 @@ Created on Sun Jun  9 18:06:26 2019
 
 import numpy as np
 import sys, cv2
-import error_analysis
+from error_analysis import extract_front_indicators
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
 from processing import predict, calculate_mean_deviation, calculate_edge_iou
 from plotting import plot_validation_results
+from mask_to_shp import mask_to_shp
 
 def remove_small_components(image:np.ndarray):
 	image = image.astype('uint8')
@@ -48,7 +49,7 @@ def remove_small_components(image:np.ndarray):
 	return largeComponents.astype(np.float32), bounding_boxes
 
 
-def mask_fjord_boundary(fjord_boundary_final_f32, iterations, raw_image_gray_uint8, pred_image_gray_uint8, settings, mask=True):
+def mask_fjord_boundary(fjord_boundary_final_f32, iterations, pred_image_gray_uint8, settings, mask=True):
 	""" Helper funcction for performing optimiation on fjord boundaries.
 		Erodes a single fjord boundary mask."""
 	kernel = settings['kernel']
@@ -58,7 +59,7 @@ def mask_fjord_boundary(fjord_boundary_final_f32, iterations, raw_image_gray_uin
 	
 	if mask:
 		masked_pred_uint8 = pred_image_gray_uint8 * fjord_boundary_eroded_f32.astype(np.uint8)
-		results_polyline = error_analysis.extract_front_indicators(raw_image_gray_uint8, masked_pred_uint8, 0, [256, 256])
+		results_polyline = extract_front_indicators(masked_pred_uint8)
 		
 		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
 		if not results_polyline is None:
@@ -72,7 +73,7 @@ def mask_fjord_boundary(fjord_boundary_final_f32, iterations, raw_image_gray_uin
 		x1, y2 = np.nonzero(polyline_image[:,:,0])
 		num_masked_pixels = x1.shape[0]
 	else:
-		results_polyline = error_analysis.extract_front_indicators(raw_image_gray_uint8, pred_image_gray_uint8, 0, [256, 256])
+		results_polyline = extract_front_indicators(pred_image_gray_uint8)
 		
 		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
 		if not results_polyline is None:
@@ -100,7 +101,7 @@ def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, settings):
 	raw_gray_uint8 = (raw_image[:,:,0] * 255.0).astype(np.uint8)
 	pred_gray_uint8 = (pred_image * 255.0).astype(np.uint8)
 	for j in range(iteration_limit):
-		results_masking = mask_fjord_boundary(fjord_boundary_final_f32, j, raw_gray_uint8, pred_gray_uint8, settings)
+		results_masking = mask_fjord_boundary(fjord_boundary_final_f32, j, pred_gray_uint8, settings)
 		num_masked_pixels = results_masking[0]
 		num_masked_pixels_array = np.append(num_masked_pixels_array, num_masked_pixels)
 		if j > 0:
@@ -119,7 +120,7 @@ def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, settings):
 		threshold = threshold / 2
 	
 	#Redo fjord masking with known maximal erosion number
-	results_masking = mask_fjord_boundary(fjord_boundary_final_f32, maximal_erosions, raw_gray_uint8, pred_gray_uint8, settings, mask=False)
+	results_masking = mask_fjord_boundary(fjord_boundary_final_f32, maximal_erosions, pred_gray_uint8, settings, mask=False)
 	polyline_image = results_masking[1]
 	fjord_boundary_eroded = results_masking[2]
 	bounding_boxes = results_masking[3]
@@ -237,8 +238,6 @@ def postprocess(i, validation_files, settings, metrics):
 	edge_iou_score = calculate_edge_iou(mask_patch_4d, pred_patch_4d)
 	print("edge_iou_score:  {:.2f}".format(edge_iou_score))
 	
-	image_settings['original_raw'] = raw_image
-	
 	#For each calving front, subset the image AGAIN and predict. This helps accuracy for inputs with large scaling/downsampling ratios
 	box_counter = 0	
 	found_front = False
@@ -250,6 +249,7 @@ def postprocess(i, validation_files, settings, metrics):
 	image_settings['fjord_boundary'] = fjord_boundary
 	image_settings['meters_per_1024_pixel'] = meters_per_1024_pixel
 	image_settings['meters_per_256_pixel'] = meters_per_256_pixel
+	image_settings['resolution_1024'] = resolution_1024
 	image_settings['resolution_256'] = resolution_256
 	image_settings['mean_deviation'] = mean_deviation
 	image_settings['edge_iou_score'] = edge_iou_score
@@ -268,6 +268,18 @@ def postprocess(i, validation_files, settings, metrics):
 		#If we still haven't found a front in the default, we "skip" the image and make a note of it.
 		if not found_front:
 			metrics['image_skip_count'] += 1
+		
+	#Calculate confusion matrix (TP/TN/FP/FN)
+	if not found_front: #If front is not found,
+		if image_name_base in settings['negative_image_names']: #and there is no front, it's a true negative
+			metrics['true_negatives'] += 1
+		else:  #and there is a front, it's a false negative
+			metrics['false_negatives'] += 1
+	else: #If front is found,
+		if image_name_base in settings['negative_image_names']: #and there is no front, it's a false positive
+			metrics['false_positive'] += 1 
+		else:  #and there is one, it's a true positive
+			metrics['true_positives'] += 1
 	
 	print('Done {0}: {1}/{2} images'.format(image_name_base, i + 1, settings['total']))
 	return metrics
@@ -284,6 +296,7 @@ def reprocess(settings, image_settings, metrics):
 	domain_scalings = settings['domain_scalings']
 	plotting = settings['plotting']
 	
+	#image_settings are assigned per front in the image
 	domain = image_settings['domain']
 	box_counter = image_settings['box_counter']
 	bounding_box = image_settings['bounding_box']
@@ -291,6 +304,7 @@ def reprocess(settings, image_settings, metrics):
 	mask_uint8 = image_settings['mask_uint8']
 	fjord_boundary = image_settings['fjord_boundary']
 	meters_per_1024_pixel = image_settings['meters_per_1024_pixel']
+	resolution_1024 = image_settings['resolution_1024']
 	resolution_256 = image_settings['resolution_256']
 			
 	box_counter += 1
@@ -298,7 +312,6 @@ def reprocess(settings, image_settings, metrics):
 	
 	#Try to get nearest square subset with padding equal to size of initial front
 	fractional_bounding_box = np.array(bounding_box) / full_size
-	print("bounding_box:", bounding_box, "fractional_bounding_box:", fractional_bounding_box)
 	sub_width = fractional_bounding_box[2] * img_3_uint8.shape[0]
 	sub_height = fractional_bounding_box[3] * img_3_uint8.shape[1]
 	sub_length = max(sub_width, sub_height)
@@ -337,6 +350,11 @@ def reprocess(settings, image_settings, metrics):
 	sub_x2 = int(sub_center_x + sub_padding)
 	sub_y1 = int(sub_center_y - sub_padding)
 	sub_y2 = int(sub_center_y + sub_padding)
+	
+	scaling = resolution_256 / resolution_1024
+	actual_bounding_box = [sub_x1 * scaling, sub_y1 * scaling, sub_padding * 2 * scaling, sub_padding * 2 * scaling]
+	print("bounding_box:", bounding_box, "fractional_bounding_box:", fractional_bounding_box, 'actual_bounding_box', actual_bounding_box)
+	image_settings['actual_bounding_box'] = actual_bounding_box
 	
 	#Perform subsetting
 	resolution_subset = sub_padding * 2 #not simplified for clarity - just find average dimensions	
@@ -402,6 +420,10 @@ def reprocess(settings, image_settings, metrics):
 	#Plot results
 	if plotting:
 		plot_validation_results(settings, metrics)
+		
+	#Generate shape file
+	mask_to_shp(settings, metrics)
+	
 	#Notify rest of the code that a front has been found, so that we don't use fallback front
 	metrics['front_count'] += 1
 	found_front = True

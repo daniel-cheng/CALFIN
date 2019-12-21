@@ -187,6 +187,7 @@ def process(i, validation_files, settings, metrics):
 	results = predict(model, img_3_uint8, mask_uint8, fjord_boundary, pred_norm_image, full_size, img_size, stride)
 	image_settings['results'] = results
 	image_settings['raw_image'] = results[0]
+	image_settings['original_raw'] = results[0]
 	image_settings['pred_image'] = results[1]
 	image_settings['mask_image'] = results[2]
 	image_settings['fjord_boundary_final_f32'] = results[3]
