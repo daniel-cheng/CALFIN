@@ -31,6 +31,13 @@ def mask_to_shp(settings, metrics):
 	dest_all_folder = os.path.join(settings['dest_root_path'], 'all', domain)
 	dest_shp_year_folder = os.path.join(dest_shp_folder, year)
 	dest_tif_year_folder = os.path.join(dest_tif_folder, year)
+	
+	#Collate all together
+	dest_shp_folder = os.path.join(settings['dest_root_path'], 'shp')
+	dest_tif_folder = os.path.join(settings['dest_root_path'], 'tif')
+	dest_all_folder = os.path.join(settings['dest_root_path'], 'all')
+	dest_shp_year_folder = os.path.join(dest_shp_folder)
+	dest_tif_year_folder = os.path.join(dest_tif_folder)
 		
 	if not os.path.exists(source_tif_path):
 		return

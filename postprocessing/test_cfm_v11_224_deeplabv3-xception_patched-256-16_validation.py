@@ -116,8 +116,11 @@ if __name__ == '__main__':
 		
 		#Begin processing validation images
 		for i in range(0, len(validation_files)):
+#		for i in range(0,50):
 #		for i in range(110,112):
 #		for i in range(22,23):
+#		for i in range(30,33):
+#		for i in range(14,16):
 			 process(i, validation_files, settings, metrics)
 			 postprocess(i, validation_files, settings, metrics)
 					

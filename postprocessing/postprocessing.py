@@ -5,9 +5,11 @@ Created on Sun Jun  9 18:06:26 2019
 @author: Daniel
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 import sys, cv2
 from error_analysis import extract_front_indicators
+from scipy.ndimage.morphology import distance_transform_edt
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
@@ -26,7 +28,7 @@ def remove_small_components(image:np.ndarray):
 	#for every component in the image, keep it only if it's above min_size
 	min_size_floor = output.size * 0.0001
 	if len(ordering) > 1:
-		min_size = sizes[ordering[1]] * 0.5
+		min_size = sizes[ordering[1]] * 0.33
 	
 	#Isolate large components
 	largeComponents = np.zeros((output.shape))
@@ -49,87 +51,70 @@ def remove_small_components(image:np.ndarray):
 	return largeComponents.astype(np.float32), bounding_boxes
 
 
-def mask_fjord_boundary(fjord_boundary_final_f32, iterations, pred_image_gray_uint8, settings, mask=True):
-	""" Helper funcction for performing optimiation on fjord boundaries.
-		Erodes a single fjord boundary mask."""
-	kernel = settings['kernel']
-	full_size = settings['full_size']
-	fjord_boundary_eroded_f32 = cv2.erode(fjord_boundary_final_f32.astype('float64'), kernel, iterations = iterations).astype(np.float32) #np.float32 [0.0, 255.0]
-	fjord_boundary_eroded_f32 = np.where(fjord_boundary_eroded_f32 > 0.5, 1.0, 0.0)
-	
-	if mask:
-		masked_pred_uint8 = pred_image_gray_uint8 * fjord_boundary_eroded_f32.astype(np.uint8)
-		results_polyline = extract_front_indicators(masked_pred_uint8)
-		
-		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
-		if not results_polyline is None:
-			polyline_image = (results_polyline[0] / 255.0)
-			bounding_boxes = [[0, 0, full_size, full_size]]
-		else:
-			polyline_image = np.zeros((full_size, full_size, 3))
-			bounding_boxes = [[0, 0, full_size, full_size]]
-		
-		#Determine number of masked pixels
-		x1, y2 = np.nonzero(polyline_image[:,:,0])
-		num_masked_pixels = x1.shape[0]
-	else:
-		results_polyline = extract_front_indicators(pred_image_gray_uint8)
-		
-		#If edge is detected, replace coarse edge mask in prediction image with connected polyline edge
-		if not results_polyline is None:
-			polyline_image = (results_polyline[0] / 255.0)
-			polyline_image[:,:,0] *= fjord_boundary_eroded_f32.astype(np.uint8)
-			polyline_image[:,:,0], bounding_boxes = remove_small_components(polyline_image[:,:,0])
-		else:
-			polyline_image = np.zeros((full_size, full_size, 3))
-			bounding_boxes = [[0, 0, full_size, full_size]]
-		
-		#Determine number of masked pixels
-		x1, y2 = np.nonzero(polyline_image[:,:,0])
-		num_masked_pixels = x1.shape[0]
-	return num_masked_pixels, polyline_image, fjord_boundary_eroded_f32, bounding_boxes
-
-
-def mask_polyline(raw_image, pred_image, fjord_boundary_final_f32, settings):
+def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 	""" Perform optimiation on fjord boundaries.
 		Continuously erode fjord boundary mask until fjord edges are masked.
 		This is detected by looking for large increases in pixels being masked,
 		followed by few pixels being masked."""
-	num_masked_pixels_array = np.array([])
-	masked_pixels_diff = np.array([0])
-	iteration_limit = 6 #limit of 6 pixels of erosion - otherwise, too much front detail is lost anyways
-	raw_gray_uint8 = (raw_image[:,:,0] * 255.0).astype(np.uint8)
-	pred_gray_uint8 = (pred_image * 255.0).astype(np.uint8)
-	for j in range(iteration_limit):
-		results_masking = mask_fjord_boundary(fjord_boundary_final_f32, j, pred_gray_uint8, settings)
-		num_masked_pixels = results_masking[0]
-		num_masked_pixels_array = np.append(num_masked_pixels_array, num_masked_pixels)
-		if j > 0:
-			masked_pixels_diff = np.append(masked_pixels_diff, num_masked_pixels_array[j] - num_masked_pixels_array[j - 1])
 	
-	#Find where the marginal increase in masked pixels decreases the most (i.e., find where increase j gives diminishing returns).
-	#Use 1st derivative of number of masked pixels with respect to iteration j.
-	#Find a minima (not even guarenteed to be local min) using argmin of (d/dj)(number of masked pixels)
-	#Additionally, check ahead one iteration to ensure we get a better minima
-	#Unable to use second derivative since it never crosses 0 (number of masked pixels is a monotonically decreasing function)
-	maximal_erosions = np.argmin(masked_pixels_diff)
-	original_maximal_erosions = maximal_erosions
-	threshold = 0.4
-	while maximal_erosions < iteration_limit - 1 and masked_pixels_diff[maximal_erosions + 1] < masked_pixels_diff[original_maximal_erosions] * threshold:
-		maximal_erosions += 1
-		threshold = threshold / 2
+	#get distance of each point from fjord boundary black pixel
+	fjord_distances = distance_transform_edt(fjord_boundary_final_f32)
+	results_polyline = extract_front_indicators(pred_image)
 	
-	#Redo fjord masking with known maximal erosion number
-	results_masking = mask_fjord_boundary(fjord_boundary_final_f32, maximal_erosions, pred_gray_uint8, settings, mask=False)
-	polyline_image = results_masking[1]
-	fjord_boundary_eroded = results_masking[2]
-	bounding_boxes = results_masking[3]
+	#If front is detected, proceed with extraction
+	if not results_polyline is None:
+		polyline = extract_front_indicators(pred_image)[0][:,:,0] / 255.0
+		polyline_distances = fjord_distances * polyline
+		
+		#find large contiginous segments, elminate the rest
+		#threshold elminnate constant = < 3
+		thresholded_distances = polyline_distances * (polyline_distances > 3)
+		
+		#readd elements that are close to 4
+		#inverse = 256 -distance map
+		inverse_distances = 255 - thresholded_distances
+		
+		#set all < -3 =0
+		inverse_distances[inverse_distances < 251] = 0
+		
+		#remove small components
+		large_inverse_distances = 255-remove_small_components(255-inverse_distances)[0]
+		
+		#get distance transform of inverse
+		distances_to_front = distance_transform_edt(large_inverse_distances)
+		
+		#add any elements < 3 back to mask
+		isolated_fronts = polyline_distances * (np.logical_and(distances_to_front < 3, polyline > 0))
+		
+		#Perform final dummy remove_small_components to retrieve bounding boxes
+		polyline_image = np.where(isolated_fronts > 0, 1.0, 0.0)
+		polyline_image, bounding_boxes = remove_small_components(polyline_image)
+	else:
+		#If no front is detected, return empty image.
+		polyline_image = settings['empty_image']
+		bounding_boxes = [[0, 0, settings['full_size'], settings['full_size']]]
 	
-	return polyline_image, fjord_boundary_eroded, bounding_boxes
+	return polyline_image, bounding_boxes
 
 
 def mask_bounding_box(bounding_boxes, image):
 	bounding_box = bounding_boxes[1]
+	#If more than 1 bounding box, find the one closest to the center, in case multiple fronts are close
+	if len(bounding_boxes) > 2:
+		image_center = np.array([image.shape[0] / 2, image.shape[1] / 2])
+		closest_distance = 256
+		closest_bounding_box = bounding_boxes[1]
+		for i in range(1, len(bounding_boxes)):
+			bounding_box = bounding_boxes[i]
+			bounding_box_center_x = bounding_box[0] + bounding_box[2] / 2 
+			bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
+			bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
+			distance = np.linalg.norm(image_center - bounding_box_center)
+			if distance < closest_distance:
+				closest_distance = distance
+				closest_bounding_box = bounding_box
+		bounding_box = closest_bounding_box
+	
 	sub_x1 = max(bounding_box[0] - 8, 0)
 	sub_x2 = min(bounding_box[0] + bounding_box[2] + 8, image.shape[0])
 	sub_y1 = max(bounding_box[1] - 8, 0)
@@ -201,6 +186,7 @@ def postprocess(i, validation_files, settings, metrics):
 	img_3_uint8 = image_settings['img_3_uint8']
 	mask_uint8 = image_settings['mask_uint8']
 	fjord_boundary = image_settings['fjord_boundary']
+	empty_image = settings['empty_image']
 	
 	raw_image = image_settings['raw_image']
 	pred_image = image_settings['pred_image']
@@ -215,11 +201,11 @@ def postprocess(i, validation_files, settings, metrics):
 	#Continuously erode fjord boundary mask until fjord edges are masked.
 	#This is detected by looking for large increases in pixels being masked,
 	#followed by few pixels being masked.
-	results_pred = mask_polyline(raw_image, pred_image[:,:,0], fjord_boundary_final_f32, settings)
-	results_mask = mask_polyline(raw_image, mask_image, fjord_boundary_final_f32, settings)
-	polyline_image = results_pred[0]
-	bounding_boxes = results_pred[2]
-	mask_final_f32 = results_mask[0][:,:,0]
+	results_pred = mask_polyline(pred_image[:,:,0], fjord_boundary_final_f32, settings)
+	results_mask = mask_polyline(mask_image, fjord_boundary_final_f32, settings)
+	polyline_image = np.stack((results_pred[0], empty_image, empty_image), axis=-1)
+	bounding_boxes = results_pred[1]
+	mask_final_f32 = results_mask[0]
 	
 	#Calculate and save mean deviation, distances, and IoU metrics based on new masked polyline
 	mean_deviation, distances = calculate_mean_deviation(polyline_image[:,:,0], mask_final_f32)
@@ -295,6 +281,7 @@ def reprocess(settings, image_settings, metrics):
 	edge_confidence_strength_threshold = settings['edge_confidence_strength_threshold']
 	domain_scalings = settings['domain_scalings']
 	plotting = settings['plotting']
+	empty_image = settings['empty_image']
 	
 	#image_settings are assigned per front in the image
 	domain = image_settings['domain']
@@ -307,6 +294,7 @@ def reprocess(settings, image_settings, metrics):
 	resolution_1024 = image_settings['resolution_1024']
 	resolution_256 = image_settings['resolution_256']
 			
+	image_settings['box_counter'] += 1
 	box_counter += 1
 	found_front = False
 	
@@ -324,7 +312,7 @@ def reprocess(settings, image_settings, metrics):
 	sub_center_y = (sub_y1 + sub_y2) / 2
 	
 	#Ensure subset will be within image bounds
-	sub_padding_ratio = 2.5
+	sub_padding_ratio = 2.0
 	half_sub_padding_ratio = sub_padding_ratio / 2
 	sub_padding = sub_length * half_sub_padding_ratio
 #					sub_padding = sub_length / 2 + 128
@@ -365,7 +353,6 @@ def reprocess(settings, image_settings, metrics):
 	
 	#Repredict
 	results = predict(model, img_3_subset_uint8, mask_subset_uint8, fjord_subset_boundary, pred_norm_image, full_size, img_size, stride)
-	raw_image = results[0]
 	pred_image = results[1]
 	mask_image = results[2]
 	fjord_boundary_final_f32 = results[3]
@@ -396,21 +383,22 @@ def reprocess(settings, image_settings, metrics):
 		domain_scalings[domain] = meters_per_subset_pixel
 	
 	#Redo masking
-	results_pred = mask_polyline(raw_image, pred_image[:,:,0], fjord_boundary_final_f32, settings)
-	results_mask = mask_polyline(raw_image, mask_image, fjord_boundary_final_f32, settings)
-	polyline_image = results_pred[0]
-	bounding_boxes_pred = results_pred[2]
-	mask_final_f32 = results_mask[0][:,:,0]
-	fjord_boundary_eroded_f32 = results_mask[1]
-	image_settings['fjord_boundary_eroded_f32'] = fjord_boundary_eroded_f32
+	results_pred = mask_polyline(pred_image[:,:,0], fjord_boundary_final_f32, settings)
+	results_mask = mask_polyline(mask_image, fjord_boundary_final_f32, settings)
+	polyline_image = np.stack((results_pred[0], empty_image, empty_image), axis=-1)
+	bounding_boxes_pred = results_pred[1]
+	mask_final_f32 = results_mask[0]
+#	bounding_boxes_mask = results_mask[1]
 
 	#mask out largest front
+#	if len(bounding_boxes_pred) < 2 or len(bounding_boxes_mask) < 2:
 	if len(bounding_boxes_pred) < 2:
 		print("no front detected, skipping")
 		metrics['no_detection_skip_count'] += 1
 		return found_front, metrics
 	polyline_image = mask_bounding_box(bounding_boxes_pred, polyline_image)
 	mask_final_f32 = mask_bounding_box(bounding_boxes_pred, mask_final_f32)
+#	mask_final_f32 = mask_bounding_box(bounding_boxes_mask, mask_final_f32) #If need stricter constraints, uncomment these lines
 	image_settings['polyline_image'] = polyline_image
 	image_settings['mask_image'] = mask_final_f32
 	
