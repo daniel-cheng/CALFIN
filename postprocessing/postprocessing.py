@@ -138,6 +138,11 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 #		thresholded_distances = polyline_distances_image * (polyline_distances_image_z_score >= z_score_cutoff)
 		
 #		plt.figure()
+		#stop gap FIX
+		if np.floor(data.max() / 2).astype(int) == 0:
+			polyline_image = settings['empty_image']
+			bounding_boxes = [[0, 0, settings['full_size'], settings['full_size']]]
+			return polyline_image, bounding_boxes
 		counts, bin_edges = np.histogram(data, bins = np.floor(data.max() / 2).astype(int))
 		inlier_mask = np.logical_not(is_outlier(counts, z_score_cutoff=2.0))
 		counts_inlier_max = counts[inlier_mask].max()
