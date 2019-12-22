@@ -19,19 +19,39 @@ import cv2
 from skimage.morphology import skeletonize
 from sklearn.neighbors import kneighbors_graph
 
+#def is_outlier(data, z_score_cutoff = 10.0):
+#	"""Uses Robust/Modified Z-score method with Median Absolute Deviation for robust univariate outlier estimation.
+#		Returns a list of booleans that indicate if element is an outlier.
+#		z_score_cutoff is the number of MAD deviations the point must exceed to be considered an outlier.
+#		See https://www.ibm.com/support/knowledgecenter/SSEP7J_11.1.0/com.ibm.swg.ba.cognos.ug_ca_dshb.doc/modified_z.html"""
+#	diff = np.abs(data - np.median(data))
+#	mad = np.median(diff)
+#	is_outlier = [False] * len(data)
+#	for i in range(len(diff)):
+#		if mad != 0:
+#			z_score = diff[i] / mad 
+#		else:
+#			z_score = 0.0
+#		is_outlier[i] = z_score >= z_score_cutoff
+#	return is_outlier
+
 def is_outlier(data, z_score_cutoff = 10.0):
 	"""Uses Robust/Modified Z-score method with Median Absolute Deviation for robust univariate outlier estimation.
 		Returns a list of booleans that indicate if element is an outlier.
-		z_score_cutoff is the number of MAD deviations the point must exceed to be considered an outlier."""
+		z_score_cutoff is the number of MAD deviations the point must exceed to be considered an outlier.
+		Fallback to MeanAD in case MAD == 0. 1.486 and 1.253314 approximate standard deviation. Why? Unknown.
+		See https://www.ibm.com/support/knowledgecenter/SSEP7J_11.1.0/com.ibm.swg.ba.cognos.ug_ca_dshb.doc/modified_z.html"""
 	diff = np.abs(data - np.median(data))
-	mad = np.median(diff)
+	MAD = np.median(diff)
+	MeanAD = np.mean(diff)
 	is_outlier = [False] * len(data)
-	for i in range(len(diff)):
-		if mad != 0:
-			z_score = diff[i] / mad 
-		else:
-			z_score = 0.0
-		is_outlier[i] = z_score >= z_score_cutoff
+	
+	if MAD != 0:
+		z_score = diff / (1.486 * MAD )
+	else:
+		z_score = diff / (1.253314 * MeanAD)
+		
+	is_outlier = z_score >= z_score_cutoff
 	return is_outlier
 
 #disallow edges between points on boundary

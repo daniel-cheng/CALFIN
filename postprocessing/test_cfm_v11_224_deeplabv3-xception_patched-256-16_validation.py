@@ -59,7 +59,12 @@ if __name__ == '__main__':
 		settings['scaling'] = scaling
 		settings['domain_scalings'] = dict()
 		settings['mask_confidence_strength_threshold'] = 0.8
-		settings['edge_confidence_strength_threshold'] = 0.6
+		settings['edge_confidence_strength_threshold'] = 0.55
+		settings['sub_padding_ratio'] = 2.5
+		settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
+		settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
+		settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
+		settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
 		settings['image_settings'] = dict()
 		#To calculate confusion matrix, include images where no front can be detected.
 		settings['negative_image_names'] = ['Hayes_LC08_L1TP_2016-06-07_080-237_T1_B5',
@@ -120,7 +125,7 @@ if __name__ == '__main__':
 #		for i in range(110,112):
 #		for i in range(22,23):
 #		for i in range(30,33):
-#		for i in range(14,16):
+#		for i in range(14,15):
 			 process(i, validation_files, settings, metrics)
 			 postprocess(i, validation_files, settings, metrics)
 					
