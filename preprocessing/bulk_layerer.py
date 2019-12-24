@@ -14,9 +14,13 @@ raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_raw
 temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_temp"
 dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_processed" 
+raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_raw"
+temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_temp"
+dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_processed"
+
+#raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_raw"
+#temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_temp"
+#dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_processed" 
 
 for base_name in os.listdir(raw_path):		
 	raw_path = os.path.join(temp_path, base_name)

@@ -58,13 +58,13 @@ if __name__ == '__main__':
 		settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
 		settings['scaling'] = scaling
 		settings['domain_scalings'] = dict()
-		settings['mask_confidence_strength_threshold'] = 0.8
-		settings['edge_confidence_strength_threshold'] = 0.55
+		settings['mask_confidence_strength_threshold'] = 0.875
+		settings['edge_confidence_strength_threshold'] = 0.575
 		settings['sub_padding_ratio'] = 2.5
 		settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
 		settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
 		settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-		settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+		settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
 		settings['image_settings'] = dict()
 		#To calculate confusion matrix, include images where no front can be detected.
 		settings['negative_image_names'] = ['Hayes_LC08_L1TP_2016-06-07_080-237_T1_B5',
@@ -120,13 +120,13 @@ if __name__ == '__main__':
 		settings['pred_norm_image'] = pred_norm_image
 		
 		#Begin processing validation images
+		#3
+		troubled_ones = [3, 7, 14, 22, 28, 41, 71, 74]
+#		troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
+		troubled_ones = [ 7]
+#		troubled_ones = [161]
 		for i in range(0, len(validation_files)):
-#		for i in range(0,50):
-#		for i in range(110,112):
-#		for i in range(22,23):
-#		for i in range(30,33):
-#		for i in range(14,15):
-#		for i in range(28,29):
+#		for i in troubled_ones:
 			 process(i, validation_files, settings, metrics)
 			 postprocess(i, validation_files, settings, metrics)
 					
@@ -136,24 +136,44 @@ if __name__ == '__main__':
 			domain_mean_deviation_points_meters = np.nanmean(metrics['domain_validation_distances_meters'][domain])
 			domain_mean_deviation_images_pixels = np.nanmean(metrics['domain_mean_deviations_pixels'][domain])
 			domain_mean_deviation_images_meters = np.nanmean(metrics['domain_mean_deviations_meters'][domain])
+			domain_median_mean_deviation_points_pixels = np.nanmedian(metrics['domain_validation_distances_pixels'][domain])
+			domain_median_mean_deviation_points_meters = np.nanmedian(metrics['domain_validation_distances_meters'][domain])
+			domain_median_mean_deviation_images_pixels = np.nanmedian(metrics['domain_mean_deviations_pixels'][domain])
+			domain_median_mean_deviation_images_meters = np.nanmedian(metrics['domain_mean_deviations_meters'][domain])
 			domain_mean_edge_iou_score = np.nanmean(metrics['domain_validation_ious'][domain])
+			domain_median_edge_iou_score = np.nanmedian(metrics['domain_validation_ious'][domain])
 			print("{} mean deviation (averaged over points): {:.2f} meters".format(domain, domain_mean_deviation_points_meters))
 			print("{} mean deviation (averaged over images): {:.2f} meters".format(domain, domain_mean_deviation_images_meters))
 			print("{} mean deviation (averaged over points): {:.2f} pixels".format(domain, domain_mean_deviation_points_pixels))
 			print("{} mean deviation (averaged over images): {:.2f} pixels".format(domain, domain_mean_deviation_images_pixels))
 			print("{} mean Jaccard index (Intersection over Union): {:.4f}".format(domain, domain_mean_edge_iou_score))
-			plot_histogram(metrics['domain_validation_distances_meters'][domain], domain + "_mean_deviations_meters", dest_path_qa, saving, domain_scaling)
+			print("{} mean deviation (median over points): {:.2f} meters".format(domain, domain_median_mean_deviation_points_meters))
+			print("{} mean deviation (median over images): {:.2f} meters".format(domain, domain_median_mean_deviation_images_meters))
+			print("{} mean deviation (median over points): {:.2f} pixels".format(domain, domain_median_mean_deviation_points_pixels))
+			print("{} mean deviation (median over images): {:.2f} pixels".format(domain, domain_median_mean_deviation_images_pixels))
+			print("{} median Jaccard index (Intersection over Union): {:.4f}".format(domain, domain_median_edge_iou_score))
+			plot_histogram(metrics['domain_validation_distances_meters'][domain], "mean_deviations_meters_" + domain, dest_path_qa, saving, domain_scaling)
 			
 		mean_deviation_points_pixels = np.nanmean(metrics['validation_distances_pixels'])
 		mean_deviation_points_meters = np.nanmean(metrics['validation_distances_meters'])
 		mean_deviation_images_pixels = np.nanmean(metrics['mean_deviations_pixels'])
 		mean_deviation_images_meters = np.nanmean(metrics['mean_deviations_meters'])
 		mean_edge_iou_score = np.nanmean(metrics['validation_ious'])
+		median_mean_deviation_points_pixels = np.nanmedian(metrics['validation_distances_pixels'])
+		median_mean_deviation_points_meters = np.nanmedian(metrics['validation_distances_meters'])
+		median_mean_deviation_images_pixels = np.nanmedian(metrics['mean_deviations_pixels'])
+		median_mean_deviation_images_meters = np.nanmedian(metrics['mean_deviations_meters'])
+		median_edge_iou_score = np.nanmedian(metrics['validation_ious'])
 		print("mean deviation (averaged over points): {:.2f} meters".format(mean_deviation_points_meters))
 		print("mean deviation (averaged over images): {:.2f} meters".format(mean_deviation_images_meters))
 		print("mean deviation (averaged over points): {:.2f} pixels".format(mean_deviation_points_pixels))
 		print("mean deviation (averaged over images): {:.2f} pixels".format(mean_deviation_images_pixels))
+		print("mean deviation (median over points): {:.2f} meters".format(median_mean_deviation_points_pixels))
+		print("mean deviation (median over images): {:.2f} meters".format(median_mean_deviation_points_meters))
+		print("mean deviation (median over points): {:.2f} pixels".format(median_mean_deviation_images_pixels))
+		print("mean deviation (median over images): {:.2f} pixels".format(median_mean_deviation_images_meters))
 		print("mean Jaccard index (Intersection over Union): {:.4f}".format(mean_edge_iou_score))
+		print("median Jaccard index (Intersection over Union): {:.4f}".format(median_edge_iou_score))
 		
 		#Print histogram of all distance errors
 		plot_histogram(metrics['validation_distances_meters'], "all_mean_deviations_meters", dest_path_qa, saving, scaling)

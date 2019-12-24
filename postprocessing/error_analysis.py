@@ -55,7 +55,9 @@ def extract_front_indicators(mask_img):
 	minimum_points = 4
 	
 	#Extract known masks
-	edge_bianry = np.where(mask_img > mask_img.max() * 0.25, 1, 0)
+	if mask_img.dtype == np.uint8:
+		mask_img = (mask_img / 255.0).astype(np.float32)
+	edge_bianry = np.where(mask_img > 0.25, 1, 0)
 	skeleton = skeletonize(edge_bianry)
 	front_pixels = np.nonzero(skeleton)
 	

@@ -18,7 +18,7 @@ from mask_to_shp import mask_to_shp
 from error_analysis import extract_front_indicators
 from ordered_line_from_unordered_points import is_outlier
 
-def remove_small_components(image:np.ndarray):
+def remove_small_components(image:np.ndarray, limit=np.inf):
 	image = image.astype('uint8')
 	#find all connected components (white blobs in image)
 	nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
@@ -29,7 +29,7 @@ def remove_small_components(image:np.ndarray):
 	#for every component in the image, keep it only if it's above min_size
 	min_size_floor = output.size * 0.0001
 	if len(ordering) > 1:
-		min_size = sizes[ordering[1]] * 0.33
+		min_size = sizes[ordering[1]] * 0.1
 	
 	#Isolate large components
 	largeComponents = np.zeros((output.shape))
@@ -37,6 +37,8 @@ def remove_small_components(image:np.ndarray):
 	#Store the bounding boxes of components, so they can be isolated and reprocessed further. Default box is entire image.
 	bounding_boxes = [[0, 0, image.shape[0], image.shape[1]]]
 	#Skip first component, since it's the background color in edge masks
+	#Restrict number of components returned depending on limit
+	number_returned = 0
 	for i in range(1, len(sizes)):
 		if sizes[ordering[i]] >= min_size_floor and sizes[ordering[i]] >= min_size:
 			mask_indices = output == ordering[i]
@@ -47,6 +49,9 @@ def remove_small_components(image:np.ndarray):
 			delta_y = max(y) - min_y
 			bounding_boxes.append([min_x, min_y, delta_x, delta_y])
 			largeComponents[mask_indices] = image[mask_indices]
+			number_returned += 1
+			if number_returned >= limit:
+				break
 	
 	#return large component image and bounding boxes for each componnet
 	return largeComponents.astype(np.float32), bounding_boxes
@@ -204,11 +209,14 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 	
 	return polyline_image, bounding_boxes
 
-def mask_bounding_box(bounding_boxes, image):
+def mask_bounding_box(bounding_boxes, image, target_box = None):
 	bounding_box = bounding_boxes[1]
-	#If more than 1 bounding box, find the one closest to the center, in case multiple fronts are close
+	#If more than 1 bounding box, find the one closest to the target, in case multiple fronts are close
 	if len(bounding_boxes) > 2:
-		image_center = np.array([image.shape[0] / 2, image.shape[1] / 2])
+		if target_box is None: #Default to center of image
+			target_center = np.array([image.shape[0] / 2, image.shape[1] / 2])
+		else: #if target bounding box is provided, use that instead
+			target_center = np.array([target_box[0] + target_box[2] / 2, target_box[1] + target_box[3] / 2])
 		closest_distance = 256
 		closest_bounding_box = bounding_boxes[1]
 		for i in range(1, len(bounding_boxes)):
@@ -216,7 +224,7 @@ def mask_bounding_box(bounding_boxes, image):
 			bounding_box_center_x = bounding_box[0] + bounding_box[2] / 2 
 			bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
 			bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
-			distance = np.linalg.norm(image_center - bounding_box_center)
+			distance = np.linalg.norm(target_center - bounding_box_center)
 			if distance < closest_distance:
 				closest_distance = distance
 				closest_bounding_box = bounding_box
@@ -234,13 +242,13 @@ def mask_bounding_box(bounding_boxes, image):
 	masked_image = None
 	if len(image.shape) > 2:
 		masked_image = image * np.stack((mask, mask, mask), axis=-1)
-		masked_image[:,:,0], bounding_boxes = remove_small_components(masked_image[:,:,0])
-		masked_image[:,:,1], bounding_boxes = remove_small_components(masked_image[:,:,1])
-		masked_image[:,:,2], bounding_boxes = remove_small_components(masked_image[:,:,2])
+		masked_image[:,:,0], bounding_boxes = remove_small_components(masked_image[:,:,0], limit = 1)
+		masked_image[:,:,1], bounding_boxes = remove_small_components(masked_image[:,:,1], limit = 1)
+		masked_image[:,:,2], bounding_boxes = remove_small_components(masked_image[:,:,2], limit = 1)
 	else:
 		masked_image = image * mask
-		masked_image, bounding_boxes = remove_small_components(masked_image)
-	return masked_image
+		masked_image, bounding_boxes = remove_small_components(masked_image, limit = 1)
+	return masked_image, bounding_box
 
 
 def calculate_metrics_calfin(settings, metrics):
@@ -353,6 +361,7 @@ def postprocess(i, validation_files, settings, metrics):
 	
 	#Try to find a front in each bounding box, if any
 	if len(bounding_boxes) > 1:
+		print('bounding_boxes', bounding_boxes)
 		for bounding_box in bounding_boxes[1:]:
 			image_settings['bounding_box'] = bounding_box
 			found_front_in_box, metrics = reprocess(settings, image_settings, metrics)
@@ -360,6 +369,8 @@ def postprocess(i, validation_files, settings, metrics):
 	
 	#if no fronts are found yet, fallback to box that encloses entire image
 	if not found_front:
+		box_counter = 0
+		image_settings['box_counter'] = box_counter
 		image_settings['bounding_box'] = bounding_boxes[0]
 		found_front, metrics = reprocess(settings, image_settings, metrics)
 		#If we still haven't found a front in the default, we "skip" the image and make a note of it.
@@ -516,17 +527,17 @@ def reprocess(settings, image_settings, metrics):
 	polyline_image = np.stack((results_pred[0], empty_image, empty_image), axis=-1)
 	bounding_boxes_pred = results_pred[1]
 	mask_final_f32 = results_mask[0]
-#	bounding_boxes_mask = results_mask[1]
+	bounding_boxes_mask = results_mask[1]
 
 	#mask out largest front
-#	if len(bounding_boxes_pred) < 2 or len(bounding_boxes_mask) < 2:
-	if len(bounding_boxes_pred) < 2:
+	if len(bounding_boxes_pred) < 2 or len(bounding_boxes_mask) < 2:
+#	if len(bounding_boxes_pred) < 2:
 		print("no front detected, skipping")
 		metrics['no_detection_skip_count'] += 1
 		return found_front, metrics
-	polyline_image = mask_bounding_box(bounding_boxes_pred, polyline_image)
-	mask_final_f32 = mask_bounding_box(bounding_boxes_pred, mask_final_f32)
-#	mask_final_f32 = mask_bounding_box(bounding_boxes_mask, mask_final_f32) #If need stricter constraints, uncomment these lines
+	polyline_image, bounding_box_pred = mask_bounding_box(bounding_boxes_pred, polyline_image)
+#	mask_final_f32 = mask_bounding_box(bounding_boxes_pred, mask_final_f32)
+	mask_final_f32, bounding_box_mask = mask_bounding_box(bounding_boxes_mask, mask_final_f32, bounding_box_pred) #If need stricter constraints, uncomment these lines
 	image_settings['polyline_image'] = polyline_image
 	image_settings['mask_image'] = mask_final_f32
 	

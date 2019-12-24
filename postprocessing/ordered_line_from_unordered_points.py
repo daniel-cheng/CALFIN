@@ -35,7 +35,7 @@ from sklearn.neighbors import kneighbors_graph
 #		is_outlier[i] = z_score >= z_score_cutoff
 #	return is_outlier
 
-def is_outlier(data, z_score_cutoff = 10.0):
+def is_outlier(data, z_score_cutoff = 2.0):
 	"""Uses Robust/Modified Z-score method with Median Absolute Deviation for robust univariate outlier estimation.
 		Returns a list of booleans that indicate if element is an outlier.
 		z_score_cutoff is the number of MAD deviations the point must exceed to be considered an outlier.
@@ -79,7 +79,7 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #	plt.show()
 	
 	#Eliminate small seperated clusters (outliers/noise)
-	outlier_mask = is_outlier(mean_cluster_distances, 10)
+	outlier_mask = is_outlier(mean_cluster_distances, 2)
 	for row in range(len(distances)):
 		try:
 			if outlier_mask[row]:
