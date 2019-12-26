@@ -6,9 +6,10 @@ Created on Sun Jun  9 18:06:26 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from skimage.io import imsave
 from matplotlib.lines import Line2D
-import os
+import os, cv2
 
 def plot_validation_results(settings, metrics):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
@@ -19,9 +20,11 @@ def plot_validation_results(settings, metrics):
 	image_settings = settings['image_settings']
 	
 	image_name_base = image_settings['image_name_base']
+	bounding_box = image_settings['actual_bounding_box']
 	meters_per_subset_pixel = image_settings['meters_per_subset_pixel']
 	distances = image_settings['distances']
 	raw_image = image_settings['raw_image']
+	unprocessed_original_raw = image_settings['unprocessed_original_raw']
 	original_raw = image_settings['original_raw']
 	pred_image = image_settings['pred_image']
 	polyline_image = image_settings['polyline_image_dilated']
@@ -50,9 +53,12 @@ def plot_validation_results(settings, metrics):
 					     Line2D([0], [0], color='#00ff00', lw=4)]
 	
 	#Begin plotting the 2x3 validation results output
-	original_raw_gray = np.clip(np.stack((original_raw[:,:,0], original_raw[:,:,0], original_raw[:,:,0]), axis=-1), 0.0, 1.0)
+	original_raw_gray = np.clip(np.stack((original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0), axis=-1), 0.0, 1.0)
 #	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
-	axarr[0,0].imshow(original_raw_gray)
+	start_point = (int(bounding_box[1]), int(bounding_box[0]))
+	end_point = (int(bounding_box[1] + bounding_box[3]), int(bounding_box[0] + bounding_box[2]))
+	original_raw_gray_patched = cv2.rectangle(original_raw_gray * 255, start_point, end_point, (0, 0, 255), 1).astype(np.uint8)
+	axarr[0,0].imshow(original_raw_gray_patched)
 	axarr[0,0].set_title(r'$\bf{a)}$ Raw Subset')
 	
 	raw_image = np.clip(raw_image, 0.0, 1.0)
@@ -95,7 +101,9 @@ def plot_validation_results(settings, metrics):
 	#Save figure
 	if saving:
 		plt.savefig(os.path.join(dest_path_qa, image_name_base + '_' + index + '_validation.png'))
-		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_original_raw.png'), (original_raw_gray * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_raw.png'), (original_raw_gray * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_raw_subset_highlight.png'), (original_raw_gray_patched).astype(np.uint8))
 		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
 		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
 		imsave(os.path.join(dest_path_qa, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
