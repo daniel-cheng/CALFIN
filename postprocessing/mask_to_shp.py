@@ -90,8 +90,8 @@ def mask_to_shp(settings, metrics):
 	fractional_bounding_box = np.array(bounding_box) / full_size
 	
 	#Transform vertices from scaled subset pixel space to original subset fractional space
-	top_left = np.array([fractional_bounding_box[0], fractional_bounding_box[1]])
-	scale = np.array([fractional_bounding_box[2] / full_size, fractional_bounding_box[3] / full_size])
+	top_left = np.array([fractional_bounding_box[1], fractional_bounding_box[0]])
+	scale = np.array([fractional_bounding_box[3] / full_size, fractional_bounding_box[2] / full_size])
 	vertices_transformed = (vertices * scale) + top_left
 	
 	#Transform vertices from original subset fractional space to geolcated meters space
