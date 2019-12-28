@@ -64,7 +64,7 @@ def extract_front_indicators(mask_img):
 	#Require a minimum number of points
 	if len(front_pixels[0]) < minimum_points:
 		return None
-		
+	
 	#Perform mask to polyline extraction.
 	results = ordered_line_from_unordered_points_tree(front_pixels, mask_img.shape, minimum_points)
 	overlay = results[2]

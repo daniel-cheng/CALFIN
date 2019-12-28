@@ -9,11 +9,7 @@ Created on Sun Jun  9 18:06:26 2019
 import numpy as np
 from keras import backend as K
 
-import sys, os, cv2, gdal
-sys.path.insert(1, '../training/keras-deeplab-v3-plus')
-sys.path.insert(2, '../training')
-from model_cfm_dual_wide_x65 import Deeplabv3
-from AdamAccumulate import AdamAccumulate
+import os, cv2, gdal
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0" #Only make first GPU visible on multi-gpu setups
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
@@ -23,21 +19,6 @@ from skimage.io import imread
 from skimage.morphology import skeletonize
 
 from aug_generators_dual import aug_validation
-
-
-def compile_model(img_size):
-	"""Compile the CALFIN Neural Network model and loads pretrained weights."""
-	print('-'*30)
-	print('Creating and compiling model...')
-	print('-'*30)
-	img_shape = (img_size, img_size, 3)
-	model = Deeplabv3(input_shape=img_shape, classes=16, OS=16, backbone='xception', weights=None)
-	
-	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2))
-	model.summary()
-	model.load_weights('../training/cfm_weights_patched_dual_wide_x65_224_e65_iou0.5136.h5')
-	
-	return model
 
 
 def preprocess(i, settings, metrics):
@@ -50,8 +31,12 @@ def read_image(i, settings, metrics):
 		 image inputs."""
 	if settings['driver'] == 'calfin':	
 		read_image_calfin(i, settings, metrics)
-	elif settings['driver'] == 'mohajerani':	
+	elif settings['driver'] == 'calfin_on_mohajerani':
 		read_image_mohajerani(i, settings, metrics)
+	elif settings['driver'] == 'mohajerani_on_calfin':
+		read_image_calfin(i, settings, metrics)
+	elif settings['driver'] == 'mask_extractor':	
+		read_image_calfin(i, settings, metrics)
 	else:
 		raise Exception('Input driver must be "calfin" or "mohajerani"')
 
@@ -61,8 +46,12 @@ def preprocess_image(settings, metrics):
 		of subsets/fronts per raw image. Can switch between CALFIN and Mohajerani style image inputs."""
 	if settings['driver'] == 'calfin':	
 		preprocess_image_calfin(settings, metrics)
-	elif settings['driver'] == 'mohajerani':	
+	elif settings['driver'] == 'calfin_on_mohajerani':	
 		preprocess_image_mohajerani(settings, metrics)
+	elif settings['driver'] == 'mohajerani_on_calfin':
+		preprocess_image_calfin(settings, metrics)
+	elif settings['driver'] == 'mask_extractor':	
+		preprocess_image_calfin(settings, metrics)
 	else:
 		raise Exception('Input driver must be "calfin" or "mohajerani"')
 
@@ -139,14 +128,16 @@ def preprocess_image_calfin(settings, metrics):
 	else:
 		img_3_f64 = img_3_f64.astype(np.float32)
 	img_final_f32 = img_3_f64 #np.float32 [0.0, 255.0]
-	mask_uint8 = (mask_f64 / mask_f64.max() * 255).astype(np.uint8)
+	mask_f32 = (mask_f64 / mask_f64.max()).astype(np.float32)
+	mask_uint8 = (mask_f32 * 255).astype(np.uint8)
 			
 	#Calculate edge from original resolution mask
 	thickness = 3
 	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (thickness, thickness))
 	mask_edge_f64 = cv2.Canny(mask_uint8, 250, 255 * 2).astype('float64') #thresholds = Use diagonals to detect strong edges, then connect anything with at least a single edge
 	mask_edge_f32 = cv2.dilate(mask_edge_f64, kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
-	mask_final_f32 = mask_edge_f32 / mask_edge_f32.max()					  
+	mask_edge_f32 = mask_edge_f32 / mask_edge_f32.max()
+	mask_final_f32 = np.stack((mask_edge_f32, mask_f32), axis = -1)
 	
 	image_settings['raw_image'] = img_final_f32
 	image_settings['mask_image'] = mask_final_f32

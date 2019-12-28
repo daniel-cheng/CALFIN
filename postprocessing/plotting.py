@@ -6,10 +6,11 @@ Created on Sun Jun  9 18:06:26 2019
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 from skimage.io import imsave
 from matplotlib.lines import Line2D
+
 import os, cv2
+
 
 def plot_validation_results(settings, metrics):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
@@ -79,7 +80,7 @@ def plot_validation_results(settings, metrics):
 	axarr[1,0].legend(front_legend, ['Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=1)
 	axarr[1,0].axis('off')
 	
-	overlay = np.clip(np.stack((polyline_image[:,:,0], mask_image, empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
+	overlay = np.clip(np.stack((polyline_image[:,:,0], mask_image[:,:,0], empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
 	axarr[1,1].imshow(overlay)
 	axarr[1,1].set_title(r'$\bf{e)}$ NN vs Ground Truth Front')
 	axarr[1,1].set_xlabel('Jaccard Index: {:.4f}'.format(edge_iou_score))
