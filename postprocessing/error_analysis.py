@@ -50,15 +50,15 @@ if __name__ == '__main__' and '1' in steps:
 
 
 """Front Extraction"""
-def extract_front_indicators(mask_img):
+def extract_front_indicators(mask_img, z_score_cutoff=2.0):
 	"""Extracts an ordered polyline from the processed mask. Also returns an overlay of the extracted polyline and the raw image. Draws to the indexed figure and specified resolution."""
 	minimum_points = 4
 	
 	#Extract known masks
 	if mask_img.dtype == np.uint8:
 		mask_img = (mask_img / 255.0).astype(np.float32)
-	edge_bianry = np.where(mask_img > 0.25, 1, 0)
-	skeleton = skeletonize(edge_bianry)
+	edge_binary = np.where(mask_img > 0.25, 1, 0)
+	skeleton = skeletonize(edge_binary)
 	front_pixels = np.nonzero(skeleton)
 	
 	#Require a minimum number of points
@@ -66,7 +66,7 @@ def extract_front_indicators(mask_img):
 		return None
 	
 	#Perform mask to polyline extraction.
-	results = ordered_line_from_unordered_points_tree(front_pixels, mask_img.shape, minimum_points)
+	results = ordered_line_from_unordered_points_tree(front_pixels, mask_img.shape, minimum_points, z_score_cutoff)
 	overlay = results[2]
 	front_line = np.array((results[0], results[1]))
 	number_of_points = front_line.shape[1]

@@ -4,7 +4,7 @@ from collections import defaultdict
 from keras import backend as K
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-import sys, glob, cv2, os, datetime
+import sys, glob, cv2, os
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
@@ -42,15 +42,24 @@ def initialize(img_size):
 	        'size'   : 14}
 	plt.rc('font', **font)
 		
-	validation_files = glob.glob(r"..\training\data\validation\Helheim*B[0-9].png")
+	validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_zhang\*modified.png")
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\mohajerani_on_calfin"
+	dest_root_path = r"..\outputs\validation\calfin_on_zhang"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
+	dest_path_all = os.path.join(dest_root_path, 'all')
+	dest_path_shp = os.path.join(dest_root_path, 'shp')
+	dest_path_tif = os.path.join(dest_root_path, 'tif')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
 	if not os.path.exists(dest_path_qa):
 		os.mkdir(dest_path_qa)
+	if not os.path.exists(dest_path_all):
+		os.mkdir(dest_path_all)
+	if not os.path.exists(dest_path_shp):
+		os.mkdir(dest_path_shp)
+	if not os.path.exists(dest_path_tif):
+		os.mkdir(dest_path_tif)
 	
 	scaling = 96.3 / 1.97
 	full_size = 256
@@ -58,13 +67,12 @@ def initialize(img_size):
 	
 	#Intialize processing pipeline variables
 	settings = dict()
-	settings['driver'] = 'mohajerani_on_calfin'
+	settings['driver'] = 'calfin_on_zhang'
 	settings['validation_files'] = validation_files
-	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
+	settings['date_index'] = 2 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
 	settings['model'] = model
 	settings['results'] = []
 	settings['plotting'] = plotting
-	settings['show_plots'] = show_plots
 	settings['saving'] = saving
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
@@ -82,15 +90,28 @@ def initialize(img_size):
 	settings['domain_scalings'] = dict()
 	settings['mask_confidence_strength_threshold'] = 0.875
 	settings['edge_confidence_strength_threshold'] = 0.575
-	settings['sub_padding_ratio'] = 1.5
+	settings['sub_padding_ratio'] = 1.25
 	settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
 	settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
 	settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
 	settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
 	settings['inter_box_distance_threshold'] = full_size / 16
 	settings['image_settings'] = dict()
-	settings['negative_image_names'] = []
-		
+	#To calculate confusion matrix, include images where no front can be detected.
+	settings['negative_image_names'] = ['Hayes_LC08_L1TP_2016-06-07_080-237_T1_B5',
+		'Helheim_LC08_L1TP_2018-06-06_232-013_T1_B5',
+		'Helheim_LE07_L1TP_2006-05-12_232-013_T2_B4',
+		'Helheim_LT05_L1TP_1991-07-14_232-013_T1_B4',
+		'Kælvegletscher_LE07_L1TP_2012-08-25_231-012_T1_B4',
+		'Nordre-Parallelgletsjer_LT05_L1TP_1997-05-22_229-012_T2_B4',
+		'Rink-Isbrae_LT05_L1TP_1986-06-16_013-009_T1_B4',
+		'Sermeq-Avannarleq-69_LC08_L1TP_2018-10-11_008-012_T1_B5',
+		'Sermeq-Avannarleq-70_LC08_L1TP_2014-04-28_011-010_T1_B5',
+		'Styrtegletsjer_LE07_L1TP_2010-04-16_229-012_T1_B4',
+		'Umiammakku_LE07_L1TP_2011-06-20_014-009_T1_B4',
+		'Upernavik-NE_LC08_L1TP_2013-09-28_015-008_T1_B5',
+		'Upernavik-SE_LC08_L1TP_2016-05-06_016-008_T1_B5']
+	
 	metrics = dict()
 	metrics['confidence_skip_count'] = 0
 	metrics['no_detection_skip_count'] = 0
@@ -104,12 +125,9 @@ def initialize(img_size):
 	metrics['domain_mean_deviations_meters'] = defaultdict(lambda: np.array([]))
 	metrics['domain_validation_distances_pixels'] = defaultdict(lambda: np.array([]))
 	metrics['domain_validation_distances_meters'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_edge_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_mask_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_calendar'] = defaultdict(lambda: dict((k, 0) for k in range(1972, datetime.datetime.now().year)))
+	metrics['domain_validation_ious'] = defaultdict(lambda: np.array([]))
 	metrics['resolution_deviation_array'] = np.zeros((0,2))
-	metrics['validation_edge_ious'] = np.array([])
-	metrics['validation_mask_ious'] = np.array([])
+	metrics['validation_ious'] = np.array([])
 	metrics['resolution_iou_array'] = np.zeros((0,2))
 	metrics['true_negatives'] = 0
 	metrics['false_negatives'] = 0

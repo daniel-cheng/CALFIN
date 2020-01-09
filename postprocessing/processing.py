@@ -38,10 +38,12 @@ def process(settings, metrics):
 def predict(settings, metrics):	
 	if settings['driver'] == 'calfin':	
 		predict_calfin(settings, metrics)
+	elif settings['driver'] == 'calfin_on_zhang':	
+		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_mohajerani':	
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':
-		process_mohajerani_on_calfin(settings, metrics)
+		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mask_extractor':	
 		process_mask(settings, metrics)
 	else:
@@ -144,12 +146,12 @@ def process_mohajerani_on_calfin(settings, metrics):
 	path_row_string = '-'.join([path, row])
 	#Akullikassaap_LE07_L1TP_2000-03-17_014-009_T1_B4.png
 	
-	calfin_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
+#	calfin_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
 	tif_source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\CalvingFronts\tif"
 	
 	calfin_name = '_'.join([domain, satellite, level, date_string, path_row_string, tier, band])
-	calfin_raw_path = os.path.join(calfin_path, calfin_name + '.png')
-	calfin_mask_path = os.path.join(calfin_path, calfin_name + '_mask.png')
+#	calfin_raw_path = os.path.join(calfin_path, calfin_name + '.png')
+#	calfin_mask_path = os.path.join(calfin_path, calfin_name + '_mask.png')
 	calfin_tif_path = os.path.join(tif_source_path, domain, year, calfin_name + '.tif')
 		
 	
@@ -189,7 +191,7 @@ def process_mohajerani_on_calfin(settings, metrics):
 	# Draw the lane onto the warped blank image
 	#plt.plot(left_fitx, ploty, color='yellow')
 	image = np.zeros((full_size, full_size, 3))
-	cv2.polylines(image,  [pts],  False,  (255, 0, 0),  1)
+	cv2.polylines(image,  [pts],  False,  (1, 0, 0),  1)
 	
 	image_settings['polyline_image'] = image
 
@@ -224,7 +226,7 @@ def calculate_mean_deviation(pred, mask):
 	return mean_deviation, distances
 
 
-def calculate_edge_iou(gt, pr, smooth=1e-6, per_image=True):
+def calculate_iou(gt, pr, smooth=1e-6, per_image=True):
 	intersection = np.sum(gt[:,:,:] * pr[:,:,:], axis=(1, 2)) #(B)
 	union = np.sum(gt[:,:,:] + pr[:,:,:] >= 1.0, axis=(1, 2)) #(B)
 	iou_score = intersection / (union + smooth) #(B)

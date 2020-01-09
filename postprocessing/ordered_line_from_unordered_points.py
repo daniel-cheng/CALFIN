@@ -19,21 +19,6 @@ import cv2
 from skimage.morphology import skeletonize
 from sklearn.neighbors import kneighbors_graph
 
-#def is_outlier(data, z_score_cutoff = 10.0):
-#	"""Uses Robust/Modified Z-score method with Median Absolute Deviation for robust univariate outlier estimation.
-#		Returns a list of booleans that indicate if element is an outlier.
-#		z_score_cutoff is the number of MAD deviations the point must exceed to be considered an outlier.
-#		See https://www.ibm.com/support/knowledgecenter/SSEP7J_11.1.0/com.ibm.swg.ba.cognos.ug_ca_dshb.doc/modified_z.html"""
-#	diff = np.abs(data - np.median(data))
-#	mad = np.median(diff)
-#	is_outlier = [False] * len(data)
-#	for i in range(len(diff)):
-#		if mad != 0:
-#			z_score = diff[i] / mad 
-#		else:
-#			z_score = 0.0
-#		is_outlier[i] = z_score >= z_score_cutoff
-#	return is_outlier
 
 def is_outlier(data, z_score_cutoff = 2.0):
 	"""Uses Robust/Modified Z-score method with Median Absolute Deviation for robust univariate outlier estimation.
@@ -55,7 +40,7 @@ def is_outlier(data, z_score_cutoff = 2.0):
 	return is_outlier
 
 #disallow edges between points on boundary
-def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points):
+def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points, z_score_cutoff=2.0):
 	x = points_tuple[0]
 	y = points_tuple[1]
 	points = np.c_[x, y]
@@ -79,7 +64,7 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #	plt.show()
 	
 	#Eliminate small seperated clusters (outliers/noise)
-	outlier_mask = is_outlier(mean_cluster_distances, 2)
+	outlier_mask = is_outlier(mean_cluster_distances, z_score_cutoff)
 	for row in range(len(distances)):
 		try:
 			if outlier_mask[row]:

@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys, cv2
 from scipy.ndimage.morphology import distance_transform_edt
+from skimage.morphology import skeletonize
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
 from preprocessing import preprocess_image
-from processing import predict, calculate_mean_deviation, calculate_edge_iou, process_mohajerani_on_calfin, process_mask
+from processing import predict, calculate_mean_deviation, calculate_iou, process_mohajerani_on_calfin
 from plotting import plot_validation_results
 from mask_to_shp import mask_to_shp
 from error_analysis import extract_front_indicators
@@ -63,7 +64,7 @@ def postprocess(settings, metrics):
 	#Calculate and save IoU metric
 	pred_patch_4d = np.expand_dims(polyline_image_dilated[:,:,0], axis=0)
 	mask_patch_4d = np.expand_dims(mask_final_dilated_f32[:,:,0], axis=0)
-	edge_iou_score = calculate_edge_iou(mask_patch_4d, pred_patch_4d)
+	edge_iou_score = calculate_iou(mask_patch_4d, pred_patch_4d)
 	print("edge_iou_score:  {:.2f}".format(edge_iou_score))
 	
 	#For each calving front, subset the image AGAIN and predict. This helps accuracy for inputs with large scaling/downsampling ratios
@@ -231,13 +232,14 @@ def reprocess(settings, metrics):
 		domain_scalings[domain] = meters_per_subset_pixel
 	
 	#Redo masking
-	results_pred = mask_polyline(pred_image[:,:,0], fjord_boundary, settings)
-	results_mask = mask_polyline(mask_image[:,:,0], fjord_boundary, settings)
+	results_pred = mask_polyline(pred_image[:,:,0], fjord_boundary, settings, min_size_percentage=0.0005, use_extracted_front=False)
+	results_mask = mask_polyline(mask_image[:,:,0], fjord_boundary, settings, min_size_percentage=0.0005, use_extracted_front=False)
 	polyline_image = np.stack((results_pred[0], empty_image, empty_image), axis=-1)
+	
 	bounding_boxes_pred = results_pred[1]
 	mask_edge_f32 = results_mask[0]
 	bounding_boxes_mask = results_mask[1]
-
+	
 	#mask out largest front
 	if len(bounding_boxes_pred) < 2 or len(bounding_boxes_mask) < 2:
 		print("no front detected, skipping")
@@ -246,18 +248,22 @@ def reprocess(settings, metrics):
 	polyline_image, bounding_box_pred = mask_bounding_box(bounding_boxes_pred, polyline_image, settings)
 	mask_edge_f32, bounding_box_mask = mask_bounding_box(bounding_boxes_mask, mask_edge_f32, settings, bounding_box_pred) #If need stricter constraints, uncomment these lines
 	mask_final_f32 = np.stack((mask_edge_f32, mask_image[:,:,1]), axis = -1)
+	results_polyline = extract_front_indicators(polyline_image[:,:,0], z_score_cutoff=25.0)
+	polyline_image = np.stack((results_polyline[0][:,:,0] / 255.0, empty_image, empty_image), axis=-1)
+	
+	image_settings['polyline_coords'] = results_polyline[1]
+	image_settings['bounding_box_pred'] = bounding_box_pred
 	image_settings['polyline_image'] = polyline_image
 	image_settings['mask_image'] = mask_final_f32
 	
-#	if settings['driver'] == 'mohajerani_on_calfin':
-#		process_mohajerani_on_calfin(settings, metrics)
+	if settings['driver'] == 'mohajerani_on_calfin':
+		process_mohajerani_on_calfin(settings, metrics)
 	
 	#Calculate validation metrics
 	calculate_metrics_calfin(settings, metrics)
 	
-	#Plot results
-	if plotting:
-		plot_validation_results(settings, metrics)
+	#Plot and save results
+	plot_validation_results(settings, metrics)
 		
 	#Generate shape file
 	mask_to_shp(settings, metrics)
@@ -269,7 +275,7 @@ def reprocess(settings, metrics):
 	return found_front, metrics
 
 
-def remove_small_components(image:np.ndarray, limit=np.inf):
+def remove_small_components(image:np.ndarray, limit=np.inf, min_size_percentage=0.00025):
 	image = image.astype('uint8')
 	#find all connected components (white blobs in image)
 	nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
@@ -278,7 +284,7 @@ def remove_small_components(image:np.ndarray, limit=np.inf):
 	ordering = np.argsort(-sizes)
 	
 	#for every component in the image, keep it only if it's above min_size
-	min_size_floor = output.size * 0.0001
+	min_size_floor = output.size * min_size_percentage
 	if len(ordering) > 1:
 		min_size = sizes[ordering[1]] * 0.1
 	
@@ -308,53 +314,7 @@ def remove_small_components(image:np.ndarray, limit=np.inf):
 	return largeComponents.astype(np.float32), bounding_boxes
 
 
-def calculate_metrics_calfin(settings, metrics):
-	kernel = settings['kernel']
-	image_settings = settings['image_settings']
-	polyline_image = image_settings['polyline_image']
-	mask_final_f32 = image_settings['mask_image']
-	meters_per_subset_pixel = image_settings['meters_per_subset_pixel']
-	meters_per_256_pixel = image_settings['meters_per_256_pixel']
-	domain = image_settings['domain']
-	mean_deviation = image_settings['mean_deviation']
-	edge_iou_score = image_settings['edge_iou_score']
-	
-	#Calculate and save mean deviation, distances, and IoU metrics based on new masked polyline
-	mean_deviation_subset, distances = calculate_mean_deviation(polyline_image[:,:,0], mask_final_f32[:,:,0])
-	image_settings['distances'] = distances
-	mean_deviation_subset_meters = mean_deviation_subset * meters_per_subset_pixel
-	metrics['mean_deviations_pixels'] = np.append(metrics['mean_deviations_pixels'], mean_deviation_subset)
-	metrics['mean_deviations_meters'] = np.append(metrics['mean_deviations_meters'], mean_deviation_subset_meters)
-	metrics['validation_distances_pixels'] = np.append(metrics['validation_distances_pixels'], distances)
-	metrics['validation_distances_meters'] = np.append(metrics['validation_distances_meters'], distances * meters_per_subset_pixel)
-	metrics['domain_mean_deviations_pixels'][domain] = np.append(metrics['domain_mean_deviations_pixels'][domain], mean_deviation_subset)
-	metrics['domain_mean_deviations_meters'][domain] = np.append(metrics['domain_mean_deviations_meters'][domain], mean_deviation_subset_meters)
-	metrics['domain_validation_distances_pixels'][domain] = np.append(metrics['domain_validation_distances_pixels'][domain], distances)
-	metrics['domain_validation_distances_meters'][domain] = np.append(metrics['domain_validation_distances_meters'][domain], distances * meters_per_subset_pixel)
-	metrics['resolution_deviation_array'] = np.concatenate((metrics['resolution_deviation_array'], np.array([[meters_per_subset_pixel, mean_deviation_subset_meters]])))
-	print("mean_deviation_subset: {:.2f} pixels, {:.2f} meters".format(mean_deviation_subset, mean_deviation_subset * meters_per_subset_pixel))
-	print("mean_deviation_difference: {:.2f} pixels, {:.2f} meters (- == good)".format(mean_deviation_subset - mean_deviation, mean_deviation_subset * meters_per_subset_pixel - mean_deviation * meters_per_256_pixel))
-	
-	#Dilate masks for easier visualization and IoU metric calculation.
-	polyline_image_dilated = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
-	mask_edge_dilated_f32 = cv2.dilate(mask_final_f32[:,:,0].astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
-	mask_final_dilated_f32 = np.stack((mask_edge_dilated_f32, mask_final_f32[:,:,1]), axis = -1)
-	image_settings['polyline_image_dilated'] = polyline_image_dilated
-	image_settings['mask_final_dilated_f32'] = mask_final_dilated_f32
-	
-	#Calculate and save IoU metric
-	pred_patch_4d = np.expand_dims(polyline_image_dilated[:,:,0], axis=0)
-	mask_patch_4d = np.expand_dims(mask_final_dilated_f32[:,:,0], axis=0)
-	edge_iou_score_subset = calculate_edge_iou(mask_patch_4d, pred_patch_4d)
-	image_settings['edge_iou_score_subset'] = edge_iou_score_subset
-	metrics['validation_ious'] = np.append(metrics['validation_ious'], edge_iou_score_subset)
-	metrics['domain_validation_ious'][domain] = np.append(metrics['domain_validation_ious'][domain], edge_iou_score_subset)
-	metrics['resolution_iou_array'] = np.concatenate((metrics['resolution_iou_array'], np.array([[meters_per_subset_pixel, edge_iou_score_subset]])))
-	print("edge_iou_score_subset: {:.2f}".format(edge_iou_score_subset))
-	print("edge_iou_score change {:.2f} (+ == good):".format(edge_iou_score_subset - edge_iou_score))
-
-
-def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
+def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_percentage=0.00025, use_extracted_front=True):
 	""" Perform optimiation on fjord boundaries.
 		Continuously erode fjord boundary mask until fjord edges are masked.
 		This is detected by looking for large increases in pixels being masked,
@@ -366,8 +326,19 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 	
 	#If front is detected, proceed with extraction
 	if not results_polyline is None:
-		polyline_image = results_polyline[0][:,:,0] / 255.0
-		polyline_coords = results_polyline[1]
+		if use_extracted_front:
+			polyline_image = results_polyline[0][:,:,0] / 255.0
+			polyline_coords = results_polyline[1]
+		else:
+			#To handle cases where zoomed on basin with discounted boundary/front walls like 
+			#Cornell_LE07_L1TP_2000-04-03_021-007_T1_B4_92-1, only use initial results_polyline to
+			#detect presence of front - don't use the output image, since the fjord boundaries
+			#have not been masked yet! (otherwise, extract_front_indicators will try to connect the gap)
+			edge_binary = np.where(pred_image > 0.25, 1, 0)
+			skeleton = skeletonize(edge_binary)
+			front_pixels = np.nonzero(skeleton)
+			polyline_image = skeleton
+			polyline_coords = np.array([front_pixels[0], front_pixels[1]])
 				
 		#Find all pixels where distance to nearest fjord boundary is an outlier
 		polyline_distances_image = fjord_distances * polyline_image
@@ -394,7 +365,7 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 		
 		print('threshold', threshold)
 		thresholded_distances = polyline_distances_image * (polyline_distances_image > threshold)
-		
+				
 		#readd elements that are close to 4
 		inverse_distances = 255 - thresholded_distances
 		
@@ -407,19 +378,20 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings):
 		#get distance transform of inverse
 		distances_to_front = distance_transform_edt(large_inverse_distances)
 		
-		#add any elements < 3 back to mask
-		isolated_fronts = polyline_distances_image * (np.logical_and(distances_to_front < threshold, polyline_image > 0))
+		#add any elements < 3 back to mask WHY ISNT THIS WORKING QUESTION MARK?
+		isolated_fronts = polyline_distances_image * (np.logical_and(distances_to_front < threshold * 1.0, polyline_image > 0))
 		
 		#Perform final dummy remove_small_components to retrieve bounding boxes
 		polyline_image = np.where(isolated_fronts > 0, 1.0, 0.0)
 		
-		polyline_image, bounding_boxes = remove_small_components(polyline_image)
+		polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
 	else:
 		#If no front is detected, return empty image.
 		polyline_image = settings['empty_image']
 		bounding_boxes = [[0, 0, settings['full_size'], settings['full_size']]]
+		polyline_coords = None
 	
-	return polyline_image, bounding_boxes
+	return polyline_image, bounding_boxes, polyline_coords
 
 
 def mask_bounding_box(bounding_boxes, image, settings, target_box = None):
@@ -450,13 +422,18 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None):
 				bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
 				bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
 				
+				original_bounding_box = image_settings['actual_bounding_box']
+				top_left = np.array([original_bounding_box[0], original_bounding_box[1]])
+				scale = np.array([original_bounding_box[2] / settings['full_size'], original_bounding_box[3] / settings['full_size']])
+				original_bounding_box_center = bounding_box_center * scale + top_left
+				
 				usable = True
 				for j in range(len(used_bounding_boxes)):
 					used_bounding_box = used_bounding_boxes[j]
 					used_bounding_box_center_x = used_bounding_box[0] + used_bounding_box[2] / 2 
 					used_bounding_box_center_y = used_bounding_box[1] + used_bounding_box[3] / 2 
 					used_bounding_box_center = np.array([used_bounding_box_center_x, used_bounding_box_center_y])
-					inter_box_distance = np.linalg.norm(bounding_box_center - used_bounding_box_center)
+					inter_box_distance = np.linalg.norm(original_bounding_box_center - used_bounding_box_center)
 					print('inter_box_distance', inter_box_distance)
 					if inter_box_distance < inter_box_distance_threshold:
 						usable = False
@@ -464,11 +441,11 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None):
 				if usable:
 					break
 			#For now, use precense of target_box to detect if we should add bounding box to used_bounding boxes
-			image_settings['used_bounding_boxes'].append(bounding_box)
+			image_settings['used_bounding_boxes'].append(image_settings['actual_bounding_box'])
 			
 		else: #if target bounding box is provided, use that instead. For now, asusme this is a mask.
 			target_center = np.array([target_box[0] + target_box[2] / 2, target_box[1] + target_box[3] / 2])
-			closest_distance = 256
+			closest_distance = settings['full_size']
 			closest_bounding_box = bounding_boxes[1]
 			for i in range(1, len(bounding_boxes)):
 				bounding_box = bounding_boxes[i]
@@ -480,15 +457,17 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None):
 					closest_distance = distance
 					closest_bounding_box = bounding_box
 			bounding_box = closest_bounding_box
-			
-	sub_x1 = max(bounding_box[0] - 16, 0)
-	sub_x2 = min(bounding_box[0] + bounding_box[2] + 16, image.shape[0])
-	sub_y1 = max(bounding_box[1] - 16, 0)
-	sub_y2 = min(bounding_box[1] + bounding_box[3] + 16, image.shape[1])
+	padding = int(settings['full_size'] / 16)
+#	padding =0
+	sub_x1 = max(bounding_box[0] - padding, 0)
+	sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
+	sub_y1 = max(bounding_box[1] - padding, 0)
+	sub_y2 = min(bounding_box[1] + bounding_box[3] + padding, image.shape[1])
 	
 	mask = np.zeros((image.shape[0], image.shape[1])) 
 	mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
-
+	
+	bounding_box = [sub_x1, sub_y1, sub_x2 - sub_x1, sub_y2 - sub_y1]
 	
 	masked_image = None
 	if len(image.shape) > 2:
@@ -500,5 +479,62 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None):
 		masked_image = image * mask
 		masked_image, bounding_boxes = remove_small_components(masked_image, limit = 1)
 	return masked_image, bounding_box
+
+
+def calculate_metrics_calfin(settings, metrics):
+	kernel = settings['kernel']
+	image_settings = settings['image_settings']
+	pred_image = image_settings['pred_image']
+	polyline_image = image_settings['polyline_image']
+	mask_final_f32 = image_settings['mask_image']
+	meters_per_subset_pixel = image_settings['meters_per_subset_pixel']
+	meters_per_256_pixel = image_settings['meters_per_256_pixel']
+	domain = image_settings['domain']
+	mean_deviation = image_settings['mean_deviation']
+	edge_iou_score = image_settings['edge_iou_score']
+	year = image_settings['year']
+	
+	#Calculate and save mean deviation, distances, and IoU metrics based on new masked polyline
+	mean_deviation_subset, distances = calculate_mean_deviation(polyline_image[:,:,0], mask_final_f32[:,:,0])
+	image_settings['distances'] = distances
+	mean_deviation_subset_meters = mean_deviation_subset * meters_per_subset_pixel
+	metrics['mean_deviations_pixels'] = np.append(metrics['mean_deviations_pixels'], mean_deviation_subset)
+	metrics['mean_deviations_meters'] = np.append(metrics['mean_deviations_meters'], mean_deviation_subset_meters)
+	metrics['validation_distances_pixels'] = np.append(metrics['validation_distances_pixels'], distances)
+	metrics['validation_distances_meters'] = np.append(metrics['validation_distances_meters'], distances * meters_per_subset_pixel)
+	metrics['domain_mean_deviations_pixels'][domain] = np.append(metrics['domain_mean_deviations_pixels'][domain], mean_deviation_subset)
+	metrics['domain_mean_deviations_meters'][domain] = np.append(metrics['domain_mean_deviations_meters'][domain], mean_deviation_subset_meters)
+	metrics['domain_validation_distances_pixels'][domain] = np.append(metrics['domain_validation_distances_pixels'][domain], distances)
+	metrics['domain_validation_distances_meters'][domain] = np.append(metrics['domain_validation_distances_meters'][domain], distances * meters_per_subset_pixel)
+	metrics['resolution_deviation_array'] = np.concatenate((metrics['resolution_deviation_array'], np.array([[meters_per_subset_pixel, mean_deviation_subset_meters]])))
+	print("mean_deviation_subset: {:.2f} pixels, {:.2f} meters".format(mean_deviation_subset, mean_deviation_subset * meters_per_subset_pixel))
+	print("mean_deviation_difference: {:.2f} pixels, {:.2f} meters (- == good)".format(mean_deviation_subset - mean_deviation, mean_deviation_subset * meters_per_subset_pixel - mean_deviation * meters_per_256_pixel))
+	
+	#Dilate masks for easier visualization and IoU metric calculation.
+	polyline_image_dilated = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+	mask_edge_dilated_f32 = cv2.dilate(mask_final_f32[:,:,0].astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+	mask_final_dilated_f32 = np.stack((mask_edge_dilated_f32, mask_final_f32[:,:,1]), axis = -1)
+	image_settings['polyline_image_dilated'] = polyline_image_dilated
+	image_settings['mask_final_dilated_f32'] = mask_final_dilated_f32
+	
+	#Calculate and save IoU metric
+	pred_edge_patch_4d = np.expand_dims(polyline_image_dilated[:,:,0], axis=0)
+	mask_edge_patch_4d = np.expand_dims(mask_final_dilated_f32[:,:,0], axis=0)
+	pred_mask_patch_4d = np.expand_dims(pred_image[:,:,1], axis=0)
+	mask_mask_patch_4d = np.expand_dims(mask_final_dilated_f32[:,:,1], axis=0)
+	edge_iou_score_subset = calculate_iou(mask_edge_patch_4d, pred_edge_patch_4d)
+	mask_iou_score_subset = calculate_iou(mask_mask_patch_4d, pred_mask_patch_4d)
+	image_settings['edge_iou_score_subset'] = edge_iou_score_subset
+	image_settings['mask_iou_score_subset'] = mask_iou_score_subset
+	metrics['validation_edge_ious'] = np.append(metrics['validation_edge_ious'], edge_iou_score_subset)
+	metrics['validation_mask_ious'] = np.append(metrics['validation_mask_ious'], mask_iou_score_subset)
+	metrics['domain_validation_edge_ious'][domain] = np.append(metrics['domain_validation_edge_ious'][domain], edge_iou_score_subset)
+	metrics['domain_validation_mask_ious'][domain] = np.append(metrics['domain_validation_mask_ious'][domain], mask_iou_score_subset)
+	metrics['resolution_iou_array'] = np.concatenate((metrics['resolution_iou_array'], np.array([[meters_per_subset_pixel, edge_iou_score_subset]])))
+	print("edge_iou_score_subset: {:.2f}".format(edge_iou_score_subset))
+	print("edge_iou_score change {:.2f} (+ == good):".format(edge_iou_score_subset - edge_iou_score))
+	
+	#Add to calandars
+	metrics['domain_validation_calendar'][domain][year] += 1
 
 

@@ -33,6 +33,10 @@ def read_image(i, settings, metrics):
 		read_image_calfin(i, settings, metrics)
 	elif settings['driver'] == 'calfin_on_mohajerani':
 		read_image_mohajerani(i, settings, metrics)
+	elif settings['driver'] == 'calfin_on_zhang':	
+		read_image_calfin(i, settings, metrics)
+	elif settings['driver'] == 'calfin_on_zhang_esa_cci':	
+		read_image_calfin_shapefile_mask(i, settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':
 		read_image_calfin(i, settings, metrics)
 	elif settings['driver'] == 'mask_extractor':	
@@ -48,6 +52,10 @@ def preprocess_image(settings, metrics):
 		preprocess_image_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_mohajerani':	
 		preprocess_image_mohajerani(settings, metrics)
+	elif settings['driver'] == 'calfin_on_zhang':	
+		preprocess_image_calfin(settings, metrics)
+	elif settings['driver'] == 'calfin_on_zhang_esa_cci':	
+		preprocess_image_calfin(settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':
 		preprocess_image_calfin(settings, metrics)
 	elif settings['driver'] == 'mask_extractor':	
@@ -62,6 +70,8 @@ def read_image_calfin(i, settings, metrics):
 	tif_source_path = settings['tif_source_path']
 	fjord_boundaries_path = settings['fjord_boundaries_path']
 	image_settings = settings['image_settings']
+	date_index = settings['date_index']
+	
 	
 	image_path = validation_files[i]
 	image_dir = os.path.dirname(image_path) 
@@ -69,7 +79,7 @@ def read_image_calfin(i, settings, metrics):
 	image_name_base = os.path.splitext(image_name)[0]
 	image_name_base_parts = image_name_base.split('_')
 	domain = image_name_base_parts[0]
-	date = image_name_base_parts[3]
+	date = image_name_base_parts[date_index]
 	year = date.split('-')[0]
 	
 	#initialize paths
@@ -86,6 +96,13 @@ def read_image_calfin(i, settings, metrics):
 	fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
 	if img_3_uint8.shape[2] != 3:
 		img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+		
+	#Detect if this image is supposed to have a front or not by seeing if its standard deviation is below threshold epsilon
+	epsilon = 1e-4
+	if np.nan_to_num(np.std(mask_uint8)) < epsilon: #and there is no front, it's a true negative
+		settings['negative_image_names'].append(image_name_base)
+#		print(image_name_base, 'is negative image')
+		
 	
 	#Get bounds and transform vertices
 	geotiff = gdal.Open(tif_path)
@@ -102,6 +119,7 @@ def read_image_calfin(i, settings, metrics):
 	image_settings['meters_per_1024_pixel'] = meters_per_1024_pixel
 	image_settings['image_name_base'] = image_name_base
 	image_settings['domain'] = domain
+	image_settings['year'] = int(year)
 	image_settings['i'] = i
 
 
@@ -144,6 +162,65 @@ def preprocess_image_calfin(settings, metrics):
 	image_settings['fjord_boundary_final_f32'] = fjord_boundary_final_f32
 
 
+def read_image_calfin_shapefile_mask(i, settings, metrics):
+	"""Reads CALFIN style image inputs and converts Shapefile into standard masks. Also extracts resolution info from GeoTiff for error analysis."""
+	validation_files = settings['validation_files']
+	tif_source_path = settings['tif_source_path']
+	fjord_boundaries_path = settings['fjord_boundaries_path']
+	image_settings = settings['image_settings']
+	date_index = settings['date_index']
+	
+	
+	image_path = validation_files[i]
+	image_dir = os.path.dirname(image_path) 
+	image_name = os.path.basename(image_path)
+	image_name_base = os.path.splitext(image_name)[0]
+	image_name_base_parts = image_name_base.split('_')
+	domain = image_name_base_parts[0]
+	date = image_name_base_parts[date_index]
+	year = date.split('-')[0]
+	
+	#initialize paths
+	mask_path = os.path.join(image_dir, image_name_base + '_mask.png')
+	tif_path = os.path.join(tif_source_path, domain, year, image_name_base + '.tif')
+#	raw_save_path = os.path.join(save_path, image_name_base + '_raw.png')
+#	mask_save_path = os.path.join(save_path, image_name_base + '_mask.png')
+#	pred_save_path = os.path.join(save_path, image_name_base + '_pred.png')
+	fjord_boundary_path = os.path.join(fjord_boundaries_path, domain + "_fjord_boundaries.png")
+	
+	#Read in raw/mask image pair
+	img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
+	mask_uint8 = imread(mask_path) #np.uint8 [0, 255]
+	fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
+	if img_3_uint8.shape[2] != 3:
+		img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+		
+	#Detect if this image is supposed to have a front or not by seeing if its standard deviation is below threshold epsilon
+	epsilon = 1e-4
+	if np.nan_to_num(np.std(mask_uint8)) < epsilon: #and there is no front, it's a true negative
+		settings['negative_image_names'].append(image_name_base)
+#		print(image_name_base, 'is negative image')
+		
+	
+	#Get bounds and transform vertices
+	geotiff = gdal.Open(tif_path)
+	geoTransform = geotiff.GetGeoTransform()
+	meters_per_native_pixel = (np.abs(geoTransform[1]) + np.abs(geoTransform[5])) / 2
+	resolution_1024 = (img_3_uint8.shape[0] + img_3_uint8.shape[1])/2
+	resolution_native = (geotiff.RasterXSize + geotiff.RasterYSize) / 2
+	meters_per_1024_pixel = resolution_native / resolution_1024 * meters_per_native_pixel
+	
+	image_settings['unprocessed_raw_image'] = img_3_uint8
+	image_settings['unprocessed_mask_image'] = mask_uint8
+	image_settings['unprocessed_fjord_boundary'] = fjord_boundary
+	image_settings['resolution_1024'] = resolution_1024
+	image_settings['meters_per_1024_pixel'] = meters_per_1024_pixel
+	image_settings['image_name_base'] = image_name_base
+	image_settings['domain'] = domain
+	image_settings['year'] = int(year)
+	image_settings['i'] = i
+
+
 def read_image_mohajerani(i, settings, metrics):
 	"""Reads Mohajerani style image inputs into memory. Uses static scaling for Helheim error analysis."""
 	validation_files = settings['validation_files']
@@ -158,7 +235,7 @@ def read_image_mohajerani(i, settings, metrics):
 	domain = image_name_base_parts[0]
 	
 	#initialize paths
-	mask_path = os.path.join(image_dir, image_name_base + '_mask.png')
+	mask_path = os.path.join(image_dir, image_name_base.replace('Subset', 'Front') + '.png')
 #	raw_save_path = os.path.join(save_path, image_name_base + '_raw.png')
 #	mask_save_path = os.path.join(save_path, image_name_base + '_mask.png')
 #	pred_save_path = os.path.join(save_path, image_name_base + '_pred.png')

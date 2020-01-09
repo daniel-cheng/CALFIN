@@ -45,7 +45,7 @@ def initialize(img_size):
 	validation_files = glob.glob(r"..\training\data\validation\Helheim*B[0-9].png")
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\mohajerani_on_calfin"
+	dest_root_path = r"..\outputs\calfin_on_zhang_esa_cci"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
@@ -58,7 +58,7 @@ def initialize(img_size):
 	
 	#Intialize processing pipeline variables
 	settings = dict()
-	settings['driver'] = 'mohajerani_on_calfin'
+	settings['driver'] = 'calfin_on_zhang_esa_cci'
 	settings['validation_files'] = validation_files
 	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
 	settings['model'] = model
