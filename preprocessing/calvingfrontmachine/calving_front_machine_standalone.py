@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QAction
 from qgis.core import *
 from qgis.utils import iface
 
-import os, shutil, glob, subprocess
+import os, shutil, glob, subprocess, fnmatch
 import numpy as np
 
 from collections import defaultdict
@@ -35,12 +35,16 @@ def domainInRaster(rasterLayer: QgsRasterLayer, domainLayer: QgsVectorLayer) -> 
 	domain = feature.geometry().boundingBox()
 	prj = geotiff.GetProjection()
 	srs = osr.SpatialReference(wkt=prj)
-	rasterCRS = srs.GetAttrValue("PROJCS|AUTHORITY", 0) + ":" + srs.GetAttrValue("PROJCS|AUTHORITY", 1)
-	if (rasterCRS is None):
-		rasterCRS = srs.GetAttrValue("AUTHORITY", 0) + ":" + srs.GetAttrValue("AUTHORITY", 1)
+	if srs.GetAttrValue("PROJCS|AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("PROJCS|AUTHORITY", 1)
+	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
+	else:
+		epsgCode = str(32621)
+	rasterCRS = "EPSG:" + epsgCode
 	
 	crs = rasterLayer.crs()
-	crs.createFromId(int(srs.GetAttrValue("AUTHORITY", 1)))
+	crs.createFromId(int(epsgCode))
 	
 	domainCRS = domainLayer.crs().authid()
 	bounds = geotiffWorldToPixelCoords(geotiff, domain, rasterCRS, domainCRS)
@@ -297,23 +301,27 @@ def layerWarp(rasterNode:QgsLayerTreeGroup, domainLayer:QgsVectorLayer) -> None:
 	geotiff = gdal.Open(fileSource)
 	prj = geotiff.GetProjection()
 	srs = osr.SpatialReference(wkt=prj)
-	rasterEpsgCode = srs.GetAttrValue("PROJCS|AUTHORITY", 0) + ":" + srs.GetAttrValue("PROJCS|AUTHORITY", 1)
-	domainEpsgCode = domainLayer.crs().authid()
-	if (rasterEpsgCode is None):
-		rasterEpsgCode = srs.GetAttrValue("AUTHORITY", 0) + ":" + srs.GetAttrValue("AUTHORITY", 1)
-	if (rasterEpsgCode != domainEpsgCode):
-		print('warping...', rasterEpsgCode, domainEpsgCode)
+	domainCRS = domainLayer.crs().authid()
+	if srs.GetAttrValue("PROJCS|AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("PROJCS|AUTHORITY", 1)
+	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
+	else:
+		epsgCode = str(32621)
+	rasterCRS = "EPSG:" + epsgCode
+	if (rasterCRS != domainCRS):
+		print('warping...', rasterCRS, domainCRS)
 		if not DRY_RUN:
 			parent = rasterNode.parent()
 			rasterName = rasterLayer.name()
 			
-			outSource = fileSource[0:-4] + "_" + domainEpsgCode[5:] + ".tif"
+			outSource = fileSource[0:-4] + "_" + domainCRS[5:] + ".tif"
 			#processing.algorithmHelp("gdal:warpreproject")
 			print(fileSource, outSource)
 			processing.run("gdal:warpreproject",
 				# {"INPUT":fileSource,
-				# "SOURCE_SRS":rasterEpsgCode,
-				# "TARGET_CRS":domainEpsgCode,
+				# "SOURCE_SRS":rasterCRS,
+				# "TARGET_CRS":domainCRS,
 				# "RESAMPLING":1, #Bilinear
 				# "NO_DATA":0,
 				# "DATA_TYPE":5, #Float32
@@ -326,8 +334,8 @@ def layerWarp(rasterNode:QgsLayerTreeGroup, domainLayer:QgsVectorLayer) -> None:
 				'OPTIONS': '',
 				'OUTPUT': outSource,
 				'RESAMPLING': 1, #Bilinear
-				'SOURCE_CRS': rasterEpsgCode,
-				'TARGET_CRS': domainEpsgCode,
+				'SOURCE_CRS': rasterCRS,
+				'TARGET_CRS': domainCRS,
 				'TARGET_EXTENT': None,
 				'TARGET_EXTENT_CRS': None,
 				'TARGET_RESOLUTION': None})
@@ -496,12 +504,16 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 	domain = feature.geometry().boundingBox()
 	prj = geotiff.GetProjection()
 	srs = osr.SpatialReference(wkt=prj)
-	rasterCRS = srs.GetAttrValue("PROJCS|AUTHORITY", 0) + ":" + srs.GetAttrValue("PROJCS|AUTHORITY", 1)
-	if (rasterCRS is None):
-		rasterCRS = srs.GetAttrValue("AUTHORITY", 0) + ":" + srs.GetAttrValue("AUTHORITY", 1)
+	if srs.GetAttrValue("PROJCS|AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("PROJCS|AUTHORITY", 1)
+	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
+		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
+	else:
+		epsgCode = str(32621)
+	rasterCRS = "EPSG:" + epsgCode
 	
 	crs = rasterLayer.crs()
-	crs.createFromId(int(srs.GetAttrValue("AUTHORITY", 1)))
+	crs.createFromId(int(epsgCode))
 	rasterLayer.setCrs(crs)
 	rasterLayer.triggerRepaint()
 	
@@ -510,13 +522,16 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 	bounds = geotiffWorldToPixelCoords(geotiff, domain, rasterCRS, domainCRS)
 	
 	img = geotiff.GetRasterBand(1)
-	img = img.ReadAsArray(0,0,geotiff.RasterXSize,geotiff.RasterYSize).astype(np.uint16)
+	img = img.ReadAsArray(0,0,geotiff.RasterXSize,geotiff.RasterYSize)
 	img = img[int(round(bounds.yMinimum())):int(round(bounds.yMaximum())), int(round(bounds.xMinimum())):int(round(bounds.xMaximum()))]
+	img = (img.astype(np.float32) / img.max() * 65535).astype(np.uint16)
 	
 	# print('Save subset:', subsetPath, resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '.png'))
 	if not DRY_RUN:
 		arrayToRaster(img, geotiff, bounds, subsetPath)
 		imsave(resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '.png'), img)
+		# imsave(resolve('small/' + domainLayer.name() + '/' + subsetName + '.png'), img)
+		# imsave(os.path.join(r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
 	try:
 		#Gather BQA info
 		fileSourceBQA = fileSource[:-7] + '_BQA.TIF'
@@ -604,19 +619,17 @@ def warpAndSaveSubsets(rasterLayers, rasterPrefix, domainLayers) -> list:
 	for i in range(rasterLen):
 		rasterLayerNode = rasterLayers[i]
 		rasterLayer = rasterLayerNode.layer()
-		if rasterLayer.name()[-2:] in rasterPrefix:
-			print('Raster (number):', rasterLayer.source())#, ' Progress:', str(i) + '/' + str(total), '(' + str((i * rasterLen) / total) + '%)')
-			for j in range(domainLen):
-				domainLayer = domainLayers[j]
-				domainLayer = domainLayer.layer()
-				rasterLayers[i] = layerWarp(rasterLayerNode, domainLayer)
-				rasterLayerNode = rasterLayers[i]
-				rasterLayer = rasterLayerNode.layer() #Reload layer in case of warping
-				if domainInRaster(rasterLayer, domainLayer):
-					subset_name = domainLayer.name() + "_" + rasterLayer.name()
-					print('Domain: ', domainLayer.name())#, ' Progress:', str((i * rasterLen + j) / total) + '%')
-					resolution = layerSubsetSave(rasterLayer, domainLayer, subset_name)
-					resolutions[domainLayer.name()].append(resolution)
+		print('Raster (number):', rasterLayer.source())#, ' Progress:', str(i) + '/' + str(total), '(' + str((i * rasterLen) / total) + '%)')
+		for j in range(domainLen):
+			domainLayer = domainLayers[j]
+			domainLayer = domainLayer.layer()
+			rasterLayers[i] = layerWarp(rasterLayerNode, domainLayer)
+			rasterLayerNode = rasterLayers[i]
+			rasterLayer = rasterLayerNode.layer() #Reload layer in case of warping
+			subset_name = domainLayer.name() + "_" + rasterLayer.name()
+			print('Domain: ', domainLayer.name())#, ' Progress:', str((i * rasterLen + j) / total) + '%')
+			resolution = layerSubsetSave(rasterLayer, domainLayer, subset_name)
+			resolutions[domainLayer.name()].append(resolution)
 	
 	# Calculate the median resolutions for each domain	
 	median_resolutions = []
@@ -722,7 +735,25 @@ def findGroups(root:QgsLayerTree):
 		if isinstance(child, QgsLayerTreeGroup):
 			result.append(child.name())
 			result.extend(findGroups(child))
-	return result			
+	return result	
+
+def findChildren(root:QgsLayerTree, matchString:str):
+	"""Return a string list of groups."""
+	result = []
+	matchStringParts = matchString.split('/', 1)
+	for child in root.children():
+		if fnmatch.fnmatch(child.name(), matchStringParts[0]):
+			if isinstance(child, QgsLayerTreeGroup):
+				if child.name().startswith(('1', '2')): 
+					
+					if int(child.name()) < 1985:
+						result.extend(findChildren(child, matchStringParts[1]))
+				else:
+					print(child.name())
+					result.extend(findChildren(child, matchStringParts[1]))
+			else:
+				result.append(child)
+	return result
 
 
 project = QgsProject.instance()
@@ -731,28 +762,29 @@ rasterPrefix = ['B5', 'B4', 'B7']
 groups = findGroups(root)
 
 # Get layer objects based on selection string values
-rasterGroupName = 'Upernavik Rasters'
+rasterGroupName = 'CalvingFronts/Rasters/*/*/*'
 rasterGroup = root.findGroup(rasterGroupName)
-rasterLayers = rasterGroup.findLayers()
-domainGroupName = 'Upernavik Domains'
+rasterLayers = findChildren(root, rasterGroupName)
+domainGroupName = 'CalvingFronts/Domains/*'
 domainGroup = root.findGroup(domainGroupName)
-domainLayers = [domainGroup.findLayers()[1]]
+domainLayers = findChildren(root, domainGroupName)
 
-check_subsetting = False
+# Get layer objects based on selection string values
+# rasterGroupName = 'CalvingFronts/Rasters/Upernavik/*/*'
+# rasterGroup = root.findGroup(rasterGroupName)
+# rasterLayers = findChildren(root, rasterGroupName)
+# domainGroupName = 'CalvingFronts/Domains/Upernavik*'
+# domainGroup = root.findGroup(domainGroupName)
+# domainLayers = findChildren(root, domainGroupName)
+
+rasterLayers
+check_subsetting = True
 check_saving = False
 check_masking = False
 check_postprocessing = False
-check_vectorization = True
-check_adding = True
+check_vectorization = False
+check_adding = False
 
 #Save subsets of raster source files using clipping domain
 if check_subsetting:
 	perform_subsetting(rasterLayers, rasterPrefix, domainLayers)
-
-#Run Neural Net and perform masking/postprocessing/additional training data saving
-if check_masking or check_postprocessing or check_saving:
-	processLayers(domainLayers, check_masking, check_saving, check_postprocessing)
-
-if check_vectorization or check_adding:
-	perform_vectorization(rasterLayers, domainLayers, rasterPrefix, check_vectorization, check_adding)
-

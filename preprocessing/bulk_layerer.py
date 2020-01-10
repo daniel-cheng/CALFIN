@@ -18,11 +18,15 @@ raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_raw"
 temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_temp"
 dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_processed"
 
+raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\raw"
+temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\temp"
+dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\processed"
+
 #raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_raw"
 #temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_temp"
 #dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation_processed" 
 
-for base_name in os.listdir(raw_path):		
+for base_name in os.listdir(raw_path):
 	raw_path = os.path.join(temp_path, base_name)
 	hdr_path = os.path.join(temp_path, base_name[0:-4] + '_hdr.png')
 	sh_path = os.path.join(temp_path, base_name[0:-4] + '_sh.png')

@@ -82,6 +82,7 @@ def initialize(img_size):
 	settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
 	settings['scaling'] = scaling
 	settings['domain_scalings'] = dict()
+	settings['always_use_extracted_front'] = False
 	settings['mask_confidence_strength_threshold'] = 0.875
 	settings['edge_confidence_strength_threshold'] = 0.575
 	settings['sub_padding_ratio'] = 1.5
