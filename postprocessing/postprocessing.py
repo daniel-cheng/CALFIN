@@ -326,6 +326,7 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 	
 	#If front is detected, proceed with extraction
 	if not results_polyline is None:
+		use_extracted_front = use_extracted_front or settings['always_use_extracted_front']
 		if use_extracted_front:
 			polyline_image = results_polyline[0][:,:,0] / 255.0
 			polyline_coords = results_polyline[1]
