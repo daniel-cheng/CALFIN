@@ -10,3 +10,6 @@
 [submodule "paper/PlotNeuralNet"]
 	path = paper/PlotNeuralNet
 	url = https://github.com/daniel-cheng/PlotNeuralNet.git
+[submodule "training/FrontLearning"]
+	path = training/FrontLearning
+	url = https://github.com/yaramohajerani/FrontLearning.git
