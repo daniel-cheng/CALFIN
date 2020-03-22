@@ -8,14 +8,16 @@
 \usepackage{multirow}
 \begin{document}
 
-\title{Calving Front Machine (CALFIN): Automated Calving Front Mask Dataset and Deep Learning Methodology for East/West Greenland, 1972-2019}
+\title{Calving Front Machine (CALFIN): Automated Calving Front Dataset and Deep Learning Methodology for East/West Greenland, 1972-2019}
 
 \Author[1]{Daniel}{Cheng}
 \Author[1]{Yara}{Mohajerani}
 \Author[2]{Michael}{Wood}
-\Author[1]{Isabella}{Velicogna}
 \Author[2]{Eric}{Larour}
 \Author[1]{Wayne}{Hayes}
+\Author[1]{Isabella}{Velicogna}
+\Author[1,2]{Eric}{Rignot}
+
 
 \affil[1]{University of California at Irvine, Irvine CA, USA}
 \affil[2]{Jet Propulsion Laboratory, California Institute of Technology, Pasadena CA, USA}
@@ -35,58 +37,50 @@
 \maketitle
 
 \begin{abstract}
-We present Calving Front Machine (CALFIN), a dataset of calving front masks for 66 glaciers along East/West Greenland. The dataset is generated from Landsat imagery from 1972 to 2019. This dataset is unique in scope, and provides new constraints on glacial evolution over the time period. The current iteration offers a new opportunity to explore previous trends and validate existing models moving forward.
+We present Calving Front Machine (CALFIN), an automated method for extracting calving fronts from satellite imagery. We generate results for 66 glaciers along East/West Greenland from 1972 to 2019. We output these results as a dataset, and provide new constraints on glacial evolution over the time period. This method is uniquely robust to clouds, illumination differences, ice mélange, and Landsat-7 Scan Line Corrector errors. The current implementation offers a new opportunity to explore previous trends, and validate existing models moving forward.
 
-The dataset contains data that is automatically generated. We present our automated methodology, which utilizes deep learning in the form of the CALFIN Neural Network. This approach builds on existing work \citep{mohajerani2019} \citep{zhang2019} \citep{baumhoer2019}. The network itself is derived from U-Net/DeeplabV3+ Xception architectures \citep{ronneberger2015} \citep{chen2018}. Additional post-processing techniques allow our method to achieve accurate and useful segmentation of raw images into Shapefile outputs. This methodology is uniquely robust to clouds, illumination differences, ice mélange, and Landsat-7 Scan Line Corrector errors.
+This method utilizes deep learning, in the form of the Google DeeplabV3+ Xception derived CALFIN Neural Network. This approach builds on existing work by Mohajerani et al., Zhang et al., and Baumhoer et al. Additional post-processing techniques allow our method to achieve accurate and useful segmentation of raw images into Shapefile outputs. 
 
-We perform an analysis of CALFIN results, which approach human levels of accuracy in comparison to manually delineated fronts. Additionally, we perform a model inter-comparison to evaluate CALFIN's performance against existing methodologies. We showcase CALFIN's ability to generalize to images it has not trained on. We achieve a mean error of 80.10 meters from the true front, on a set of 162 testing images. %TODO/Save for future paper? We show the applicability of CALFIN's methodology to SAR data, Antarctic glaciers, as well as non-marine terminating glaciers.
+We achieve are often indistinguishable from the manually-curated fronts, deviating from such test data by 1 pixel (about 80 meters) or less XXX% of the time across 162 test images.
 
-At this stage, we seek feedback from the community and welcome any critiques or questions regarding the dataset and/or our methods. This work was conducted as a collaboration between NASA’s Jet Propulsion Laboratory and the University of California, Irvine.
-\citep{ronneberger2015}
-\citep{iglovikov2018}
-\citep{chollet2016}
-\citep{chen2017}
-\citep{chen2018}
-\citep{bjork2015}
-\citep{xie2015}
-\citep{garcia2012}
+CALFIN excels among the current state of the art. We show this by performing a model inter-comparison to evaluate CALFIN's performance against existing methodologies. We also showcase CALFIN's ability to generalize to SAR and MODIS imagery. We achieve a mean error of 2.25 pixels (86.76 meters) from the true front on a diverse set of 162 testing images.
 
 \end{abstract}
 
 \introduction
 %Introduction
-The evolution of Greenland's tidewater glaciers is an important constraint on the evolution of the Greenland Ice Sheet as a whole. Likewise, changes in the Greenland are important in tracking and predicting changes in the climate overall. Constraining Greenland's glacial evolution is thus an important part of improving our understanding of Earth's climate.
+The evolution of Greenland's tidewater glaciers is an important constraint on the evolution of the Greenland Ice Sheet as a whole. Likewise, changes in Greenland are important in tracking and predicting changes in the climate overall. Constraining Greenland's glacial evolution is thus an important part of improving our understanding of Earth's changing climate.
 
 %Comment out subsection headers?
-\subsection{Motivation}
-One such constraint on glacial evolution is the position of glacial calving fronts over time. However, delineating the calving fronts of marine-terminating glaciers is typically a time-intensive manual process. As a result, many glaciers receive less labeling than is ideal, or none at all. Additionally, existing glaciers that do receive annual labeling do not capture intra-annual variability. 
+%\subsection{Motivation}
+One constraint on glacial evolution is the position of glacial calving fronts over time. Currently, most calving front delineation is done with time-consuming manual labor. This results in severe under-coverage of available satellite imagery. As a result, many smaller glaciers have {\em no} calving front data, while others have annual or seasonal coverage at best.
 
-The need for an improved methodology is apparent. An automated methodology allows for the solution to previously stated issues. However, the automation of glacial calving front delineation is non-trivial. Confounding issues - such as cloud cover, ice mélange, shadowing,  - present an impediment to naive techniques such as edge detection \citep{paravolidakis2016} and texture analysis \citep{malik2001}. Ultimately, emerging techniques in computer science provide a promising approach to this problem. More specifically, machine learning and deep neural networks provide a robust, scalable, and accurate method to automatically delineate tidewater glacial calving fronts.
+The automation of glacial calving front delineation would would alleviate these issues, but is a non-trivial task. Confounding issues - such as cloud cover, ice mélange, shadowing,  - present an impediment to naive techniques such as edge detection \citep{paravolidakis2016} and texture analysis \citep{malik2001}. Fortunately, modern machine learning techniques and deep neural networks provide a robust, scalable, and accurate method to solve this task.
 
-\subsection{Methodology}
-In this study, we evaluate automated methods of delineating glacial termini. The glaciers studied are located along East/West Greenland. They include Helheim, Kangerlussuaq, Kong Oscar, Hayes, Rink Isbrae, Upernavik, Jakobshavn, Kangiata Nunaata, and 58 other nearby glaciers. The intra-annual time series studied spans from 1972 to June 2019. Our source data is the Landsat Near Infrared (NIR) band.
+%\subsection{Existing Work}
+Existing efforts have been made by ESA's Climate Change Initiative to provide calving front locations for 26 Greenlandic basins, from 1990-2016\citep{enveo2017}. Additionally, the Programme for Monitoring of the Greenland Ice Sheet provides calving fronts for 47 glaciers, but is limited to annual measurements from 1990-2018\citep{andersen2019}. Additionally, there are many individual teams including Bunce et al., Joughin et al., Carr et al., Murray et al., and Catania et al. Moreover, there are growing efforts to provide a unified database of manually delineated calving fronts. Nevertheless, the constant cost of adding of new data - as well as the current gaps in shared data - implies a consistent need for new data assimilation efforts, and the necessity of automation.
 
-We determine that convolutional neural networks present the most promising automated methodology. We determine that the UNet-inspired DeeplabV3+ architecture, with Xception backbone, is the most promising neural network architecture. We release a modified version of the DeeplabV3+ network, along with the final weights we use for dataset production. We release a set of data products, Calving Front Machine (CALFIN), which consists of both calving front masks, as well as Shapefile polylines for the 66 glacial basins along East/West Greenland.
+%\subsection{Methodology}
+In this study, we present novel contributions to automated glacial calving front delineation. We apply our automated methods to Helheim, Kangerlussuaq, Kong Oscar, Hayes, Rink Isbrae, Upernavik, Jakobshavn, Kangiata Nunaata, and 58 other nearby glaciers along East/West Greenland. We use Landsat NIR band images spanning 1972 to 2019. We augment existing manually-curated fronts with our own, to be used as training and testing data for our automated algorithm.
 
-\subsection{Existing Work}
-Existing efforts have been made by ESA's Climate Change Initiative to provide calving front locations for 26 Greenlandic basins, from 1990-2016\citep{enveo2017}. Additionally, the Programme for Monitoring of the Greenland Ice Sheet provides calving fronts for 47 glaciers, but is limited to annual measurements from 1990-2018\citep{andersen2019}. Moroever, there are growing efforts to provide a unified database of manually delineated calving fronts. Nonetheless, the constant cost of adding of new data - as well as the current gaps in shared data - implies a consistent need for new data assimilation efforts.
+We utilize machine learning and deep convolutional neural networks to automatically process our source data. We determine that the UNet-inspired DeeplabV3+ architecture, with Xception backbone, is the most capable neural network architecture. We contribute a modified version of the DeeplabV3+ network, along with the final weights we use for dataset production. We contribute the generated data products, Calving Front Machine (CALFIN). This consists of both calving front masks, as well as Shapefile polylines for each of the 66 Greenlandic glacial basins.
 
-We evaluate existing work in the field, performed by Mohajerani, Zhang, and Baumhoer. These studies offer the potential to cross-validate the viability of our own methods.
+We compare our methodology and its results against studies by Mohajerani et al., Zhang et al., and Baumhoer et al.
 
-\subsection{Takeaways}
+%\subsection{Takeaways}
 Our main takeaway is the viability of generalized neural networks for automated calving front detection. Specifically, a well trained network can approach human levels of accuracy in picking arbitrary glacial calving fronts - without retraining. This demonstration of learning also lends credence to this methodology as a viable approach to other data assimilation tasks.
 
-Our key goal is to provide high spatial accuracy, dense temporal resolution, and long time series calving front masks for the cryospheric/climate modeling community. We look forward to fulfilling our part in this collaborative goal, as we continue to improve our method and release additional data moving forward.
+Our key goal and contribution is to automatically provide high spatial accuracy, dense temporal resolution, and long time series calving front locations for the cryospheric/climate modeling community.
 
 \section{Data - Source and Preprocessing}
-This study focuses on the automated data assimilation of remote sensing data. In this section, we describe the following: we evaluate data sources with high spatio-temporal resolution; after selecting Landsat as our data source, we describe the preprocessing methods required for input into our neural network processing step.
+In this section, we evaluate data sources with high spatio-temporal resolution and conclude that Landsat is the best source for our study. We then describe the preprocessing methods required for input into our neural network processing step.
 
 \subsection{Data - Source}
 
 \begin{wrapfigure}{r}{9.0cm}
 \noindent
 \begin{minipage}{9.0cm}
-    \caption{A comparison of the data sources available for use. Long time series, high resolution, high repeat cycle attributes are desired, in that order. Italicized entries represent optimal sources within each attribute. }
+    \caption{A comparison of the data sources available for use. Long time series, high resolution, high repeat cycle attributes are desired, in that order. Italicized entries represent optimal values within each attribute. }
     \label{tab:table-data_source}
     \resizebox{9.0cm}{!}{
     \begin{tabular}{|c|c|c|c|c|}
@@ -104,7 +98,7 @@ This study focuses on the automated data assimilation of remote sensing data. In
 
 \begin{minipage}{9.0cm}
     \includegraphics[width=9.0cm]{all_Landsat_bands_annotated.png}
-    \caption{Landsat band availability overlaid a graph of atmospheric transmission percentages for various wavelengths. The Near-Infrared The NIR band (highlighted in pink) benefits from both long time series availability, as well as high atmospheric transmittance.}
+    \caption{Landsat band availability overlaid a graph of atmospheric transmission percentages for various wavelengths \citep{mase2019}. The Near-Infrared The NIR band (highlighted in pink) benefits from both long time series availability, as well as high atmospheric transmittance.}
 \end{minipage}
 \end{wrapfigure}
 
@@ -216,7 +210,7 @@ The following subsections cover our solutions to each of the problems above. See
 \subsection{Post-Processing - Pixel Mask to Coastal Polyline}
 The first problem is that the raw pixel mask is often imperfect. Currently, CALFIN-NN cannot always completely determine the calving front in an arbitrary image. As a consequence, traditional vectorization methods using OpenCV or GDAL will not work with the imperfect, non-closed contours seen in  CALFIN-NN's output. However, the nature of its inaccuracies are predictable. Thus we exploit the characteristics of CALFIN-NN's output to compensate for its specific inaccuracies. $show examples here!$
 
-To address this first constraint, we develop an algorithm that finds the polyline representing the coastline in the pixel mask. This algorithm shares similarities to (but is independent from) Michał Żołnieruk's point cloud to line approximation method \citep{żołnieruk2016}. Our algorithm is implemented by converting each pixel in the mask to nodes in a graph, and finding the single longest path in the graph's minimum spanning tree. This path corresponds to the the coastline edge. Note that this algorithm is not guaranteed to find the correct calving front, as it is still limited by the correctness of CALFIN-NN's outputs.
+To address this first constraint, we develop an algorithm that finds the polyline representing the coastline in the pixel mask. This algorithm shares similarities to (but is independent from) Michał Żołnieruk's point cloud to line approximation method \citep{zolnieruk2016}. Our algorithm is implemented by converting each pixel in the mask to nodes in a graph, and finding the single longest path in the graph's minimum spanning tree. This path corresponds to the the coastline edge. Note that this algorithm is not guaranteed to find the correct calving front, as it is still limited by the correctness of CALFIN-NN's outputs.
 
 A detailed explanation of the algorithm follows below.
 
@@ -266,11 +260,11 @@ The second method is the Mean Distance from the True Front. This is the same met
 \subsection{Validation Results}
 The table below prints the above metrics for the appropiate validation sets, as well as the values from comparable studies. 
 
-CALFIN performs well on the Mohajerani validation set, though the reverse is not true. We assert that this shows an improvement in the generalization capability of the CALFIN network over Mohajerani et al. 
+CALFIN performs well on the Mohajerani validation set, though the reverse is not true. We assert that this shows an improvement in the generalization capability of the CALFIN network over Mohajerani et al (78.04m vs 96.31m). This is supported by the results of the model inter-comparison described in section 7.3, where we run the model used by Mohajerani et al. on Helheim subsets in CALFIN's validation set (125.01m vs 782.24m).
 
-CALFIN does not perform competitively on the Zhang validation set, which consists of SAR data. We posit that increasing CALFIN-NN's input resolution, higher resolution SAR data, and additional training will enable CALFIN to incorporate SAR data without further modification. 
+CALFIN does not perform competitively on the Zhang validation set, which consists of SAR data. We note that despite being restricted to using lower resolution QuickLook subsets, we still achieve a better per-pixel accuracy measure than Zhang et al (4.35px vs 5.5px). We posit that increasing CALFIN-NN's input resolution, higher resolution SAR data, and additional training will enable CALFIN to incorporate SAR data without further modification. 
 
-Testing on the Antarctic SAR Baumhoer validation set was deemed out of scope for this study on Greenlandic Landsat data.
+Testing on the Antarctic SAR Baumhoer validation set was deemed out of scope for this study on Greenlandic Landsat data. However, we provide its metrics here for completeness.
 
 \begin{table}[h]
 \caption{Error estimate and classification accuracy for all available combinations of model-validation sets. }
@@ -279,28 +273,30 @@ Testing on the Antarctic SAR Baumhoer validation set was deemed out of scope for
 \label{Error}
 \resizebox{0.85\linewidth}{!}{%
 \begin{tabular}{lllll}
-model-validation & \multicolumn{2}{l}{Distance} & \multicolumn{2}{l}{IoU} \\
+model/validation & \multicolumn{2}{l}{Distance} & \multicolumn{2}{l}{IoU} \\
  & ~Mean & Median & Ice/Ocean & 3-pixel Front \\
-CALFIN-162 & 80.10m,~2.12px & 44.59m, 1.21px &  &  \\
-CALFIN-Helheim & 123.01m, 2.32px & 61.47m, 1.22px &  &  \\
-CALFIN-Mohajerani & 78.04m, 2.04px &  &  &  \\
-CALFIN-Zhang & 336.48m, 4.35px & 190.88m, 2.74px &  & 0.3300 \\
-CALFIN-Zhang-ESA-CCI &  &  &  &  \\
-Mohajerani-CALFIN-Helheim & 782.85m, 25.24px & 322.47m, 10.47px & 0.9729 & 0.0302 \\
-Mohajerani-Mohajerani & 96.31m, 2.71px & - & - & - \\
-Zhang-Zhang & 33m, 5.5px & - & - & - \\
-Zhang-Zhang-ESA-CCI & 104m, 17.3px & - & - & - \\
-Baumhoer-Baumhoer & 108m, 2.69px & - & 0.905 & -
+CALFIN/CALFIN-train &  &  &  &  \\
+CALFIN/CALFIN-validation & 80.10m,~2.12px & 44.59m, 1.21px &  &  \\
+CALFIN/CALFIN-Helheim & 123.01m, 2.32px & 61.47m, 1.22px &  &  \\
+CALFIN/Mohajerani & 78.04m, 2.04px &  &  &  \\
+CALFIN/Zhang & 336.48m, 4.35px & 190.88m, 2.74px &  & 0.3300 \\
+CALFIN/Zhang-ESA-CCI &  &  &  &  \\
+Mohajerani/CALFIN-Helheim & 782.85m, 25.24px & 322.47m, 10.47px & 0.9729 & 0.0302 \\
+Mohajerani/Mohajerani & 96.31m, 2.71px & - & - & - \\
+Zhang/Zhang & 33m, 5.5px & - & - & - \\
+Zhang/Zhang-ESA-CCI & 104m, 17.3px & - & - & - \\
+Baumhoer/Baumhoer & 108m, 2.69px & - & 0.905 & -
 \end{tabular}
 }
 \end{table}
 
 \subsection{Detection Accuracy}
-We show CALFIN's ability to automatically filter images where even humans would not be able to detect calving fronts. To do this, we include 13 images in the test set which contain adverse image conditions that do not contain discernible calving fronts. We calculate the true positive, true negative, false positive, and false negative rates for the entire 162 image data set, and output the confusion matrix below. We note that CALFIN does not output any false positives. This behavior is desired, as it ensures we output fronts conservatively, rather than output incorrect fronts.
+We show CALFIN's ability to automatically filter images where even humans would not be able to detect calving fronts. To do this, we include 13 images in the test set which contain adverse image conditions that do not contain discernible calving fronts. We calculate the true positive, true negative, false positive, and false negative rates for the entire 162 image data set, and output the confusion matrix below. We note that CALFIN does not output any false positives on our validation set. This behavior is desired, as it ensures we output fronts conservatively, rather than output incorrect fronts.
 
 
 \begin{table}[h]
 \centering
+\caption{Confusion matrix showing CALFIN's ability to not only detect fronts in images, but to discern whether there are any fronts at all. The T column/row indicates the presence of fronts, and the F column/row indicates the lack thereof}
 \refstepcounter{table}
 \label{confusion-matrix}
 \begin{tabular}{llll}
@@ -318,11 +314,11 @@ We show CALFIN's ability to automatically filter images where even humans would 
 We generate results that are two-fold in nature. First, we release the calving front data we produced throughout the study. Secondly, we release an implementation of CALFIN-NN to the scientific community for use, study, and further development.
 
 \subsection{Results - CALFIN Dataset}
-We release the CALFIN dataset, which spans 66 domains across East/West Greenland over the period 1972-2019. This consists of 1703 manually delineated and over 20000 automatically delineated calving fronts.
+We release the CALFIN dataset, which spans 66 domains across East/West Greenland over the period 1972-2019. This consists of over 1600 manually delineations and over 20000 automatically delineated calving fronts.
 
 We provide 2 levels of CALFIN data products. 
 
-Level 0 products include the raw inputs and basic outputs used for CALFIN-NN. These products consist of the raw single-band GeoTiff subsets for each domain, the domain Shapefiles used for subsetting, raw manual/auto-generated coastline pixel masks, and a Quality Assurance image for validation purposes. Note that we do not provide the original Landsat GeoTIFF files. Use cases of Level 0 products may include studies of reproducibility, validation, or training new neural networks.
+Level 0 products include the raw inputs and basic outputs used for CALFIN-NN. These products consist of the raw single-band GeoTiff subsets for each domain, the domain Shapefiles used for subsetting, raw manual/auto-generated coastline pixel masks, and a Quality Assurance image for validation purposes. Use cases of Level 0 products may include studies of reproducibility, validation, or training new neural networks.
 
 Level 1 product includes the calving front Shapefile. This product consists only of the isolated, refined, and geo-referenced calving fronts for each time step/domain. Shapefiles and their associated source GeoTIFFs lie in the EPSG:32624 and EPSG:32621 projections for East/West Greenland, respectively.
 

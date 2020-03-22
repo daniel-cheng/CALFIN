@@ -122,6 +122,164 @@ def plot_validation_results(settings, metrics):
 		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
 
 
+def plot_production_results(settings, metrics):
+	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
+	empty_image = settings['empty_image']
+	saving = settings['saving']
+	plotting = settings['plotting']
+	show_plots = settings['show_plots']
+	dest_path_qa = settings['dest_path_qa']
+	image_settings = settings['image_settings']
+	
+	image_name_base = image_settings['image_name_base']
+	bounding_box = image_settings['actual_bounding_box']
+	raw_image = image_settings['raw_image']
+	unprocessed_original_raw = image_settings['unprocessed_original_raw']
+	original_raw = image_settings['original_raw']
+	pred_image = image_settings['pred_image']
+	polyline_image = image_settings['polyline_image_dilated']
+	index = str(image_settings['i'] + 1) + '-' + str(image_settings['box_counter'])
+	
+	#Set figure size for 1600x900 resolution, tight layout
+	plt.rcParams["figure.figsize"] = (16,4.5)
+	
+	#Create the color key for each subplots' legends	
+	preprocess_legend = [Line2D([0], [0], color='#ff0000', lw=4),
+					     Line2D([0], [0], color='#00ff00', lw=4),
+	                     Line2D([0], [0], color='#0000ff', lw=4)]
+	nn_legend = [Line2D([0], [0], color='#00ff00', lw=4),
+	             Line2D([0], [0], color='#ff0000', lw=4)]
+	front_legend = [Line2D([0], [0], color='#ff0000', lw=4)]
+#	polyline_image[:,:,0] = skeletonize(polyline_image[:,:,0])
+	#Begin plotting the 2x3 validation results output
+	original_raw_gray = np.clip(np.stack((original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0), axis=-1), 0.0, 1.0)
+#	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
+	start_point = (int(bounding_box[1]), int(bounding_box[0]))
+	end_point = (int(bounding_box[1] + bounding_box[3]), int(bounding_box[0] + bounding_box[2]))
+	original_raw_gray_patched = cv2.rectangle(original_raw_gray * 255, start_point, end_point, (255, 0, 0), 1).astype(np.uint8)
+	raw_image = np.clip(raw_image, 0.0, 1.0)
+	pred_image = np.clip(pred_image, 0.0, 1.0)
+	extracted_front = np.clip(np.stack((polyline_image[:,:,0], empty_image, empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
+	
+	if plotting:
+		#Initialize plots
+		f, axarr = plt.subplots(1, 4, num=index)
+		f.suptitle(image_name_base, fontsize=18, weight='bold')
+	
+		axarr[0].imshow(original_raw_gray_patched)
+		axarr[0].set_title(r'$\bf{a)}$ Raw Subset')
+		
+		axarr[1].imshow(raw_image)
+		axarr[1].set_title(r'$\bf{b)}$ Preprocessed Input')
+		axarr[1].legend(preprocess_legend, ['Raw', 'HDR', 'S/H'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=3)
+		axarr[1].axis('off')
+		
+		axarr[2].imshow(pred_image)
+		axarr[2].set_title(r'$\bf{c)}$ NN Output')
+		axarr[2].legend(nn_legend, ['Land/Ice', 'Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=2)
+		axarr[2].axis('off')
+		
+		axarr[3].imshow(extracted_front)
+		axarr[3].set_title(r'$\bf{d)}$ Extracted Front')
+		axarr[3].legend(front_legend, ['Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=1)
+		axarr[3].axis('off')
+		
+		#Refresh plot if necessary
+		plt.subplots_adjust(top = 0.90, bottom = 0.075, right = 0.97, left = 0.03, hspace = 0.3, wspace = 0.2)
+		f.canvas.draw()
+		f.canvas.flush_events()
+	
+	#Save figure
+	if saving:
+		domain = image_settings['domain']
+		dest_path_qa_domain = os.path.join(dest_path_qa, domain)
+		if not os.path.exists(dest_path_qa_domain):
+			os.mkdir(dest_path_qa_domain)
+		
+		if plotting:
+			plt.savefig(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_results.png'))
+			if not show_plots:
+				plt.close()
+		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
+
+
+def plot_troubled_ones(settings, metrics):
+	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
+	saving = settings['saving']
+	plotting = settings['plotting']
+	show_plots = settings['show_plots']
+	dest_path_qa_bad = settings['dest_path_qa_bad']
+	image_settings = settings['image_settings']
+	
+	image_name_base = image_settings['image_name_base']
+	bounding_box = image_settings['actual_bounding_box']
+	raw_image = image_settings['raw_image']
+	unprocessed_original_raw = image_settings['unprocessed_original_raw']
+	original_raw = image_settings['original_raw']
+	pred_image = image_settings['pred_image']
+	index = str(image_settings['i'] + 1) + '-' + str(image_settings['box_counter'])
+	
+	#Set figure size for 1600x900 resolution, tight layout
+	plt.rcParams["figure.figsize"] = (16,4.5)
+	
+	#Create the color key for each subplots' legends	
+	preprocess_legend = [Line2D([0], [0], color='#ff0000', lw=4),
+					     Line2D([0], [0], color='#00ff00', lw=4),
+	                     Line2D([0], [0], color='#0000ff', lw=4)]
+	nn_legend = [Line2D([0], [0], color='#00ff00', lw=4),
+	             Line2D([0], [0], color='#ff0000', lw=4)]
+#	polyline_image[:,:,0] = skeletonize(polyline_image[:,:,0])
+	#Begin plotting the 2x3 validation results output
+	original_raw_gray = np.clip(np.stack((original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0, original_raw[:,:,0] / 255.0), axis=-1), 0.0, 1.0)
+#	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
+	start_point = (int(bounding_box[1]), int(bounding_box[0]))
+	end_point = (int(bounding_box[1] + bounding_box[3]), int(bounding_box[0] + bounding_box[2]))
+	original_raw_gray_patched = cv2.rectangle(original_raw_gray * 255, start_point, end_point, (255, 0, 0), 1).astype(np.uint8)
+	raw_image = np.clip(raw_image, 0.0, 1.0)
+	pred_image = np.clip(pred_image, 0.0, 1.0)
+	
+	if plotting:
+		#Initialize plots
+		f, axarr = plt.subplots(1, 3, num=index)
+		f.suptitle(image_name_base, fontsize=18, weight='bold')
+	
+		axarr[0].imshow(original_raw_gray_patched)
+		axarr[0].set_title(r'$\bf{a)}$ Raw Subset')
+		
+		axarr[1].imshow(raw_image)
+		axarr[1].set_title(r'$\bf{b)}$ Preprocessed Input')
+		axarr[1].legend(preprocess_legend, ['Raw', 'HDR', 'S/H'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=3)
+		axarr[1].axis('off')
+		
+		axarr[2].imshow(pred_image)
+		axarr[2].set_title(r'$\bf{c)}$ NN Output')
+		axarr[2].legend(nn_legend, ['Land/Ice', 'Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=2)
+		axarr[2].axis('off')
+		
+		
+		#Refresh plot if necessary
+		plt.subplots_adjust(top = 0.85, bottom = 0.075, right = 0.97, left = 0.03, hspace = 0.3, wspace = 0.2)
+		f.canvas.draw()
+		f.canvas.flush_events()
+	
+	#Save figure
+	if saving:
+		domain = image_settings['domain']
+		dest_path_qa_bad_domain = os.path.join(dest_path_qa_bad, domain)
+		if not os.path.exists(dest_path_qa_bad_domain):
+			os.mkdir(dest_path_qa_bad_domain)
+		
+		if plotting:
+			plt.savefig(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_results.png'))
+			if not show_plots:
+				plt.close()
+		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+
 def plot_histogram(distances, name, dest_path, saving, scaling):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
 	#Initialize plots

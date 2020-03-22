@@ -31,11 +31,12 @@ from aug_generators_dual import create_unaugmented_data_patches_from_rgb_image
 def process(settings, metrics):	
 	image_settings = settings['image_settings']
 	image_settings['original_raw'] = image_settings['raw_image']
-	image_settings['original_mask'] = image_settings['mask_image']
 	image_settings['original_fjord_boundary'] = image_settings['fjord_boundary_final_f32']
 	image_settings['unprocessed_original_raw'] = image_settings['unprocessed_raw_image']
-	image_settings['unprocessed_original_mask'] = image_settings['unprocessed_mask_image']
 	image_settings['unprocessed_original_fjord_boundary'] = image_settings['unprocessed_fjord_boundary']
+	if settings['driver'] != 'production':
+		image_settings['original_mask'] = image_settings['mask_image']
+		image_settings['unprocessed_original_mask'] = image_settings['unprocessed_mask_image']
 	predict(settings, metrics)
 	
 
@@ -50,6 +51,8 @@ def predict(settings, metrics):
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mask_extractor':	
 		process_mask(settings, metrics)
+	elif settings['driver'] == 'production':	
+		predict_calfin(settings, metrics)
 	else:
 		raise Exception('Input driver must be "calfin" or "mohajerani"')
 
@@ -67,7 +70,8 @@ def process_mask(settings, metrics):
 	#Save results
 	image_settings['raw_image'] = raw_image_final_f32
 	image_settings['pred_image'] = mask_final_f32
-	
+
+
 def predict_calfin(settings, metrics):	
 	"""Takes in a neural network model, input image, mask, fjord boundary mask, and windowded normalization image to create prediction output.
 	Uses the full original size, image patch size, and stride legnth as additional variables."""

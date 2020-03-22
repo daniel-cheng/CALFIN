@@ -45,7 +45,7 @@ def initialize(img_size, suffix):
 	validation_files = glob.glob(os.path.join(r"../training/data", suffix, "*B[0-9].png"))
 	
 	#Initialize output folders
-	dest_root_path = r"../outputs/calfin_on_calfin_" + suffix
+	dest_root_path = r"../outputs/mohajerani_retrained_on_calfin_" + suffix
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
@@ -61,6 +61,7 @@ def initialize(img_size, suffix):
 	settings['driver'] = 'calfin'
 	settings['validation_files'] = validation_files
 	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
+	settings['log_file_name'] = 'logs__mohajerani_on_calfin.txt'
 	settings['model'] = model
 	settings['results'] = []
 	settings['plotting'] = plotting
@@ -138,10 +139,11 @@ def initialize(img_size, suffix):
 if __name__ == '__main__':
 	#Initialize model once, and setup variable passing/main function. Must be done in global namespace to benefit from model reuse.
 	img_size = 224
-	try:
-		model
-	except NameError:
-		model = compile_unet_model(img_size)
+	#We usually need to overwrite the model anyways
+#	try:
+#		model
+#	except NameError:
+	model = compile_unet_model(img_size)
 	settings, metrics = initialize(img_size, 'validation')
 	
 	#Execute calving front extraction pipeline.

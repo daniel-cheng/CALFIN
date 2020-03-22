@@ -16,7 +16,7 @@ from postprocessing import postprocess
 def main(settings, metrics):
 	#Begin processing validation images
 #	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-#	troubled_ones = [161]
+#	troubled_ones = [137]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
 		preprocess(i, settings, metrics)
@@ -30,7 +30,7 @@ def main(settings, metrics):
 	return settings, metrics
 
 
-def initialize(img_size, suffix):
+def initialize(img_size, suffix, l7=True):
 	#initialize settings and model if not already done	
 	plotting = True
 	show_plots = False
@@ -145,10 +145,10 @@ if __name__ == '__main__':
 	settings, metrics = initialize(img_size, 'validation')
 	
 	#Execute calving front extraction pipeline.
-	main(settings, metrics)
-	
-	val_settings, val_metrics = settings, metrics
-	settings, metrics = initialize(img_size, 'train')
-	
-	#Execute calving front extraction pipeline.
-	main(settings, metrics)
+#	main(settings, metrics)
+#	
+#	val_settings, val_metrics = settings, metrics
+#	settings, metrics = initialize(img_size, 'train')
+#	
+#	#Execute calving front extraction pipeline.
+#	main(settings, metrics)

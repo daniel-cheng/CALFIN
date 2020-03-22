@@ -7,6 +7,8 @@ Created on Thu May 30 09:28:22 2019
 import matplotlib.pyplot as plt
 import numpy as np
 import os, shutil
+os.environ['GDAL_DATA'] = 'D:\\ProgramData\\Anaconda3\\envs\\cfm\\Library\\share\\gdal' #Ensure crs are exported correctly by gdal/osr/fiona
+
 from osgeo import gdal, osr
 from shapely.geometry import mapping, Polygon, LineString
 import fiona
@@ -57,12 +59,6 @@ def mask_to_shp(settings, metrics):
 	
 	# Load geotiff and get domain layer/bounding box of area to mask
 	geotiff = gdal.Open(source_tif_path)
-	prj = geotiff.GetProjection()
-	srs = osr.SpatialReference(wkt=prj)
-	rasterCRS = srs.GetAttrValue("PROJCS|AUTHORITY", 1)
-	if (rasterCRS is None):
-		rasterCRS = srs.GetAttrValue("AUTHORITY", 1)
-	rasterCRS = int(rasterCRS)
 	
 	#Get bounds
 	geoTransform = geotiff.GetGeoTransform()
@@ -70,6 +66,16 @@ def mask_to_shp(settings, metrics):
 	yMax = geoTransform[3]
 	xMax = xMin + geoTransform[1] * geotiff.RasterXSize
 	yMin = yMax + geoTransform[5] * geotiff.RasterYSize
+	
+	#Get projection
+	prj = geotiff.GetProjection()
+	srs = osr.SpatialReference(wkt=prj)
+	if srs.GetAttrValue("PROJCS|AUTHORITY", 1) is not None:
+		rasterCRS = int(srs.GetAttrValue("PROJCS|AUTHORITY", 1))
+	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
+		rasterCRS = int(srs.GetAttrValue("AUTHORITY", 1))
+	else:
+		rasterCRS = 32621
 	
 	#Transform from scaled pixel coordaintes to fractional scaled fractional original to original image to geotiff coordinates
 	full_size = settings['full_size']
@@ -94,7 +100,15 @@ def mask_to_shp(settings, metrics):
 	}
 	
 	# Write a new Shapefile
-	for dest_shp_path in [dest_shp_domain_path, dest_shp_all_path]:
+	if settings['save_to_all']:
+		shp_save_paths = [dest_shp_domain_path, dest_shp_all_path]
+		tif_save_paths = [dest_tif_domain_path, dest_tif_all_path]
+	else:
+		shp_save_paths = [dest_shp_domain_path]
+		tif_save_paths = [dest_tif_domain_path]
+	for i in range(len(shp_save_paths)):
+		dest_shp_path = shp_save_paths[i]
+		dest_tif_path = tif_save_paths[i]
 		with fiona.open(
 			dest_shp_path,
 			'w',
@@ -107,8 +121,7 @@ def mask_to_shp(settings, metrics):
 				'geometry': mapping(polyline),
 				'properties': {'id': 0},
 			})
-	shutil.copy2(source_tif_path, dest_tif_domain_path)
-	shutil.copy2(source_tif_path, dest_tif_all_path)
+		shutil.copy2(source_tif_path, dest_tif_path)
 
 
 #beizer curves taken from: https://stackoverflow.com/a/12644499/1905613
