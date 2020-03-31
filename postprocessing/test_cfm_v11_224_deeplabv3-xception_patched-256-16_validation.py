@@ -8,15 +8,15 @@ import sys, cv2, glob
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
-from preprocessing import compile_model, preprocess
-from processing import process
+from preprocessing import  preprocess
+from processing import compile_model, process
 from postprocessing import postprocess
 from plotting import plot_histogram, plot_scatter
 
 def main(settings, metrics):
 	#Begin processing validation images
 	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-	troubled_ones = [161]
+	troubled_ones = [137]
 #	for i in range(0, len(settings['validation_files'])):
 	for i in troubled_ones:
 		preprocess(i, settings, metrics)

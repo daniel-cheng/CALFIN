@@ -42,15 +42,15 @@ mergeToHDR.useAlignment = false;
 mergeToHDR.useACRToning = false;
 var numberOfBrackets = 1;
 var userCanceled = false;
-var sourceFolder = new Folder("D:/Daniel/Documents/Github/CALFIN\ Repo/training/data/validation_raw");
-var outputFolder = new Folder("D:/Daniel/Documents/Github/CALFIN\ Repo/training/data/validation_temp");
+var sourceFolder = new Folder("D:/Daniel/Documents/Github/CALFIN\ Repo/preprocessing/calvingfrontmachine/landsat_raw"); //Must also change below to set default
+var outputFolder = new Folder("D:/Daniel/Documents/Github/CALFIN\ Repo/processing/landsat_raw_temp"); //These variables only update when new folder is set
 var saveType = "PNG";
 var jpegQuality = 10;
 var progress;
 var statusText;
 var progressWindow;
 var fileMask = "*";
-var outputFilename = "hdr_output_";
+var outputFilename = "_hdr.png";
 var zeroPadding = 5;
 
 var hdrRadius = 100;
@@ -70,6 +70,22 @@ var estTimeRemaining = "";
 var previewDoc;
 var originalDoc;
 
+function GetFilesRecursive(folder) {
+	var results = new Array();
+    var children = folder.getFiles('*');
+	children.sort();
+    for (var i = 0; i < children.length; i++) {
+        var child = children[i];
+        if (child instanceof File) {
+			results.push(child);
+        } else {
+			results = results.concat(GetFilesRecursive(Folder(child)));
+			statusText.text = child.toString().substring(60);
+        }
+    }
+    return results;
+};
+
 function main()
 {
     promptUser();
@@ -78,8 +94,7 @@ function main()
     if(sourceFolder != null && outputFolder != null && sourceFolder.exists && outputFolder.exists && numberOfBrackets > 0)
     {
         initializeProgress();
-        var files =  sourceFolder.getFiles(fileMask);
-        files.sort();
+        var files = GetFilesRecursive(sourceFolder);
         var currentFileList = new Array();
 
         var numberOfFiles = files.length;
@@ -91,12 +106,13 @@ function main()
         {
             zeroPadding = numberOfFilesStr.length;
         }
-
+		
+		var start = new Date();
         for(var index = 0;  index < numberOfFiles; index++)
         {
             if((index % numberOfBrackets) == numberOfBrackets - 1)
             {
-                var start = new Date();
+                
                 progress.value = 100 * index / numberOfFiles;
                 currentFileList.push(files[index]);
                 if(userCanceled) break;
@@ -152,9 +168,10 @@ function main()
                 
                 //calculate time remaining
                 var end = new Date();
-                var timeElapsed = end.getTime() - start.getTime();
-                var mins = timeElapsed / 60000 * ((numberOfFiles - index - 1) / numberOfBrackets);
-                estTimeRemaining = " | Remaining: " + ZeroPad((mins / 60).toFixed(0),2) + ":" + ZeroPad((mins % 60).toFixed(0),2);
+                var minutesElapsed = (end.getTime() - start.getTime()) / 60000;
+				var minutesPerImage = minutesElapsed / ((index - 1) / numberOfBrackets);
+                var minutesRemain = minutesPerImage * ((numberOfFiles - index - 1) / numberOfBrackets);
+                estTimeRemaining = " | Remaining: " + ZeroPad((minutesRemain / 60).toFixed(0),2) + "h:" + ZeroPad((minutesRemain % 60).toFixed(0),2) + 'm';
             }
             else
             {
@@ -335,7 +352,7 @@ function promptUser()
         leftGroup: Group { orientation: 'column', alignChildren:'fill', \
             inputPanel: Panel { text: 'Input', \
                 sourceGroup: Group { \
-                    sourceBox: EditText { characters: 40, text: 'D:/Daniel/Documents/Github/CALFIN\ Repo/training/data/validation_raw' }, \
+                    sourceBox: EditText { characters: 40, text: 'D:/Daniel/Documents/Github/CALFIN\ Repo/preprocessing/calvingfrontmachine/landsat_raw' }, \
                     sourceBrowse: Button { text: 'Browse' } \
                 }, \
                 bracketGroup: Group{ \
@@ -351,7 +368,7 @@ function promptUser()
             toningPanel: Panel { text: 'Toning', orientation:'row', alignChildren:'top' } ,\
             outputPanel: Panel { text: 'Output', \
                 outputGroup: Group { \
-                    outputBox: EditText { characters: 40, text: 'D:/Daniel/Documents/Github/CALFIN\ Repo/training/data/validation_temp' }, \
+                    outputBox: EditText { characters: 40, text: 'D:/Daniel/Documents/Github/CALFIN\ Repo/processing/landsat_raw_temp' }, \
                     outputBrowse: Button { text: 'Browse' } \
                 }, \
                 outputOptionsGroup: Group { \
@@ -587,8 +604,8 @@ function generateToningPanel(toningPanel)
         {
             presetDropDown.add("item", presetFiles[f].displayName.replace(".hdt",""));
         }
-        presetDropDown.selection = 3;
-        loadPreset(presetFiles[3]);
+        presetDropDown.selection = 1;
+        loadPreset(presetFiles[1]);
         presetDropDown.onChange = function()
         {
             loadPreset(presetFiles[presetDropDown.selection.index]);

@@ -4,7 +4,7 @@ from collections import defaultdict
 from keras import backend as K
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-import sys, glob, cv2, os
+import sys, glob, cv2, os, datetime
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
@@ -16,7 +16,7 @@ from postprocessing import postprocess
 def main(settings, metrics):
 	#Begin processing validation images
 #	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-#	troubled_ones = [161]
+#	troubled_ones = [137]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
 		preprocess(i, settings, metrics)
@@ -30,7 +30,7 @@ def main(settings, metrics):
 	return settings, metrics
 
 
-def initialize(img_size):
+def initialize(img_size, suffix, l7=True):
 	#initialize settings and model if not already done	
 	plotting = True
 	show_plots = False
@@ -42,10 +42,10 @@ def initialize(img_size):
 	        'size'   : 14}
 	plt.rc('font', **font)
 		
-	validation_files = glob.glob(r"..\training\data\validation\*B[0-9].png")
+	validation_files = glob.glob(os.path.join(r"..\training\data", suffix, "*B[0-9].png"))
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\calfin_on_calfin"
+	dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
@@ -80,9 +80,10 @@ def initialize(img_size):
 	settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
 	settings['scaling'] = scaling
 	settings['domain_scalings'] = dict()
+	settings['always_use_extracted_front'] = True
 	settings['mask_confidence_strength_threshold'] = 0.875
 	settings['edge_confidence_strength_threshold'] = 0.575
-	settings['sub_padding_ratio'] = 1.5
+	settings['sub_padding_ratio'] = 2.5
 	settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
 	settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
 	settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
@@ -141,7 +142,13 @@ if __name__ == '__main__':
 		model
 	except NameError:
 		model = compile_model(img_size)
-	settings, metrics = initialize(img_size)
+	settings, metrics = initialize(img_size, 'validation')
 	
 	#Execute calving front extraction pipeline.
-	main(settings, metrics)
+#	main(settings, metrics)
+#	
+#	val_settings, val_metrics = settings, metrics
+#	settings, metrics = initialize(img_size, 'train')
+#	
+#	#Execute calving front extraction pipeline.
+#	main(settings, metrics)

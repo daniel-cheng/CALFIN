@@ -15,8 +15,12 @@ from scipy.spatial import distance
 import os, cv2, glob, gdal, sys
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
+sys.path.insert(3, '../training/FrontLearning')
+import unet_model
 from model_cfm_dual_wide_x65 import Deeplabv3
 from AdamAccumulate import AdamAccumulate
+from segmentation_models.losses import bce_jaccard_loss, jaccard_loss, binary_crossentropy
+from segmentation_models.metrics import iou_score, jaccard_score
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0" #Only make first GPU visible on multi-gpu setups
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
@@ -27,11 +31,12 @@ from aug_generators_dual import create_unaugmented_data_patches_from_rgb_image
 def process(settings, metrics):	
 	image_settings = settings['image_settings']
 	image_settings['original_raw'] = image_settings['raw_image']
-	image_settings['original_mask'] = image_settings['mask_image']
 	image_settings['original_fjord_boundary'] = image_settings['fjord_boundary_final_f32']
 	image_settings['unprocessed_original_raw'] = image_settings['unprocessed_raw_image']
-	image_settings['unprocessed_original_mask'] = image_settings['unprocessed_mask_image']
 	image_settings['unprocessed_original_fjord_boundary'] = image_settings['unprocessed_fjord_boundary']
+	if settings['driver'] != 'production':
+		image_settings['original_mask'] = image_settings['mask_image']
+		image_settings['unprocessed_original_mask'] = image_settings['unprocessed_mask_image']
 	predict(settings, metrics)
 	
 
@@ -46,6 +51,8 @@ def predict(settings, metrics):
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mask_extractor':	
 		process_mask(settings, metrics)
+	elif settings['driver'] == 'production':	
+		predict_calfin(settings, metrics)
 	else:
 		raise Exception('Input driver must be "calfin" or "mohajerani"')
 
@@ -63,7 +70,8 @@ def process_mask(settings, metrics):
 	#Save results
 	image_settings['raw_image'] = raw_image_final_f32
 	image_settings['pred_image'] = mask_final_f32
-	
+
+
 def predict_calfin(settings, metrics):	
 	"""Takes in a neural network model, input image, mask, fjord boundary mask, and windowded normalization image to create prediction output.
 	Uses the full original size, image patch size, and stride legnth as additional variables."""
@@ -234,6 +242,38 @@ def calculate_iou(gt, pr, smooth=1e-6, per_image=True):
 	return mean_iou_score
 
 
+SMOOTH = 1e-12
+SMOOTH2 = 1e-1
+def bce_ln_jaccard_loss(gt, pr, bce_weight=1.0, smooth=SMOOTH, per_image=True):
+	bce = K.mean(binary_crossentropy(gt[:,:,:,0], pr[:,:,:,0]))*25/26 + K.mean(binary_crossentropy(gt[:,:,:,1], pr[:,:,:,1]))/26
+	loss = bce_weight * bce - K.log(jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image))*25/26 - K.log(jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image))/26
+	return loss
+
+
+def iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+	edge_iou_score = jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image)
+	mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
+	return (edge_iou_score * 25 + mask_iou_score)/26
+
+def edge_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+	edge_iou_score = jaccard_score(gt[:,:,:,0], pr[:,:,:,0], smooth=smooth, per_image=per_image)
+	return edge_iou_score
+
+
+def mask_iou_score(gt, pr, smooth=SMOOTH, per_image=True):
+	mask_iou_score = jaccard_score(gt[:,:,:,1], pr[:,:,:,1], smooth=smooth, per_image=per_image)
+	return mask_iou_score
+
+
+def deviation(gt, pr, smooth=SMOOTH2, per_image=True):
+	mismatch = K.sum(K.abs(gt[:,:,:,1] - pr[:,:,:,1]), axis=[1, 2]) #(B)
+	length = K.sum(gt[:,:,:,0], axis=[1, 2]) #(B)
+	deviation = mismatch / (length + smooth) #(B)
+
+	mean_deviation = K.mean(deviation) / 3.0 #- (account for line thickness of 3 at 224)
+	return mean_deviation
+
+
 def compile_model(img_size):
 	"""Compile the CALFIN Neural Network model and loads pretrained weights."""
 	print('-'*30)
@@ -249,3 +289,23 @@ def compile_model(img_size):
 	return model
 
 
+def compile_unet_model(img_size):
+	"""Compile the CALFIN Neural Network model and loads pretrained weights."""
+	print('-'*30)
+	print('Creating and compiling model...')
+	print('-'*30)
+	height = img_size
+	width = img_size
+	channels = 3
+	n_init = 32
+	n_layers = 4
+	drop = 0.2
+	model = unet_model.unet_model_double_dropout(height=height, width=width, channels=channels, n_init=n_init, n_layers=n_layers, drop=drop)
+	print('Importing unet_model_double_dropout...')
+	
+
+	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, edge_iou_score, mask_iou_score, deviation])
+	model.summary()
+	model.load_weights('../training/mohajerani_224_3_32_4_e59_iou0.4981.h5')
+	
+	return model

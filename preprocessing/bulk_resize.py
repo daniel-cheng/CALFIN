@@ -1,39 +1,57 @@
-from qgis.core import *
-import os, re, glob, sys
+import os
 import numpy as np
 from skimage.io import imsave, imread
+from skimage.transform import resize
 
-in_path = r"C:\Users\Daniel\AppData\Roaming\QGIS\QGIS3\profiles\default\python\plugins\calvingfrontmachine\train"
-try:
-    domain = sys.argv[1] #'Upernavik'
-    scale = float(sys.argv[2])
-    dry_run = int(sys.argv[3])
-except:
-    domain = 'Hayes-train'
-    dry_run = 0
-source_path = os.path.join(in_path, domain)
-
-# Generate mask confidence from masks
-averages = []    
-for name in os.listdir(source_path):        
-    file_path = os.path.join(source_path, name)
-    if '_mask.png' not in name or not os.path.isfile(file_path):
-        continue
-    result = imread(file_path, as_gray = True)
-    averages.append(result)
-    resolutions.append(result.shape)
-resolution = np.median(resolutions, axis=0)
-
-averages = np.array(averages)
-
-#Calculate confidence image
-confidence = calculate_confidence(averages)
-
-#Duplicate mask confidence for each input image
-for name in os.listdir(source_path):
-    if '_mask.png' not in name or not os.path.isfile(file_path):
-        continue
-    save_path = os.path.join(source_path, name[0:-4] + '_confidence.png')
-    print('Saving mask confidence to:', save_path)
-    if (dry_run == 0):
-        imsave(save_path, confidence)
+use_reference_folder = False
+if not use_reference_folder:
+	source_path = r"./calvingfrontmachine/landsat_raw"
+	
+	# Generate mask confidence from masks
+	for domain in os.listdir(source_path):
+		domain_path = os.path.join(source_path, domain)
+		resolutions = []
+		for file_name in os.listdir(domain_path):
+			file_path = os.path.join(domain_path, file_name)
+			result = imread(file_path, as_gray = True)
+			resolutions.append(result.shape)
+		
+		resolution = np.ceil(np.median(resolutions, axis=0))
+		print(domain, resolution)
+		for file_name in os.listdir(domain_path):
+			file_path = os.path.join(domain_path, file_name)
+			img = imread(file_path)
+			if img.dtype == np.uint8:
+				img = (img.astype(np.float32) / 255 * 65535).astype(np.uint16)
+				imsave(file_path, img)
+			if img.shape[0] != resolution[0] or img.shape[1] != resolution[1]:
+				print('Saving:', file_path)
+				img = resize(img, resolution, preserve_range=True).astype(np.uint16)
+				imsave(file_path, img)
+else:
+	source_path = r"./calvingfrontmachine/landsat_raw"
+	ref_path = r"./calvingfrontmachine/landsat_raw_old"
+	
+	# Generate mask confidence from masks
+	for domain in os.listdir(source_path):
+		domain_path = os.path.join(source_path, domain)
+		domain_ref_path = os.path.join(ref_path, domain)
+		resolutions = []
+		for file_name in os.listdir(domain_ref_path):
+			file_path = os.path.join(domain_ref_path, file_name)
+			result = imread(file_path, as_gray = True)
+			resolutions.append(result.shape)
+			break
+		
+		resolution = np.ceil(np.median(resolutions, axis=0))
+		print(domain, resolution)
+		for file_name in os.listdir(domain_path):
+			file_path = os.path.join(domain_path, file_name)
+			img = imread(file_path)
+			if img.dtype == np.uint8:
+				img = (img.astype(np.float32) / 255 * 65535).astype(np.uint16)
+				imsave(file_path, img)
+			if img.shape[0] != resolution[0] or img.shape[1] != resolution[1]:
+				print('Saving:', file_path)
+				img = resize(img, resolution, preserve_range=True).astype(np.uint16)
+				imsave(file_path, img)
