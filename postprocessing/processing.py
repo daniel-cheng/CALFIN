@@ -45,6 +45,8 @@ def predict(settings, metrics):
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang':	
 		predict_calfin(settings, metrics)
+	elif settings['driver'] == 'calfin_on_baumhoer':	
+		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_mohajerani':	
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':
@@ -284,7 +286,7 @@ def compile_model(img_size):
 	
 	model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2))
 	model.summary()
-	model.load_weights('../training/cfm_weights_patched_dual_wide_x65_224_e65_iou0.5136.h5')
+	model.load_weights('../training/cfm_weights_patched_dual_wide_x65_224_e17_iou0.5236.h5')
 	
 	return model
 

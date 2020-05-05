@@ -100,12 +100,12 @@ def mask_to_shp(settings, metrics):
 	}
 	
 	# Write a new Shapefile
-	if settings['save_to_all']:
-		shp_save_paths = [dest_shp_domain_path, dest_shp_all_path]
-		tif_save_paths = [dest_tif_domain_path, dest_tif_all_path]
-	else:
-		shp_save_paths = [dest_shp_domain_path]
-		tif_save_paths = [dest_tif_domain_path]
+#	if settings['save_to_all']:
+#		shp_save_paths = [dest_shp_domain_path, dest_shp_all_path]
+#		tif_save_paths = [dest_tif_domain_path, dest_tif_all_path]
+#	else:
+	shp_save_paths = [dest_shp_domain_path]
+	tif_save_paths = [dest_tif_domain_path]
 	for i in range(len(shp_save_paths)):
 		dest_shp_path = shp_save_paths[i]
 		dest_tif_path = tif_save_paths[i]

@@ -267,7 +267,7 @@ def getSavePaths(fileName:str, domainLayer:QgsVectorLayer, typeDir:str):
 		Output: str path - file save paths.
 	"""
 	
-	date = fileName.split('_')[2]
+	date = fileName.split('_')[5]
 	year = date.split('-')[0]
 	
 	# if (rootGroup.parent().name().startswith('2') or rootGroup.parent().name().startswith('1')):
