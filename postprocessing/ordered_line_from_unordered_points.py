@@ -91,8 +91,9 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 	
 	#Symmetrize matrix to make undriected
 	rows, cols = mst.nonzero()
-	mst[cols, rows] = mst[rows, cols]
-	mst_array = mst.toarray()
+# 	mst[cols, rows] = mst[rows, cols]
+	mst = mst + mst.T - np.diag(mst.diagonal())
+	mst_array = np.squeeze(np.asarray(mst))
 	#Find longest path
 	length, path_indices = longest_undirected_weighted_path(mst_array)
 	

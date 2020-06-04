@@ -19,13 +19,19 @@ def main(settings, metrics):
 #	troubled_ones = [137]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
-		preprocess(i, settings, metrics)
-		process(settings, metrics)
-		postprocess(settings, metrics)
+		if 'Rink-Isbrae' in settings['validation_files'][i] or 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
+#		if 'Inngia' in settings['validation_files'][i]:
+#			if i == 62:
+			preprocess(i, settings, metrics)
+			process(settings, metrics)
+			postprocess(settings, metrics)
+#			break
 	
 	#Print statistics
-	print_calfin_domain_metrics(settings, metrics)
-	print_calfin_all_metrics(settings, metrics)
+#	print_calfin_domain_metrics(settings, metrics)
+#	print_calfin_all_metrics(settings, metrics)
+	
+#	plt.show()
 	
 	return settings, metrics
 
@@ -35,6 +41,7 @@ def initialize(img_size, suffix, l7=True):
 	plotting = True
 	show_plots = False
 	saving = True
+	rerun = True
 	
 	#Initialize plots
 	plt.close('all')
@@ -66,6 +73,7 @@ def initialize(img_size, suffix, l7=True):
 	settings['plotting'] = plotting
 	settings['show_plots'] = show_plots
 	settings['saving'] = saving
+	settings['rerun'] = rerun
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
 	settings['stride'] = stride
@@ -142,13 +150,13 @@ if __name__ == '__main__':
 		model
 	except NameError:
 		model = compile_model(img_size)
-	settings, metrics = initialize(img_size, 'validation')
+#	settings, metrics = initialize(img_size, 'validation')
 	
 	#Execute calving front extraction pipeline.
 #	main(settings, metrics)
-#	
+	
 #	val_settings, val_metrics = settings, metrics
-#	settings, metrics = initialize(img_size, 'train')
-#	
-#	#Execute calving front extraction pipeline.
-#	main(settings, metrics)
+	settings, metrics = initialize(img_size, 'train')
+	
+#	Execute calving front extraction pipeline.
+	main(settings, metrics)

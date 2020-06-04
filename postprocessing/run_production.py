@@ -18,34 +18,40 @@ def main(settings, metrics):
 #	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
 #	troubled_ones = [10234]
 #	10302-10405
-	for i in range(10233, 10234):
+#	for i in range(10233, 10234):
 #	for i in troubled_ones:
-		preprocess(i, settings, metrics)
-		process(settings, metrics)
-		postprocess(settings, metrics)
-	
+	for i in range(21142, len(settings['validation_files'])):
+# 		if 'Rink-Isbrae' in settings['validation_files'][i]:
+		if 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
+#
+			preprocess(i, settings, metrics)
+			process(settings, metrics)
+			postprocess(settings, metrics)
+
+
 	#Print statistics
 #	print_calfin_domain_metrics(settings, metrics)
 #	print_calfin_all_metrics(settings, metrics)
-	
+
 	return settings, metrics
 
 
 def initialize(img_size):
-	#initialize settings and model if not already done	
+	#initialize settings and model if not already done
 	plotting = True
 	show_plots = False
 	saving = True
-	
+	rerun = True
+
 	#Initialize plots
 	plt.close('all')
 	font = {'family' : 'normal',
 	        'size'   : 14}
 	plt.rc('font', **font)
-	
+
 	validation_files = glob.glob(r"..\processing\landsat_raw_processed\Helheim*B[0-9].png")
 	validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
-	
+
 	#Initialize output folders
 	dest_root_path = r"..\outputs\production"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
@@ -56,21 +62,23 @@ def initialize(img_size):
 		os.mkdir(dest_path_qa)
 	if not os.path.exists(dest_path_qa_bad):
 		os.mkdir(dest_path_qa_bad)
-	
+
 	scaling = 96.3 / 1.97
 	full_size = 256
 	stride = 16
-	
+
 	#Intialize processing pipeline variables
 	settings = dict()
 	settings['driver'] = 'production'
 	settings['validation_files'] = validation_files
 	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
+	settings['log_file_name'] = 'logs_production.txt'
 	settings['model'] = model
 	settings['results'] = []
 	settings['plotting'] = plotting
 	settings['show_plots'] = show_plots
 	settings['saving'] = saving
+	settings['rerun'] = rerun
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
 	settings['stride'] = stride
@@ -98,7 +106,7 @@ def initialize(img_size):
 	settings['inter_box_distance_threshold'] = full_size / 16
 	settings['image_settings'] = dict()
 	settings['negative_image_names'] = []
-		
+
 	metrics = dict()
 	metrics['confidence_skip_count'] = 0
 	metrics['no_detection_skip_count'] = 0
@@ -123,9 +131,9 @@ def initialize(img_size):
 	metrics['false_negatives'] = 0
 	metrics['false_positive'] = 0
 	metrics['true_positives'] = 0
-	
+
 	#Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
-	#and ensure confident predictions. To normalize this when overlaying patches back together, 
+	#and ensure confident predictions. To normalize this when overlaying patches back together,
 	#generate normalization image that scales the predicted image based on number of patches each pixel is in.
 	strides = int((full_size - img_size) / stride + 1) #(256-224 / 16 + 1) = 3
 	pred_norm_image = np.zeros((full_size, full_size, 3))
@@ -138,7 +146,7 @@ def initialize(img_size):
 			y_end = y_start + img_size
 			pred_norm_image[x_start:x_end, y_start:y_end, 0:2] += pred_norm_patch
 	settings['pred_norm_image'] = pred_norm_image
-	
+
 	return settings, metrics
 
 
@@ -150,6 +158,6 @@ if __name__ == '__main__':
 	except NameError:
 		model = compile_model(img_size)
 	settings, metrics = initialize(img_size)
-	
+
 	#Execute calving front extraction pipeline.
 	main(settings, metrics)

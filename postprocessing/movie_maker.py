@@ -57,7 +57,7 @@ def mask_to_points(img_mask):
 	return x, y
 
 
-def make_video(input_path, image_paths, output_path, fps=1.0, size=None,
+def make_video(image_paths, output_path, fps=24.0, size=None,
 			   is_color=True, format='MJPG'):
 	"""
 	Create a video from a list of images.
@@ -296,4 +296,7 @@ def images_to_video():
 		except Exception as e:
 			print('Error in:', domain)
 			traceback.print_exc()
-		
+	
+video_output_path = r"D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_videos"	
+image_paths = glob.glob(os.path.join(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_videos", '*.png'))
+make_video(image_paths, os.path.join(video_output_path, 'Upernavik'))

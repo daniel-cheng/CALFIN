@@ -43,7 +43,7 @@ def initialize(img_size):
 	plt.rc('font', **font)
 		
 	validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_baumhoer\*.png")
-	validation_files = list(filter(lambda x: '_mask' not in x, validation_files))[0:2]
+	validation_files = list(filter(lambda x: '_mask' not in x, validation_files))
 	print(validation_files)
 	
 	#Initialize output folders

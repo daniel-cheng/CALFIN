@@ -35,6 +35,8 @@ def read_image(i, settings, metrics):
 		read_image_mohajerani(i, settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang':	
 		read_image_calfin(i, settings, metrics)
+	elif settings['driver'] == 'calfin_on_baumhoer':	
+		read_image_calfin(i, settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang_esa_cci':	
 		read_image_calfin_shapefile_mask(i, settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':
@@ -55,6 +57,8 @@ def preprocess_image(settings, metrics):
 	elif settings['driver'] == 'calfin_on_mohajerani':	
 		preprocess_image_mohajerani(settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang':	
+		preprocess_image_calfin(settings, metrics)
+	elif settings['driver'] == 'calfin_on_baumhoer':	
 		preprocess_image_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang_esa_cci':	
 		preprocess_image_calfin(settings, metrics)
@@ -109,6 +113,7 @@ def read_image_calfin(i, settings, metrics):
 		
 	
 	#Get bounds and transform vertices
+	print(tif_path)
 	geotiff = gdal.Open(tif_path)
 	geoTransform = geotiff.GetGeoTransform()
 	meters_per_native_pixel = (np.abs(geoTransform[1]) + np.abs(geoTransform[5])) / 2
