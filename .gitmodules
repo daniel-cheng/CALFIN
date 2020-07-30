@@ -13,3 +13,6 @@
 [submodule "training/FrontLearning"]
 	path = training/FrontLearning
 	url = https://github.com/yaramohajerani/FrontLearning.git
+[submodule "training/HRNet"]
+	path = training/HRNet
+	url = https://github.com/niecongchong/HRNet-keras-semantic-segmentation.git

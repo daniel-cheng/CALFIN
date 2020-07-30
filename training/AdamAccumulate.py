@@ -1,6 +1,5 @@
 #https://github.com/keras-team/keras/issues/3556#issuecomment-440638517
 import keras.backend as K
-from keras.legacy import interfaces
 from keras.optimizers import Optimizer
 
 
@@ -13,7 +12,7 @@ class AdamAccumulate(Optimizer):
         super(AdamAccumulate, self).__init__(**kwargs)
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(lr, name='lr')
+            self.learning_rate = K.variable(lr, name='learning_rate')
             self.beta_1 = K.variable(beta_1, name='beta_1')
             self.beta_2 = K.variable(beta_2, name='beta_2')
             self.decay = K.variable(decay, name='decay')
@@ -25,12 +24,11 @@ class AdamAccumulate(Optimizer):
         self.accum_iters = K.variable(accum_iters, K.dtype(self.iterations))
         self.accum_iters_float = K.cast(self.accum_iters, K.floatx())
 
-    @interfaces.legacy_get_updates_support
     def get_updates(self, loss, params):
         grads = self.get_gradients(loss, params)
         self.updates = [K.update_add(self.iterations, 1)]
 
-        lr = self.lr
+        lr = self.learning_rate
 
         completed_updates = K.cast(K.tf.floordiv(self.iterations, self.accum_iters), K.floatx())
 
@@ -87,7 +85,7 @@ class AdamAccumulate(Optimizer):
         return self.updates
 
     def get_config(self):
-        config = {'lr': float(K.get_value(self.lr)),
+        config = {'learning_rate': float(K.get_value(self.learning_rate)),
                   'beta_1': float(K.get_value(self.beta_1)),
                   'beta_2': float(K.get_value(self.beta_2)),
                   'decay': float(K.get_value(self.decay)),

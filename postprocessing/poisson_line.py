@@ -7,7 +7,6 @@ Created on Thu May 30 09:28:22 2019
 import numpy as np
 import os, glob, cv2, shutil
 import matplotlib.pyplot as plt
-from scipy.misc import imresize
 from scipy.ndimage import distance_transform_edt
 from redistribute_points import redistribute_points
 from skimage.morphology import skeletonize

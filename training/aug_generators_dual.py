@@ -267,7 +267,8 @@ def imgaug_generator_patched(batch_size=1, img_size=640, patch_size=512, patch_s
 			#Load images, resetting source "iterator" when reaching the end
 			if source_counter == source_limit:
 				curriculum_index = int(min(np.floor(float(returnCount) / float(images_per_epoch)), curriculum_max_length))
-				images = glob.glob(train_data_path + '/' + curriculum[curriculum_index] + '*[0-9].png')
+				images = glob.glob(train_data_path + '/' + curriculum[curriculum_index] + '*.png')
+				images = list(filter(lambda x: '_mask' not in x, images))
 				shuffle(images)
 				source_counter = 0
 				source_limit = len(images)

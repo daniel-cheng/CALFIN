@@ -56,7 +56,7 @@ class AdditionalValidationSets(Callback):
 					if type(self.model.metrics[i-1]) is str:
 						valuename = validation_set_name + '_' + self.model.metrics[i-1]
 					else:
-						valuename = validation_set_name + '_' + self.model.metrics[i-1].__name__
+						valuename = validation_set_name + '_' + self.model.metrics[i-1].name
 				if i == 2:
 					print(' - ' + valuename + ': {:.4f}'.format(result), end='')
 				self.history.setdefault(valuename, []).append(result)
