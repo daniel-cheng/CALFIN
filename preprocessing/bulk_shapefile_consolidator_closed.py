@@ -46,7 +46,7 @@ def duplicate_prefix_filter(file_list):
 
 def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version):
 	schema = {
-		'geometry': 'LineString',
+		'geometry': 'Polygon',
 		'properties': {
 			'GlacierID': 'int',
 			'Center_X': 'float',
@@ -66,27 +66,31 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 			'Author': 'str'
 		},
 	}
-	
+
 	outProj = Proj('epsg:3413') #3413 (NSIDC Polar Stereographic North)
 	crs = from_epsg(3413)
 	source_manual_quality_assurance_path = os.path.join(source_path_manual, 'quality_assurance')
 	source_auto_quality_assurance_path = os.path.join(source_path_auto, 'quality_assurance')
-	output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_' + version + '.shp')
-	with fiona.open(output_all_shp_path, 
-		'w', 
-		driver='ESRI Shapefile', 
-		crs=fiona.crs.from_epsg(3413), 
-		schema=schema, 
+	output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_' + version + '_closed.shp')
+	with fiona.open(output_all_shp_path,
+		'w',
+		driver='ESRI Shapefile',
+		crs=fiona.crs.from_epsg(3413),
+		schema=schema,
 		encoding='utf-8') as output_all_shp_file:
 		for domain in os.listdir(source_manual_quality_assurance_path):
 			if '.' in domain:
 				continue
-			file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_validation.png'))
-			file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_results.png'))
+# 			if not('Upernavik' in domain or 'Rink-Isbrae' in domain or 'Inngia' in domain or 'Umiammakku' in domain):
+			if 'Rink-Isbrae' not in domain:
+				continue
+			file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_pred.tif'))
+			file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_pred.tif'))
 			file_list = file_list_manual + file_list_auto
 			file_list.sort(key=landsat_sort)
 #			file_list = duplicate_prefix_filter(file_list)
 			for file_path in file_list:
+				print(file_path)
 				file_name = os.path.basename(file_path)
 				file_name_parts = file_name.split('_')
 				file_basename = "_".join(file_name_parts[0:-2])
@@ -119,30 +123,35 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 				else:
 					print('Unrecognized sattlelite!')
 					continue
-				
-				if 'validation' in file_path:
+
+				if 'mask_extractor' in file_path:
 					source_domain_path = os.path.join(source_path_manual, 'domain')
-				elif 'results' in file_path:
+				elif 'production' in file_path:
 					source_domain_path = os.path.join(source_path_auto, 'domain')
-				
+
 #				if not landsat_output_lookup(domain, date, orbit, satellite, level):
 #					print('duplicate pick, continuing:', date, orbit, satellite, level, domain)
 #					continue
 				reprocessing_id = file_name_parts[-2][-1]
-				old_file_shp_name = file_basename + '_' + reprocessing_id + '_cf.shp'	
+				old_file_shp_name = file_basename + '_cf_closed.shp'
 				old_file_shp_file_path = os.path.join(source_domain_path, domain, old_file_shp_name)
 #				print(old_file_shp_file_path)
 				with fiona.open(old_file_shp_file_path, 'r', encoding='utf-8') as source_shp:
 					coords = np.array(list(source_shp)[0]['geometry']['coordinates'])
 					inProj = Proj('epsg:' + str(name_id_dict[domain]), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
-					x = coords[:,0]
-					y = coords[:,1]
+					x = coords[0,:,0]
+					y = coords[0,:,1]
 					x2, y2 = transform(inProj, outProj, x, y)
 					polyline = np.stack((x2, y2), axis=-1)
 					polyline_center = np.mean(polyline, axis=0)
-					
-					closest_glacier = centers_kdtree.query(polyline_center)
-					closest_feature = list(glacierIds)[closest_glacier[1]]
+
+					glacierIdsList = list(glacierIds)
+					for i in range(len(glacierIdsList)):
+						if glacierIdsList[i]['properties']['GlacierID'] == 17:
+							closest_feature = list(glacierIds)[i]
+							break
+# 					closest_glacier = centers_kdtree.query(polyline_center)
+# 					closest_feature = list(glacierIds)[17]
 					closest_feature_id = closest_feature['properties']['GlacierID']
 					closest_feature_reference_name = closest_feature['properties']['RefName']
 					closest_feature_greenlandic_name =  closest_feature['properties']['GrnlndcNam']
@@ -157,37 +166,37 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 						closest_feature_official_name = ''
 					if closest_feature_alt_name is None:
 						closest_feature_alt_name = ''
-					
-					output_domain_shp_path = os.path.join(dest_domain_path, 'termini_1972-2019_' + closest_feature_reference_name.replace(' ','-') + '_' + version + '.shp')
+
+					output_domain_shp_path = os.path.join(dest_domain_path, 'termini_1972-2019_' + closest_feature_reference_name.replace(' ','-') + '_' + version + '_closed.shp')
 					if not os.path.exists(output_domain_shp_path):
 						mode = 'w'
 					else:
 						mode = 'a'
-						
-					with fiona.open(output_domain_shp_path, 
-						mode, 
-						driver='ESRI Shapefile', 
-						crs=fiona.crs.from_epsg(3413), 
-						schema=schema, 
+
+					with fiona.open(output_domain_shp_path,
+						mode,
+						driver='ESRI Shapefile',
+						crs=fiona.crs.from_epsg(3413),
+						schema=schema,
 						encoding='utf-8') as output_domain_shp_file:
-						
+
 						date_parsed = parse(date_dashed)
 						date_cutoff = parse('2003-05-31')
 						if satellite == 'LE07' and date_parsed > date_cutoff:
-							if 'validation' in file_path:
+							if 'mask_extractor' in file_path:
 								qual_flag = 3
-							elif 'results' in file_path:
+							elif 'production' in file_path:
 								qual_flag = 13
 						else:
-							if 'validation' in file_path:
+							if 'mask_extractor' in file_path:
 								qual_flag = 0
-							elif 'results' in file_path:
+							elif 'production' in file_path:
 								qual_flag = 10
-						
+
 						sequence_id = len(output_domain_shp_file)
 						print(closest_feature_reference_name, closest_feature_id, sequence_id)
 						output_data = {
-							'geometry': mapping(LineString(polyline)),
+							'geometry': mapping(Polygon(polyline)),
 							'properties': {
 								'GlacierID': closest_feature_id,
 								'Center_X': float(polyline_center[0]),
@@ -291,17 +300,17 @@ if __name__ == "__main__":
 	name_id_dict['Umiammakku'] = 32621
 	name_id_dict['Upernavik-NE'] = 32621
 	name_id_dict['Upernavik-SE'] =  32621
-	
+
 	version = "v1.0"
 	source_path_manual = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
 	source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production'
 	dest_domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
 	dest_all_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-greenland-termini'
-	
+
 	glacierIds = fiona.open(r'D:\Daniel\Downloads\GlacierIDs\GlacierIDsRef.shp', 'r', encoding='utf-8')
 	glacier_centers = np.array(list(map(center, glacierIds)))
 	centers_kdtree = KDTree(glacier_centers)
-	
+
 	with open(r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\scenes\all_scenes.txt", 'r') as scenes_file:
 		scene_list = scenes_file.readlines()
 		scene_hash_table = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(str))))
@@ -316,7 +325,7 @@ if __name__ == "__main__":
 				print('hash collision:', scene.split()[0], scene_hash_table[date][orbit][satellite][level].split()[0])
 			else:
 				scene_hash_table[date][orbit][satellite][level] = scene
-	
+
 	output_hash_table = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(int)))))
-	
+
 	consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version)

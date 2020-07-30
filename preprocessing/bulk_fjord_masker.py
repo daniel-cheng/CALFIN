@@ -7,10 +7,11 @@ import numpngw
 
 dry_run = False
 
-root_path = r"..\reprocessing\images_1024_twentieth"
+root_path = r"..\reprocessing\sentinel_raw"
 dest_path = r"..\reprocessing\fjord_boundaries" 
 
 for domain in os.listdir(root_path):		
+	print(domain)
 	source_domain_path = os.path.join(root_path, domain)
 	dest_domain_path = os.path.join(dest_path)
 	if not os.path.exists(dest_domain_path):
@@ -30,7 +31,10 @@ for domain in os.listdir(root_path):
 #			domain_mask_img = mask_img
 #	domain_mask_img = 1.0 - domain_mask_img / domain_mask_img.max()
 	
-	for raw_path in reversed(glob.glob(os.path.join(source_domain_path, '*B[0-9].png'))):
+	file_list = glob.glob(os.path.join(source_domain_path, '*.png'))
+	file_list = reversed(list(filter(lambda x: '_mask' not in x, file_list)))
+	for raw_path in file_list:
+#		print(raw_path)
 		raw_img = imread(raw_path, as_gray = True).astype(np.float32)
 		
 		#Add to batches
@@ -52,5 +56,5 @@ for domain in os.listdir(root_path):
 	print('Saving processed fjord boundary mask to:', save_mask_path)
 	if (dry_run == False):
 #		print(domain_mask_img.shape)
-#		imsave(save_mask_path, domain_mask_img)
+		imsave(save_mask_path, domain_raw_img)
 		imsave(save_raw_path, domain_raw_img)

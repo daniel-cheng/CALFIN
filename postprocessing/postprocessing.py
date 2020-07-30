@@ -564,7 +564,13 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 		Continuously erode fjord boundary mask until fjord edges are masked.
 		This is detected by looking for large increases in pixels being masked,
 		followed by few pixels being masked."""
-	
+
+#	if no front, return empty image and full hounding box, no coords
+#	else if front,
+#		if reuse front, use clipped front
+#		else, setup full front
+#		if fjord boundary doesn't exist, 
+		
 	#get distance of each point from fjord boundary black pixel
 	fjord_distances = distance_transform_edt(fjord_boundary_final_f32)
 	results_polyline = extract_front_indicators(pred_image)
@@ -585,7 +591,24 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 			front_pixels = np.nonzero(skeleton)
 			polyline_image = skeleton
 			polyline_coords = np.array([front_pixels[0], front_pixels[1]])
-				
+			
+		#Check to see if there are any fjord boundaries to mask
+#		if fjord_boundary_final_f32.min() < 127:
+#			polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
+#			return polyline_image, bounding_boxes, polyline_coords
+#		else:
+#			#If no front is detected, return empty image.
+#			polyline_image = settings['empty_image']
+#			bounding_boxes = [[0, 0, settings['full_size'], settings['full_size']]]
+#			polyline_coords = None
+		
+		
+		#No intersections with fjord - just treat as if no boundaries
+#		if fjord_distances.min() > 4:
+#			polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
+#			return polyline_image, bounding_boxes, polyline_coords
+		
+	
 		#Find all pixels where distance to nearest fjord boundary is an outlier
 		polyline_distances_image = fjord_distances * polyline_image
 		polyline_coords_distances = polyline_distances_image[tuple(polyline_coords)]

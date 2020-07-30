@@ -10,6 +10,99 @@ from skimage.io import imsave
 from matplotlib.lines import Line2D
 import os, cv2
 
+os.environ['GDAL_DATA'] = r'D:\\ProgramData\\Anaconda3\\envs\\cfm\\Library\\share\\gdal' #Ensure crs are exported correctly by gdal/osr/fiona
+
+from osgeo import gdal, osr
+
+def tif_save(settings, metrics, dest_path, array):
+#def pngToGeotiff(array:np.ndarray, domain:str, bounds:dict, dest_path:str) -> ('Driver', 'Dataset'):
+	image_settings = settings['image_settings']
+	domain = image_settings['domain']
+	
+	#write out shp file
+	date_index = settings['date_index']
+	image_settings = settings['image_settings']
+	image_name_base = image_settings['image_name_base']
+	image_name_base_parts = image_name_base.split('_')
+	
+	domain = image_name_base_parts[0]
+	date =  image_name_base_parts[date_index]
+	year = date.split('-')[0]
+	tif_name = image_name_base + '.tif'
+	source_tif_path = os.path.join(settings['tif_source_path'], domain, year, tif_name)
+	
+	# Load geotiff and get domain layer/bounding box of area to mask
+	geotiff = gdal.Open(source_tif_path)
+	
+	#Get bounds
+	geoTransform = geotiff.GetGeoTransform()
+	xMin = geoTransform[0]
+	yMax = geoTransform[3]
+	xMax = xMin + geoTransform[1] * geotiff.RasterXSize
+	yMin = yMax + geoTransform[5] * geotiff.RasterYSize
+	
+	#Get projection
+	prj = geotiff.GetProjection()
+	srs = osr.SpatialReference(wkt=prj)
+	if srs.GetAttrValue("PROJCS|AUTHORITY", 1) is not None:
+		rasterCRS = int(srs.GetAttrValue("PROJCS|AUTHORITY", 1))
+	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
+		rasterCRS = int(srs.GetAttrValue("AUTHORITY", 1))
+	else:
+		rasterCRS = 32621
+	
+	#Transform from scaled pixel coordaintes to fractional scaled fractional original to original image to geotiff coordinates
+	full_size = settings['full_size']
+	bounding_box = image_settings['actual_bounding_box']
+	fractional_bounding_box = np.array(bounding_box) / full_size
+	
+	xRange = xMax - xMin
+	yRange = yMax - yMin
+	subset_xMin = fractional_bounding_box[1] * xRange + xMin
+	subset_xMax = (fractional_bounding_box[1] + fractional_bounding_box[3]) * xRange + xMin
+	subset_yMax = yMax - fractional_bounding_box[0] * yRange
+	subset_yMin = yMax - (fractional_bounding_box[0] + fractional_bounding_box[2]) * yRange
+	
+	bounds = {'xMin':subset_xMin, 'xMax':subset_xMax, 'yMin':subset_yMin, 'yMax':subset_yMax}
+	
+	# TODO: Fix X/Y coordinate mismatch and use ns/ew labels to reduce confusion. Also, general cleanup and refactoring.
+	array = np.flip(array, axis=0)
+	h, w = array.shape[:2]
+	x_pixels = w  # number of pixels in x
+	y_pixels = h  # number of pixels in y
+	x_pixel_size = (bounds['xMax'] - bounds['xMin']) / x_pixels  # size of the pixel...		
+	y_pixel_size = (bounds['yMax']  - bounds['yMin']) / y_pixels  # size of the pixel...		
+	x_min = bounds['xMin'] 
+	y_max = bounds['yMax']   # x_min & y_max are like the "top left" corner.
+	
+	
+	driver = gdal.GetDriverByName('GTiff')
+	
+	dataset = driver.Create(
+		dest_path,
+		x_pixels,
+		y_pixels,
+		3,
+		gdal.GDT_Byte, )
+	
+	dataset.SetGeoTransform((
+		x_min,	# 0
+		x_pixel_size,  # 1
+		0,					  # 2
+		y_max,	# 3
+		0,					  # 4
+		-y_pixel_size))  #6
+	
+	srs = osr.SpatialReference()
+	srs.ImportFromEPSG(rasterCRS)
+	
+	array = np.flipud(array)
+	dataset.SetProjection(srs.ExportToWkt())
+	dataset.GetRasterBand(1).WriteArray(array[:,:,0])
+	dataset.GetRasterBand(2).WriteArray(array[:,:,1])
+	dataset.GetRasterBand(3).WriteArray(array[:,:,2])
+	dataset.FlushCache()  # Write to disk.
+	return dataset, dataset.GetRasterBand(1)  #If you need to return, remenber to return  also the dataset because the band don`t live without dataset.
 
 def plot_validation_results(settings, metrics):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
@@ -17,6 +110,7 @@ def plot_validation_results(settings, metrics):
 	scaling = settings['scaling']
 	saving = settings['saving']
 	plotting = settings['plotting']
+	rerun = 'rerun' in settings
 	show_plots = settings['show_plots']
 	dest_path_qa = settings['dest_path_qa']
 	image_settings = settings['image_settings']
@@ -112,14 +206,21 @@ def plot_validation_results(settings, metrics):
 			plt.savefig(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_validation.png'))
 			if not show_plots:
 				plt.close()
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_raw.png'), (original_raw_gray * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_raw_subset_highlight.png'), (original_raw_gray_patched).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
+		if rerun:
+			if os.path.exists(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png')):
+				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+		else:
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_raw.png'), (original_raw_gray * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_raw_subset_highlight.png'), (original_raw_gray_patched).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
+			tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+			tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
 
 
 def plot_production_results(settings, metrics):
@@ -127,6 +228,7 @@ def plot_production_results(settings, metrics):
 	empty_image = settings['empty_image']
 	saving = settings['saving']
 	plotting = settings['plotting']
+	rerun = settings['rerun']
 	show_plots = settings['show_plots']
 	dest_path_qa = settings['dest_path_qa']
 	image_settings = settings['image_settings']
@@ -200,16 +302,24 @@ def plot_production_results(settings, metrics):
 			plt.savefig(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_results.png'))
 			if not show_plots:
 				plt.close()
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
+		if rerun:
+			if os.path.exists(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png')):
+				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+		else:
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
+			tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+			tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
 
 
 def plot_troubled_ones(settings, metrics):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""
 	saving = settings['saving']
 	plotting = settings['plotting']
+	rerun = settings['rerun']
 	show_plots = settings['show_plots']
 	dest_path_qa_bad = settings['dest_path_qa_bad']
 	image_settings = settings['image_settings']
@@ -276,9 +386,10 @@ def plot_troubled_ones(settings, metrics):
 			plt.savefig(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_results.png'))
 			if not show_plots:
 				plt.close()
-		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
-		imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
+		if not rerun:
+			imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
+			imsave(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
 
 def plot_histogram(distances, name, dest_path, saving, scaling):
 	"""Plots a standardized set of 6 plots for validation of the neural network, and quantifies its error per image."""

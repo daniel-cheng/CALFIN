@@ -45,6 +45,8 @@ def predict(settings, metrics):
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_zhang':	
 		predict_calfin(settings, metrics)
+	elif settings['driver'] == 'calfin_on_baumhoer':	
+		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'calfin_on_mohajerani':	
 		predict_calfin(settings, metrics)
 	elif settings['driver'] == 'mohajerani_on_calfin':

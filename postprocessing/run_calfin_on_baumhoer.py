@@ -16,32 +16,25 @@ from postprocessing import postprocess
 def main(settings, metrics):
 	#Begin processing validation images
 #	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-#	troubled_ones = [137]
+#	troubled_ones = [161]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
-		if 'Rink-Isbrae' in settings['validation_files'][i] or 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
-#		if 'Inngia' in settings['validation_files'][i]:
-#			if i == 62:
-			preprocess(i, settings, metrics)
-			process(settings, metrics)
-			postprocess(settings, metrics)
-#			break
+		preprocess(i, settings, metrics)
+		process(settings, metrics)
+		postprocess(settings, metrics)
 	
 	#Print statistics
-#	print_calfin_domain_metrics(settings, metrics)
-#	print_calfin_all_metrics(settings, metrics)
-	
-#	plt.show()
+	print_calfin_domain_metrics(settings, metrics)
+	print_calfin_all_metrics(settings, metrics)
 	
 	return settings, metrics
 
 
-def initialize(img_size, suffix, l7=True):
+def initialize(img_size):
 	#initialize settings and model if not already done	
 	plotting = True
-	show_plots = False
+	show_plots = True
 	saving = True
-	rerun = True
 	
 	#Initialize plots
 	plt.close('all')
@@ -49,10 +42,12 @@ def initialize(img_size, suffix, l7=True):
 	        'size'   : 14}
 	plt.rc('font', **font)
 		
-	validation_files = glob.glob(os.path.join(r"..\training\data", suffix, "*B[0-9].png"))
+	validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_baumhoer\*.png")
+	validation_files = list(filter(lambda x: '_mask' not in x, validation_files))
+	print(validation_files)
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix
+	dest_root_path = r"..\outputs\calfin_on_baumhoer"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
@@ -65,22 +60,22 @@ def initialize(img_size, suffix, l7=True):
 	
 	#Intialize processing pipeline variables
 	settings = dict()
-	settings['driver'] = 'calfin'
+	settings['driver'] = 'calfin_on_baumhoer'
 	settings['validation_files'] = validation_files
-	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
+	settings['date_index'] = 5 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X/Sentinel-1 images.
+	settings['log_file_name'] = 'logs_calfin_on_baumhoer.txt'
 	settings['model'] = model
 	settings['results'] = []
 	settings['plotting'] = plotting
 	settings['show_plots'] = show_plots
 	settings['saving'] = saving
-	settings['rerun'] = rerun
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
 	settings['stride'] = stride
 	settings['line_thickness'] = 3
 	settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
 	settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-	settings['tif_source_path'] = r"..\preprocessing\CalvingFronts\tif"
+	settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
 	settings['dest_path_qa'] = dest_path_qa
 	settings['dest_root_path'] = dest_root_path
 	settings['save_path'] = r"..\processing\landsat_preds"
@@ -89,9 +84,9 @@ def initialize(img_size, suffix, l7=True):
 	settings['scaling'] = scaling
 	settings['domain_scalings'] = dict()
 	settings['always_use_extracted_front'] = True
-	settings['mask_confidence_strength_threshold'] = 0.875
-	settings['edge_confidence_strength_threshold'] = 0.575
-	settings['sub_padding_ratio'] = 2.5
+	settings['mask_confidence_strength_threshold'] = 0.1
+	settings['edge_confidence_strength_threshold'] = 0.1
+	settings['sub_padding_ratio'] = 1.25
 	settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
 	settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
 	settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
@@ -99,7 +94,7 @@ def initialize(img_size, suffix, l7=True):
 	settings['inter_box_distance_threshold'] = full_size / 16
 	settings['image_settings'] = dict()
 	settings['negative_image_names'] = []
-		
+	
 	metrics = dict()
 	metrics['confidence_skip_count'] = 0
 	metrics['no_detection_skip_count'] = 0
@@ -150,13 +145,9 @@ if __name__ == '__main__':
 		model
 	except NameError:
 		model = compile_model(img_size)
-#	settings, metrics = initialize(img_size, 'validation')
+	settings, metrics = initialize(img_size)
 	
 	#Execute calving front extraction pipeline.
-#	main(settings, metrics)
-	
-#	val_settings, val_metrics = settings, metrics
-	settings, metrics = initialize(img_size, 'train')
-	
-#	Execute calving front extraction pipeline.
 	main(settings, metrics)
+
+

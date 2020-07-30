@@ -19,19 +19,13 @@ def main(settings, metrics):
 #	troubled_ones = [137]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
-		if 'Rink-Isbrae' in settings['validation_files'][i] or 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
-#		if 'Inngia' in settings['validation_files'][i]:
-#			if i == 62:
-			preprocess(i, settings, metrics)
-			process(settings, metrics)
-			postprocess(settings, metrics)
-#			break
+		preprocess(i, settings, metrics)
+		process(settings, metrics)
+		postprocess(settings, metrics)
 	
 	#Print statistics
-#	print_calfin_domain_metrics(settings, metrics)
-#	print_calfin_all_metrics(settings, metrics)
-	
-#	plt.show()
+	print_calfin_domain_metrics(settings, metrics)
+	print_calfin_all_metrics(settings, metrics)
 	
 	return settings, metrics
 
@@ -41,7 +35,6 @@ def initialize(img_size, suffix, l7=True):
 	plotting = True
 	show_plots = False
 	saving = True
-	rerun = True
 	
 	#Initialize plots
 	plt.close('all')
@@ -49,10 +42,29 @@ def initialize(img_size, suffix, l7=True):
 	        'size'   : 14}
 	plt.rc('font', **font)
 		
-	validation_files = glob.glob(os.path.join(r"..\training\data", suffix, "*B[0-9].png"))
+	validation_files = []
+	for file_path in glob.glob(os.path.join(r"..\training\data", suffix, "*B[0-9].png")):
+		file_path_parts = file_path.split(os.path.sep)
+		file_name_parts = file_path_parts[-1].split('_')
+		date_parts = file_name_parts[3].split('-')
+		satellite = file_name_parts[1]
+		year = int(date_parts[0])
+		month = int(date_parts[1])
+		day = int(date_parts[2])
+		date = datetime.date(year, month, day)
+		l7_fail_date = datetime.date(year, month, day)
+		if l7:
+			if satellite == 'LE07' and date >= l7_fail_date:
+				validation_files.append(file_path)
+		else:
+			if not (satellite == 'LE07' and date >= l7_fail_date):
+				validation_files.append(file_path)
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix
+	if l7:
+		dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix + "_only-l7sce"
+	else:
+		dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix + "_no-l7sce"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
@@ -73,7 +85,6 @@ def initialize(img_size, suffix, l7=True):
 	settings['plotting'] = plotting
 	settings['show_plots'] = show_plots
 	settings['saving'] = saving
-	settings['rerun'] = rerun
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
 	settings['stride'] = stride
@@ -150,13 +161,13 @@ if __name__ == '__main__':
 		model
 	except NameError:
 		model = compile_model(img_size)
-#	settings, metrics = initialize(img_size, 'validation')
+	settings, metrics = initialize(img_size, 'validation', l7=True)
 	
 	#Execute calving front extraction pipeline.
-#	main(settings, metrics)
+	main(settings, metrics)
 	
-#	val_settings, val_metrics = settings, metrics
-	settings, metrics = initialize(img_size, 'train')
+	val_settings, val_metrics = settings, metrics
+	settings, metrics = initialize(img_size, 'validation', l7=False)
 	
-#	Execute calving front extraction pipeline.
+	#Execute calving front extraction pipeline.
 	main(settings, metrics)

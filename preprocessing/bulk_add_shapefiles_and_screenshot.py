@@ -75,21 +75,21 @@ def layerFromPath(lineFilePath:str, rootGroup:QgsLayerTreeGroup,  project:QgsLay
 		renderer.updateRangeUpperValue(i, year)
 		
 	project.addMapLayer(lineLayer, False)
-	rootGroup.insertLayer(0, lineLayer)
+	layer = rootGroup.insertLayer(0, lineLayer)
 
 class TestTask( QgsTask ):
-	def __init__(self, desc, sourcePath, destGroup):
-		QgsTask.__init__(self, desc)
-		self.sourcePath = sourcePath
-		self.destGroup = destGroup
+	def __init__(self, desc):
+		QgsTask.__init__(self, desc )
 		
 	def bulkAdd(self):
+		rootGroupName = 'Shapefiles'
+		sourcePath = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
 		project = QgsProject.instance()
 		root = project.layerTreeRoot()
-		rootGroup = findGroup(root, self.destGroup)
+		rootGroup = findGroup(root, rootGroupName)
 		
 		# For each domain in CalvingFronts...
-		shapefilesPathList = sorted(glob.glob(os.path.join(self.sourcePath, '*.shp')))
+		shapefilesPathList = glob.glob(os.path.join(sourcePath, '*.shp'))
 		numShapefiles = len(shapefilesPathList)
 		for i in reversed(range(numShapefiles)):
 			self.setProgress((i) / numShapefiles * 50)
@@ -97,16 +97,67 @@ class TestTask( QgsTask ):
 			layerFromPath(lineFilePath, rootGroup, project)
 			self.setProgress((i + 1) / numShapefiles * 50)
 			
+	def bulkScreenshot(self):
+		project = QgsProject.instance()
+		root = project.layerTreeRoot()
+		domainGroupName = 'CalvingFronts/Domains/*/*'
+		domainLayers = findChildren(root, domainGroupName)
+		
+		# For each domain in CalvingFronts...
+#		canvas = iface.mapCanvas()
+		numDomain = len(domainLayers)
+		
+		view = iface.layerTreeView()
+		saveDir = r'D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_screnshots'
+		for i in range(numDomain):
+			self.setProgress((i) / numDomain * 50)
+			domainLayer = domainLayers[i].layer()
+			layerName = domainLayer.name()
+			view.setCurrentLayer(domainLayer)
+#			extent = domainLayer.extent()
+#			print(extent)
+#			canvas.setExtent(extent)
+			iface.actionZoomToLayer()
+#			iface.mapCanvas().refresh()
+			time.sleep(3)
+			savePath = os.path.join(saveDir, 'termini_1972-2019_' + layerName + '_overlay.png')
+			iface.mapCanvas().saveAsImage(savePath)
+			self.setProgress((i + 1) / numDomain * 50)
+			
 	def run(self):
 		try:
 			self.bulkAdd()
+#			self.bulkScreenshot()
 		except:
 			traceback.print_exc()
 		self.completed()
 
-sourcePath = r'level-1_shapefiles-domain-termini'
-destGroup = 'CalvingFronts'
-task = TestTask('Adding Shapefiles...', sourcePath, destGroup) 
+task = TestTask('Adding Shapefiles...') 
 QgsApplication.taskManager().addTask(task)
+def manual_screenshot():
+	domainLayer = domainLayers.pop()
+	layerName = domainLayer.name()
+	savePath = os.path.join(saveDir, 'termini_1972-2019_' + layerName + '_overlay.png')
+	qgis.utils.iface.mapCanvas().saveAsImage(savePath)
+	if len(domainLayers) > 0:
+		domainLayer = domainLayers[-1].layer()
+		view.setCurrentLayer(domainLayer)
+		qgis.utils.iface.zoomToActiveLayer()
+#		timer = threading.Timer(1.0, lambda: save_screenshot(domainLayers))
+#		timer.start()
 
-print('If an error occured, check the source path & destination group:', sourcePath, destGroup)
+project = QgsProject.instance()
+root = project.layerTreeRoot()
+domainGroupName = 'CalvingFronts/Domains/*'
+domainLayers = findChildren(root, domainGroupName)
+# For each domain in CalvingFronts...
+numDomain = len(domainLayers)
+view = qgis.utils.iface.layerTreeView()
+saveDir = r'D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_screenshots'
+domainLayer = domainLayers[-1].layer()
+view.setCurrentLayer(domainLayer)
+qgis.utils.iface.zoomToActiveLayer()
+#for i in range(numDomain):
+#	manual_screenshot()
+manual_screenshot()
+

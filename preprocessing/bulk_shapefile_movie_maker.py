@@ -12,10 +12,15 @@ from skimage.io import imsave, imread
 from scipy.spatial import KDTree
 from pyproj import Proj, transform
 from shapely.geometry import mapping, Polygon, LineString
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import fiona
 from fiona.crs import from_epsg
 from dateutil.parser import parse
+#import rasterio
+#import rasterio.plot
+import matplotlib as mpl
+#from descartes import PolygonPatch
+#import matplotlib as mpl
 
 #level 0 should inlcude all subsets (preprocessed)
 #Make individual ones, domain ones, and all available
@@ -29,6 +34,21 @@ def landsat_sort(file_path):
 	else:
 		return file_name_parts[3] + 'b'
 
+def date_extractor(file_path):
+	"""Returns date from landsat file path."""
+	file_name_parts = file_path.split(os.path.sep)[-1].split('_')
+	return file_name_parts[3]
+	
+def create_date_matrix(file_paths):
+	result = OrderedDict()
+	for file_path in file_paths:
+		date = date_extractor(file_path)
+		if date in result:
+			result[date] += file_path
+		else:
+			result[date] = [file_path]
+	return result
+	
 def duplicate_prefix_filter(file_list):
 	caches = set()
 	results = []
@@ -44,7 +64,7 @@ def duplicate_prefix_filter(file_list):
 			print('override:', prefix)
 	return results
 
-def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version):
+def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, tif_source_path, version):
 	schema = {
 		'geometry': 'LineString',
 		'properties': {
@@ -72,21 +92,34 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 	source_manual_quality_assurance_path = os.path.join(source_path_manual, 'quality_assurance')
 	source_auto_quality_assurance_path = os.path.join(source_path_auto, 'quality_assurance')
 	output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_' + version + '.shp')
-	with fiona.open(output_all_shp_path, 
-		'w', 
-		driver='ESRI Shapefile', 
-		crs=fiona.crs.from_epsg(3413), 
-		schema=schema, 
-		encoding='utf-8') as output_all_shp_file:
-		for domain in os.listdir(source_manual_quality_assurance_path):
-			if '.' in domain:
+	for domain in os.listdir(source_manual_quality_assurance_path):
+		if '.' in domain:
+			continue
+		file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_validation.png'))
+		file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_results.png'))
+		file_list = file_list_manual + file_list_auto
+		file_list.sort(key=landsat_sort)
+		date_file_matrix = create_date_matrix(file_list)
+		
+		for date, file_paths in date_file_matrix.items():
+			first_file_name = os.path.basename(file_paths[0])
+			first_file_name_parts = first_file_name.split('_')
+			first_file_basename = "_".join(first_file_name_parts[0:-2])
+			satellite = first_file_name_parts[1]
+			if satellite.startswith('S'):
+				print('todo')
 				continue
-			file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_validation.png'))
-			file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_results.png'))
-			file_list = file_list_manual + file_list_auto
-			file_list.sort(key=landsat_sort)
-#			file_list = duplicate_prefix_filter(file_list)
-			for file_path in file_list:
+			tif_path = os.path.join(tif_source_path, '_'.join(first_file_name_parts[0:7]) + '.tif')
+#			tif_img = rasterio.open(tif_path)
+#			rasterio.plot.show((tif_img, 1))
+#			ax = mpl.pyplot.gca()
+			cmap = mpl.cm.viridis
+			norm = mpl.colors.Normalize(vmin=1972, vmax=2019)
+			cb1 = mpl.colorbar.ColorbarBase(ax, cmap=cmap,
+				                                norm=norm,
+				                                orientation='vertical')				
+			patches = []
+			for file_path in file_paths:
 				file_name = os.path.basename(file_path)
 				file_name_parts = file_name.split('_')
 				file_basename = "_".join(file_name_parts[0:-2])
@@ -125,13 +158,14 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 				elif 'results' in file_path:
 					source_domain_path = os.path.join(source_path_auto, 'domain')
 				
-#				if not landsat_output_lookup(domain, date, orbit, satellite, level):
-#					print('duplicate pick, continuing:', date, orbit, satellite, level, domain)
-#					continue
+	#				if not landsat_output_lookup(domain, date, orbit, satellite, level):
+	#					print('duplicate pick, continuing:', date, orbit, satellite, level, domain)
+	#					continue
 				reprocessing_id = file_name_parts[-2][-1]
 				old_file_shp_name = file_basename + '_' + reprocessing_id + '_cf.shp'	
 				old_file_shp_file_path = os.path.join(source_domain_path, domain, old_file_shp_name)
-#				print(old_file_shp_file_path)
+	#				print(old_file_shp_file_path)
+	
 				with fiona.open(old_file_shp_file_path, 'r', encoding='utf-8') as source_shp:
 					coords = np.array(list(source_shp)[0]['geometry']['coordinates'])
 					inProj = Proj('epsg:' + str(name_id_dict[domain]), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
@@ -206,8 +240,11 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 								'RefName': closest_feature_reference_name,
 								'Author': 'Cheng_D'},
 						}
-						output_domain_shp_file.write(output_data)
-						output_all_shp_file.write(output_data)
+#						output_domain_shp_file.write(output_data)
+#						output_all_shp_file.write(output_data)
+					patches += PolygonPatch(polyline)
+				ax.add_collection(mpl.collections.PatchCollection(patches))
+			raise Error()
 
 def center(x):
 	return x['geometry']['coordinates']
@@ -297,6 +334,7 @@ if __name__ == "__main__":
 	source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production'
 	dest_domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
 	dest_all_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-greenland-termini'
+	tif_source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\CalvingFronts\tif'
 	
 	glacierIds = fiona.open(r'D:\Daniel\Downloads\GlacierIDs\GlacierIDsRef.shp', 'r', encoding='utf-8')
 	glacier_centers = np.array(list(map(center, glacierIds)))
@@ -319,4 +357,4 @@ if __name__ == "__main__":
 	
 	output_hash_table = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(int)))))
 	
-	consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version)
+	consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, tif_source_path, version)

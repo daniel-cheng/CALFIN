@@ -4,44 +4,36 @@ from collections import defaultdict
 from keras import backend as K
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
-import sys, glob, cv2, os, datetime
+import sys, glob, cv2, os
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
 
 from validation import print_calfin_domain_metrics, print_calfin_all_metrics
-from preprocessing import preprocess
-from processing import process, compile_model
+from preprocessing import compile_model, preprocess
+from processing import process
 from postprocessing import postprocess
 
 def main(settings, metrics):
 	#Begin processing validation images
 #	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-#	troubled_ones = [137]
+#	troubled_ones = [161]
 	for i in range(0, len(settings['validation_files'])):
 #	for i in troubled_ones:
-		if 'Rink-Isbrae' in settings['validation_files'][i] or 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
-#		if 'Inngia' in settings['validation_files'][i]:
-#			if i == 62:
-			preprocess(i, settings, metrics)
-			process(settings, metrics)
-			postprocess(settings, metrics)
-#			break
+		preprocess(i, settings, metrics)
+		process(settings, metrics)
+		postprocess(settings, metrics)
 	
 	#Print statistics
-#	print_calfin_domain_metrics(settings, metrics)
-#	print_calfin_all_metrics(settings, metrics)
-	
-#	plt.show()
+	print_calfin_domain_metrics(settings, metrics)
+	print_calfin_all_metrics(settings, metrics)
 	
 	return settings, metrics
 
 
-def initialize(img_size, suffix, l7=True):
+def initialize(img_size):
 	#initialize settings and model if not already done	
 	plotting = True
-	show_plots = False
 	saving = True
-	rerun = True
 	
 	#Initialize plots
 	plt.close('all')
@@ -49,15 +41,24 @@ def initialize(img_size, suffix, l7=True):
 	        'size'   : 14}
 	plt.rc('font', **font)
 		
-	validation_files = glob.glob(os.path.join(r"..\training\data", suffix, "*B[0-9].png"))
+	validation_files = glob.glob(r"..\training\data\validation\Helheim*B[0-9].png")
 	
 	#Initialize output folders
-	dest_root_path = r"..\outputs\calfin_on_calfin_" + suffix
+	dest_root_path = r"..\outputs\validation\calfin_on_calfin"
 	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
+	dest_path_all = os.path.join(dest_root_path, 'all')
+	dest_path_shp = os.path.join(dest_root_path, 'shp')
+	dest_path_tif = os.path.join(dest_root_path, 'tif')
 	if not os.path.exists(dest_root_path):
 		os.mkdir(dest_root_path)
 	if not os.path.exists(dest_path_qa):
 		os.mkdir(dest_path_qa)
+	if not os.path.exists(dest_path_all):
+		os.mkdir(dest_path_all)
+	if not os.path.exists(dest_path_shp):
+		os.mkdir(dest_path_shp)
+	if not os.path.exists(dest_path_tif):
+		os.mkdir(dest_path_tif)
 	
 	scaling = 96.3 / 1.97
 	full_size = 256
@@ -65,15 +66,12 @@ def initialize(img_size, suffix, l7=True):
 	
 	#Intialize processing pipeline variables
 	settings = dict()
-	settings['driver'] = 'calfin'
+	settings['driver'] = 'mohajerani_on_calfin'
 	settings['validation_files'] = validation_files
-	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
 	settings['model'] = model
 	settings['results'] = []
 	settings['plotting'] = plotting
-	settings['show_plots'] = show_plots
 	settings['saving'] = saving
-	settings['rerun'] = rerun
 	settings['full_size'] = full_size
 	settings['img_size'] = img_size
 	settings['stride'] = stride
@@ -88,7 +86,6 @@ def initialize(img_size, suffix, l7=True):
 	settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
 	settings['scaling'] = scaling
 	settings['domain_scalings'] = dict()
-	settings['always_use_extracted_front'] = True
 	settings['mask_confidence_strength_threshold'] = 0.875
 	settings['edge_confidence_strength_threshold'] = 0.575
 	settings['sub_padding_ratio'] = 2.5
@@ -98,8 +95,21 @@ def initialize(img_size, suffix, l7=True):
 	settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
 	settings['inter_box_distance_threshold'] = full_size / 16
 	settings['image_settings'] = dict()
-	settings['negative_image_names'] = []
-		
+	#To calculate confusion matrix, include images where no front can be detected.
+	settings['negative_image_names'] = ['Hayes_LC08_L1TP_2016-06-07_080-237_T1_B5',
+		'Helheim_LC08_L1TP_2018-06-06_232-013_T1_B5',
+		'Helheim_LE07_L1TP_2006-05-12_232-013_T2_B4',
+		'Helheim_LT05_L1TP_1991-07-14_232-013_T1_B4',
+		'Kælvegletscher_LE07_L1TP_2012-08-25_231-012_T1_B4',
+		'Nordre-Parallelgletsjer_LT05_L1TP_1997-05-22_229-012_T2_B4',
+		'Rink-Isbrae_LT05_L1TP_1986-06-16_013-009_T1_B4',
+		'Sermeq-Avannarleq-69_LC08_L1TP_2018-10-11_008-012_T1_B5',
+		'Sermeq-Avannarleq-70_LC08_L1TP_2014-04-28_011-010_T1_B5',
+		'Styrtegletsjer_LE07_L1TP_2010-04-16_229-012_T1_B4',
+		'Umiammakku_LE07_L1TP_2011-06-20_014-009_T1_B4',
+		'Upernavik-NE_LC08_L1TP_2013-09-28_015-008_T1_B5',
+		'Upernavik-SE_LC08_L1TP_2016-05-06_016-008_T1_B5']
+	
 	metrics = dict()
 	metrics['confidence_skip_count'] = 0
 	metrics['no_detection_skip_count'] = 0
@@ -113,12 +123,9 @@ def initialize(img_size, suffix, l7=True):
 	metrics['domain_mean_deviations_meters'] = defaultdict(lambda: np.array([]))
 	metrics['domain_validation_distances_pixels'] = defaultdict(lambda: np.array([]))
 	metrics['domain_validation_distances_meters'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_edge_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_mask_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_calendar'] = defaultdict(lambda: dict((k, 0) for k in range(1972, datetime.datetime.now().year)))
+	metrics['domain_validation_ious'] = defaultdict(lambda: np.array([]))
 	metrics['resolution_deviation_array'] = np.zeros((0,2))
-	metrics['validation_edge_ious'] = np.array([])
-	metrics['validation_mask_ious'] = np.array([])
+	metrics['validation_ious'] = np.array([])
 	metrics['resolution_iou_array'] = np.zeros((0,2))
 	metrics['true_negatives'] = 0
 	metrics['false_negatives'] = 0
@@ -150,13 +157,9 @@ if __name__ == '__main__':
 		model
 	except NameError:
 		model = compile_model(img_size)
-#	settings, metrics = initialize(img_size, 'validation')
+	settings, metrics = initialize(img_size)
 	
 	#Execute calving front extraction pipeline.
-#	main(settings, metrics)
-	
-#	val_settings, val_metrics = settings, metrics
-	settings, metrics = initialize(img_size, 'train')
-	
-#	Execute calving front extraction pipeline.
 	main(settings, metrics)
+
+
