@@ -1,6 +1,7 @@
-from qgis.core import *
-import os, re, glob, time
+import os, glob, traceback
 from PyQt5.QtGui import QAction
+from qgis.core import QgsTask, QgsApplication, QgsLayerTreeGroup, QgsProject, QgsRasterLayer
+from qgis.utils import iface
 
 root_group_name = 'Rasters'
 source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland'
@@ -39,35 +40,53 @@ def layerFromPath(file_path:str, group:QgsLayerTreeGroup) -> (QgsRasterLayer):
 	layerGroup.setItemVisibilityChecked(False)
 	layerGroup.setExpanded(False)
 
-def bulkAdd():
-	project = QgsProject.instance()
-	root = project.layerTreeRoot()
-#	layers = [node.layer() for node in root.findLayers()]
-#	groups = root.findGroups()
-	root_group = findGroup(root, root_group_name)
-	
-	domain_groups = []
-	# For each domain in CalvingFronts...
-	for domain in os.listdir(source_path):
-		if domain != 'Kangerlussuaq':
-			continue
-		domain_groups.append(domain)
-		root_group.addGroup(domain)
-		domain_group = findGroup(root_group, domain)
-		domain_path = os.path.join(source_path, domain)
-		# For each year group in CalvingFronts...
-		for year in sorted(os.listdir(domain_path)):
-			domain_group.addGroup(year)
-			year_group = findGroup(domain_group, year)
-			year_path = os.path.join(domain_path, year)
-			# For each shapefile in the year group...
-			for file in sorted(glob.glob(os.path.join(year_path, '*_B[0-9].TIF')), key=landsat_sort, reverse=True):
-				file_path = os.path.join(year_path, file)
-				#Add the layers to the project
-				print(domain, year, file_path)
-				if dry_run != 0:
-					layerFromPath(file_path, year_group)
-		domain_group.setExpanded(False)
-		iface.mainWindow().findChild( QAction, 'mActionSaveProject' ).trigger()
 
-bulkAdd()
+class TestTask( QgsTask ):
+	def __init__(self, desc):
+		QgsTask.__init__(self, desc )
+		
+	def bulkAdd(self):
+		project = QgsProject.instance()
+		root = project.layerTreeRoot()
+	#	layers = [node.layer() for node in root.findLayers()]
+	#	groups = root.findGroups()
+		root_group = findGroup(root, root_group_name)
+		
+		domain_groups = []
+		# For each domain in CalvingFronts...
+		for domain in os.listdir(source_path):
+			if domain != '79North':
+				continue
+			domain_groups.append(domain)
+			root_group.addGroup(domain)
+			domain_group = findGroup(root_group, domain)
+			domain_path = os.path.join(source_path, domain)
+			counter = 0
+			numDomain = len(glob.glob(os.path.join(domain_path, '*', '*_B[0-9].TIF')))
+			# For each year group in CalvingFronts...
+			for year in sorted(os.listdir(domain_path)):
+				domain_group.addGroup(year)
+				year_group = findGroup(domain_group, year)
+				year_path = os.path.join(domain_path, year)
+				# For each shapefile in the year group...
+				for file in sorted(glob.glob(os.path.join(year_path, '*_B[0-9].TIF')), key=landsat_sort, reverse=True):
+					file_path = os.path.join(year_path, file)
+					#Add the layers to the project
+					print(domain, year, file_path)
+					if dry_run != 0:
+						layerFromPath(file_path, year_group)
+					counter += 1
+					self.setProgress((counter + 1) / numDomain * 100)
+			domain_group.setExpanded(False)
+			iface.mainWindow().findChild( QAction, 'mActionSaveProject' ).trigger()
+	
+	def run(self):
+		try:
+			self.bulkAdd()
+#			self.bulkScreenshot()
+		except:
+			traceback.print_exc()
+		self.completed()
+
+task = TestTask('Adding Rasters...') 
+QgsApplication.taskManager().addTask(task)

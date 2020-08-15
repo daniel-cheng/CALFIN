@@ -12,32 +12,46 @@ sys.path.insert(0, '../training')
 from aug_generators import aug_resize
 
 source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw'
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\redo "
-source_name_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\redo_source"
-calendar_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calendars'
+source_processed_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
+dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\landsat_raw"
 
 domains = sorted(os.listdir(source_path))
 domains_count = len(domains)
 
 augs = aug_resize(img_size=1024)
-counter = 0
-total = 0
-removed = 0
-for file_name in os.listdir(source_name_path):
-	file_name_parts = file_name.split('_')
-	domain = file_name_parts[0]
-	source_file_path = os.path.join(source_path, domain, file_name)
-	
-
-	img = imread(source_file_path, as_gray=True)
-	if img.dtype == np.uint8:
-		img = img.astype(np.uint16) * 257
-	elif img.dtype == np.float64:
-		img = (img * 65535).astype(np.uint16)
+if not os.path.exists(dest_path):
+	os.mkdir(dest_path)
+for domain in os.listdir(source_path):
+	if domain != 'Petermann':
+		continue
+	source_domain_path = os.path.join(source_path, domain)
+	dest_domain_path = os.path.join(dest_path, domain)
+	if not os.path.exists(dest_domain_path):
+		os.mkdir(dest_domain_path)
+	print(domain)
+	for file_name in os.listdir(source_domain_path)[0::1]:
+		if '_mask' not in file_name:
+			file_name_parts = file_name.split('_')
+			file_name_base = file_name.split('.')[0]
+			mask_file_name = file_name_base + '_mask.png'
+			date = file_name_parts[3]
+			year = int(date.split('-')[0])
+			dest_raw_file_path = os.path.join(dest_domain_path, file_name)
+			dest_mask_file_path = os.path.join(dest_domain_path, mask_file_name)
+			source_file_path = os.path.join(source_domain_path, file_name)
+			source_processed_file_path = os.path.join(source_processed_path, file_name)
+			print(dest_raw_file_path, dest_mask_file_path)
 		
-	dat = augs(image=img)
-	img_aug = dat['image'] #np.uint15 [0, 65535]
-					
-	imsave(raw_dest_path, img_aug)
-	imsave(mask_dest_path, img_aug)
-	counter += 1
+			img = imread(source_file_path, as_gray=True)
+			if img.dtype == np.uint8:
+				img = img.astype(np.uint16) * 257
+			elif img.dtype == np.float64:
+				img = (img * 65535).astype(np.uint16)
+				
+			if img.shape[0] < 1024 or img.shape[1] < 1024:
+				dat = augs(image=img)
+				img_aug = dat['image'] #np.uint16 [0, 65535]
+			else:
+				img_aug = img
+			shutil.copy(source_processed_file_path, dest_raw_file_path)
+			imsave(dest_mask_file_path, img_aug)

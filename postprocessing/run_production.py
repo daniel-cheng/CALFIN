@@ -10,154 +10,159 @@ sys.path.insert(2, '../training')
 
 from validation import print_calfin_domain_metrics, print_calfin_all_metrics
 from preprocessing import preprocess
-from processing import process, compile_model
+from processing import process, compile_model, compile_hrnet_model
 from postprocessing import postprocess
 
 def main(settings, metrics):
-	#Begin processing validation images
-#	troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-#	troubled_ones = [10234]
-#	10302-10405
-#	for i in range(10233, 10234):
-#	for i in troubled_ones:
-	for i in range(21142, len(settings['validation_files'])):
-# 		if 'Rink-Isbrae' in settings['validation_files'][i]:
-		if 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
-#
-			preprocess(i, settings, metrics)
-			process(settings, metrics)
-			postprocess(settings, metrics)
-
-
-	#Print statistics
-#	print_calfin_domain_metrics(settings, metrics)
-#	print_calfin_all_metrics(settings, metrics)
-
-	return settings, metrics
+    #Begin processing validation images
+#    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
+    troubled_ones = [1444, 10302, 10400, 21641]
+    troubled_ones = [10302]
+#    troubled_ones = [21641]
+#    10302-10405
+#    for i in range(10233, 10234):
+    for i in troubled_ones:
+    
+#    for i in range(10303, len(settings['validation_files'])): #Kronborg
+#    for i in range(2161, len(settings['validation_files'])):
+#    for i in range(1444, 1445):
+#        if i % 300 == 0:
+        name = settings['validation_files'][i]
+        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
+#        if 'Kronborg' in name:
+            preprocess(i, settings, metrics)
+            process(settings, metrics)
+            postprocess(settings, metrics)
+    
+    #Print statistics
+    print_calfin_domain_metrics(settings, metrics)
+    print_calfin_all_metrics(settings, metrics)
+    
+    return settings, metrics
 
 
 def initialize(img_size):
-	#initialize settings and model if not already done
-	plotting = True
-	show_plots = False
-	saving = True
-	rerun = True
+    #initialize settings and model if not already done
+    plotting = True
+    show_plots = False
+    saving = True
+    rerun = False
 
-	#Initialize plots
-	plt.close('all')
-	font = {'family' : 'normal',
-	        'size'   : 14}
-	plt.rc('font', **font)
+    #Initialize plots
+    plt.close('all')
+    font = {'family' : 'normal',
+            'size'   : 14}
+    plt.rc('font', **font)
+    
+    validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
 
-	validation_files = glob.glob(r"..\processing\landsat_raw_processed\Helheim*B[0-9].png")
-	validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
+    #Initialize output folders
+    dest_root_path = r"..\outputs\production_staging"
+    dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
+    dest_path_qa_bad = os.path.join(dest_root_path, 'quality_assurance_bad')
+    if not os.path.exists(dest_root_path):
+        os.mkdir(dest_root_path)
+    if not os.path.exists(dest_path_qa):
+        os.mkdir(dest_path_qa)
+    if not os.path.exists(dest_path_qa_bad):
+        os.mkdir(dest_path_qa_bad)
 
-	#Initialize output folders
-	dest_root_path = r"..\outputs\production"
-	dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
-	dest_path_qa_bad = os.path.join(dest_root_path, 'quality_assurance_bad')
-	if not os.path.exists(dest_root_path):
-		os.mkdir(dest_root_path)
-	if not os.path.exists(dest_path_qa):
-		os.mkdir(dest_path_qa)
-	if not os.path.exists(dest_path_qa_bad):
-		os.mkdir(dest_path_qa_bad)
+    scaling = 96.3 / 1.97
+    full_size = 256
+    stride = 16
 
-	scaling = 96.3 / 1.97
-	full_size = 256
-	stride = 16
+    #Intialize processing pipeline variables
+    settings = dict()
+    settings['driver'] = 'production'
+    settings['validation_files'] = validation_files
+    settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
+    settings['log_file_name'] = 'logs_production.txt'
+    settings['model'] = model
+    settings['results'] = []
+    settings['plotting'] = plotting
+    settings['show_plots'] = show_plots
+    settings['saving'] = saving
+    settings['rerun'] = rerun
+    settings['full_size'] = full_size
+    settings['img_size'] = img_size
+    settings['stride'] = stride
+    settings['line_thickness'] = 3
+    settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
+    settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
+    settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
+    settings['dest_path_qa'] = dest_path_qa
+    settings['dest_root_path'] = dest_root_path
+    settings['save_path'] = r"..\processing\landsat_preds"
+    settings['dest_path_qa_bad'] = dest_path_qa_bad
+    settings['save_to_all'] = False
+    settings['total'] = len(validation_files)
+    settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
+    settings['scaling'] = scaling
+    settings['domain_scalings'] = dict()
+    settings['always_use_extracted_front'] = True
+    settings['mask_confidence_strength_threshold'] = 0.875
+    settings['edge_confidence_strength_threshold'] = 0.575
+    settings['sub_padding_ratio'] = 2.5
+    settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
+    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+    settings['inter_box_distance_threshold'] = full_size / 16
+    settings['image_settings'] = dict()
+    settings['negative_image_names'] = []
 
-	#Intialize processing pipeline variables
-	settings = dict()
-	settings['driver'] = 'production'
-	settings['validation_files'] = validation_files
-	settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
-	settings['log_file_name'] = 'logs_production.txt'
-	settings['model'] = model
-	settings['results'] = []
-	settings['plotting'] = plotting
-	settings['show_plots'] = show_plots
-	settings['saving'] = saving
-	settings['rerun'] = rerun
-	settings['full_size'] = full_size
-	settings['img_size'] = img_size
-	settings['stride'] = stride
-	settings['line_thickness'] = 3
-	settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
-	settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-	settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
-	settings['dest_path_qa'] = dest_path_qa
-	settings['dest_root_path'] = dest_root_path
-	settings['save_path'] = r"..\processing\landsat_preds"
-	settings['dest_path_qa_bad'] = dest_path_qa_bad
-	settings['save_to_all'] = False
-	settings['total'] = len(validation_files)
-	settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
-	settings['scaling'] = scaling
-	settings['domain_scalings'] = dict()
-	settings['always_use_extracted_front'] = True
-	settings['mask_confidence_strength_threshold'] = 0.875
-	settings['edge_confidence_strength_threshold'] = 0.575
-	settings['sub_padding_ratio'] = 2.5
-	settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-	settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-	settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-	settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-	settings['inter_box_distance_threshold'] = full_size / 16
-	settings['image_settings'] = dict()
-	settings['negative_image_names'] = []
+    metrics = dict()
+    metrics['confidence_skip_count'] = 0
+    metrics['no_detection_skip_count'] = 0
+    metrics['front_count'] = 0
+    metrics['image_skip_count'] = 0
+    metrics['mean_deviations_pixels'] = np.array([])
+    metrics['mean_deviations_meters'] = np.array([])
+    metrics['validation_distances_pixels'] = np.array([])
+    metrics['validation_distances_meters'] = np.array([])
+    metrics['domain_mean_deviations_pixels'] = defaultdict(lambda: np.array([]))
+    metrics['domain_mean_deviations_meters'] = defaultdict(lambda: np.array([]))
+    metrics['domain_validation_distances_pixels'] = defaultdict(lambda: np.array([]))
+    metrics['domain_validation_distances_meters'] = defaultdict(lambda: np.array([]))
+    metrics['domain_validation_edge_ious'] = defaultdict(lambda: np.array([]))
+    metrics['domain_validation_mask_ious'] = defaultdict(lambda: np.array([]))
+    metrics['domain_validation_calendar'] = defaultdict(lambda: dict((k, 0) for k in range(1972, datetime.datetime.now().year)))
+    metrics['resolution_deviation_array'] = np.zeros((0,2))
+    metrics['validation_edge_ious'] = np.array([])
+    metrics['validation_mask_ious'] = np.array([])
+    metrics['resolution_iou_array'] = np.zeros((0,2))
+    metrics['true_negatives'] = 0
+    metrics['false_negatives'] = 0
+    metrics['false_positive'] = 0
+    metrics['true_positives'] = 0
 
-	metrics = dict()
-	metrics['confidence_skip_count'] = 0
-	metrics['no_detection_skip_count'] = 0
-	metrics['front_count'] = 0
-	metrics['image_skip_count'] = 0
-	metrics['mean_deviations_pixels'] = np.array([])
-	metrics['mean_deviations_meters'] = np.array([])
-	metrics['validation_distances_pixels'] = np.array([])
-	metrics['validation_distances_meters'] = np.array([])
-	metrics['domain_mean_deviations_pixels'] = defaultdict(lambda: np.array([]))
-	metrics['domain_mean_deviations_meters'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_distances_pixels'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_distances_meters'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_edge_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_mask_ious'] = defaultdict(lambda: np.array([]))
-	metrics['domain_validation_calendar'] = defaultdict(lambda: dict((k, 0) for k in range(1972, datetime.datetime.now().year)))
-	metrics['resolution_deviation_array'] = np.zeros((0,2))
-	metrics['validation_edge_ious'] = np.array([])
-	metrics['validation_mask_ious'] = np.array([])
-	metrics['resolution_iou_array'] = np.zeros((0,2))
-	metrics['true_negatives'] = 0
-	metrics['false_negatives'] = 0
-	metrics['false_positive'] = 0
-	metrics['true_positives'] = 0
+    #Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
+    #and ensure confident predictions. To normalize this when overlaying patches back together,
+    #generate normalization image that scales the predicted image based on number of patches each pixel is in.
+    strides = int((full_size - img_size) / stride + 1) #(256-224 / 16 + 1) = 3
+    pred_norm_image = np.zeros((full_size, full_size, 3))
+    pred_norm_patch = np.ones((img_size, img_size, 2))
+    for x in range(strides):
+        for y in range(strides):
+            x_start = x * stride
+            x_end = x_start + img_size
+            y_start = y * stride
+            y_end = y_start + img_size
+            pred_norm_image[x_start:x_end, y_start:y_end, 0:2] += pred_norm_patch
+    np.nan_to_num(pred_norm_image)
+    settings['pred_norm_image'] = pred_norm_image
 
-	#Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
-	#and ensure confident predictions. To normalize this when overlaying patches back together,
-	#generate normalization image that scales the predicted image based on number of patches each pixel is in.
-	strides = int((full_size - img_size) / stride + 1) #(256-224 / 16 + 1) = 3
-	pred_norm_image = np.zeros((full_size, full_size, 3))
-	pred_norm_patch = np.ones((img_size, img_size, 2))
-	for x in range(strides):
-		for y in range(strides):
-			x_start = x * stride
-			x_end = x_start + img_size
-			y_start = y * stride
-			y_end = y_start + img_size
-			pred_norm_image[x_start:x_end, y_start:y_end, 0:2] += pred_norm_patch
-	settings['pred_norm_image'] = pred_norm_image
-
-	return settings, metrics
+    return settings, metrics
 
 
 if __name__ == '__main__':
-	#Initialize model once, and setup variable passing/main function. Must be done in global namespace to benefit from model reuse.
-	img_size = 224
-	try:
-		model
-	except NameError:
-		model = compile_model(img_size)
-	settings, metrics = initialize(img_size)
+    #Initialize model once, and setup variable passing/main function. Must be done in global namespace to benefit from model reuse.
+    img_size = 224
+    try:
+        model
+    except NameError:
+        model = compile_model(img_size)
+    settings, metrics = initialize(img_size)
 
-	#Execute calving front extraction pipeline.
-	main(settings, metrics)
+    #Execute calving front extraction pipeline.
+    main(settings, metrics)

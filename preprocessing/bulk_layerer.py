@@ -26,6 +26,10 @@ raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontma
 temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_temp"
 dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
 
+raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw"
+temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_temp"
+dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
+
 for file_path in glob.glob(os.path.join(raw_path, '**', '*')):
 	base_name = file_path.split(os.path.sep)[-1]
 	raw_path = os.path.join(file_path)

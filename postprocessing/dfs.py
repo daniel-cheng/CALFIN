@@ -1,4 +1,8 @@
 from collections import defaultdict
+import sys
+
+print('setting recursion limit to 8000 in CALFIN/postprocessing/dfs.py')
+sys.setrecursionlimit(8000)
 
 def longest_DFS(edges, visited, index):
 	"""

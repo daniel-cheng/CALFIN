@@ -4,14 +4,21 @@ from skimage.io import imsave, imread
 import skimage
 import numpngw
 #skimage.io.use_plugin('freeimage')
+sys.path.insert(0, '../training')
+from aug_generators import aug_resize
+
+augs = aug_resize(img_size=1024)
+
 
 dry_run = False
 
-root_path = r"..\reprocessing\sentinel_raw"
+root_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw"
 dest_path = r"..\reprocessing\fjord_boundaries" 
 
 for domain in os.listdir(root_path):		
 	print(domain)
+#	if domain != 'Petermann':
+#		continue
 	source_domain_path = os.path.join(root_path, domain)
 	dest_domain_path = os.path.join(dest_path)
 	if not os.path.exists(dest_domain_path):
@@ -56,5 +63,16 @@ for domain in os.listdir(root_path):
 	print('Saving processed fjord boundary mask to:', save_mask_path)
 	if (dry_run == False):
 #		print(domain_mask_img.shape)
-		imsave(save_mask_path, domain_raw_img)
-		imsave(save_raw_path, domain_raw_img)
+		
+		img = domain_raw_img
+		if img.dtype == np.uint8:
+			img = img.astype(np.uint16) * 257
+		elif img.dtype == np.float64:
+			img = (img * 65535).astype(np.uint16)
+			
+		dat = augs(image=img)
+		img_aug = dat['image'] #np.uint15 [0, 65535]
+						
+		imsave(save_mask_path, img_aug)
+	
+#		imsave(save_raw_path, domain_raw_img)

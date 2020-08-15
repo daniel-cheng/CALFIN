@@ -7,14 +7,16 @@ import numpy as np
 from collections import defaultdict
 from osgeo import gdal, osr
 from pyproj import Proj, transform
-from skimage.io import imsave, imread
+from skimage.io import imsave, imread #To import skimage in QGIS: find python (, curl/wget get-pip.py, install pip, then pip install scikit-image
 from skimage.transform import resize
+import traceback
 
 DRY_RUN = 0
-nodata_threshold = 0.25
-cloud_threshold = 0.15 #.25
+nodata_threshold = 0.4
+cloud_threshold = 0.4 #.25
 #Clouds are 5th bit in 16 bit BQA image
-maskClouds = 0b0000000000001000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
+cloudsBitMask 		= 0b0000000000010000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
+cloudsConfBitMask 	= 0b0000000001100000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
 
 
 def domainInRaster(rasterLayer: QgsRasterLayer, domainLayer: QgsVectorLayer) -> bool:
@@ -36,7 +38,7 @@ def domainInRaster(rasterLayer: QgsRasterLayer, domainLayer: QgsVectorLayer) -> 
 	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
 		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
 	else:
-		epsgCode = str(32621)
+		epsgCode = str(32620)
 	rasterCRS = "EPSG:" + epsgCode
 	
 	crs = rasterLayer.crs()
@@ -55,8 +57,15 @@ def domainInRaster(rasterLayer: QgsRasterLayer, domainLayer: QgsVectorLayer) -> 
 	minY = int(round(bounds.xMinimum()))
 	maxY = int(round(bounds.xMaximum())) 
 	
+	fileName = os.path.basename(fileSourceBQA)
+	date = fileName.split('_')[2]
+	year = date.split('-')[0]
+	
 	if minX < 0 or maxX > geotiff.RasterXSize or maxX > geotiffBQA.RasterXSize or minY < 0 or maxY > geotiff.RasterYSize or maxY > geotiffBQA.RasterYSize:
 		return False
+	elif int(year) < 1985:
+		print('warning: check cloud mask parameters for MSS! (year < 1985)')
+		return True
 	else:
 		#Check image is above Nodata percentage threshold
 		band = geotiff.GetRasterBand(1)
@@ -86,10 +95,15 @@ def domainInRaster(rasterLayer: QgsRasterLayer, domainLayer: QgsVectorLayer) -> 
 		#Check image is above cloud percentage threshold
 		bandBQA = geotiffBQA.GetRasterBand(1)
 		imgBQA = bandBQA.ReadAsArray(minX, minY, maxX - minX, maxY - minY).astype(np.uint16)
-		print('warning: check cloud mask parameters for MSS! (year < 1985)')
-		masked = imgBQA & maskClouds
-		cloudCount = np.sum(masked)
-		percentCloud = cloudCount / 8.0 / imgBQA.size
+#		print('warning: check cloud mask parameters for MSS! (year < 1985)')
+		cloudsMask = imgBQA & cloudsBitMask
+#		cloudsConfMask = imgBQA & cloudsConfBitMask
+		clouds = cloudsMask / 16.0
+#		cloudsConfidence = cloudsConfMask / 32.0 / 3.0
+#		weightedClouds = clouds * cloudsConfidence
+#		cloudCount = np.sum(weightedClouds)
+		cloudCount = np.sum(clouds)
+		percentCloud = cloudCount / imgBQA.size #must correspond with maskClouds bit
 		if percentCloud > cloud_threshold:
 			geotiff = None
 			geotiffBQA = None
@@ -242,7 +256,7 @@ def layerWarp(rasterNode:QgsLayerTreeGroup, domainLayer:QgsVectorLayer) -> None:
 	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
 		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
 	else:
-		epsgCode = str(32621)
+		epsgCode = str(32620)
 	rasterCRS = "EPSG:" + epsgCode
 	if (rasterCRS != domainCRS):
 		print('warping...', rasterCRS, domainCRS)
@@ -336,7 +350,7 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 	elif srs.GetAttrValue("AUTHORITY", 1) is not None:
 		epsgCode = srs.GetAttrValue("AUTHORITY", 1)
 	else:
-		epsgCode = str(32621)
+		epsgCode = str(32620)
 	rasterCRS = "EPSG:" + epsgCode
 	
 	crs = rasterLayer.crs()
@@ -363,48 +377,48 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 		imsave(resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '.png'), img)
 		# imsave(resolve('small/' + domainLayer.name() + '/' + subsetName + '.png'), img)
 		# imsave(os.path.join(r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
-	try:
-		#Gather BQA info
-		fileSourceBQA = fileSource[:-7] + '_BQA.TIF'
-		#Save BQA subset
-		geotiffBQA = gdal.Open(fileSourceBQA)
-		imgBQA = geotiffBQA.GetRasterBand(1)
-		imgBQA = imgBQA.ReadAsArray(0,0,geotiffBQA.RasterXSize,geotiffBQA.RasterYSize).astype(np.uint16)
-		imgBQA = imgBQA[int(round(bounds.yMinimum())):int(round(bounds.yMaximum())), int(round(bounds.xMinimum())):int(round(bounds.xMaximum()))]
-		# print('Save BQA subset:', subsetPathBQA, resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_bqa.png'))
-		if not DRY_RUN:
-			# arrayToRaster(imgBQA, geotiffBQA, bounds, subsetPathBQA)
-			# print(fileSourceBQA, geotiffBQA.RasterXSize, geotiffBQA.RasterYSize)
-			# print(int(round(bounds.yMinimum())), int(round(bounds.yMaximum())), int(round(bounds.xMinimum())), int(round(bounds.xMaximum())))
-			# imsave(resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_bqa.png'), imgBQA)
-			pass
-		
-		#Gather MTL info
-		fileSourceMTL = fileSource[:-7] + '_MTL.txt'
-		#Save MTL subset	
-		if not DRY_RUN:
-			image_feats = ['']*6
-			with open(fileSourceMTL, 'r') as image_feats_source_file:	
-				lines = image_feats_source_file.readlines()
-				for line in lines:
-					if 'SUN_AZIMUTH =' in line:
-						image_feats[0] = line.strip()
-					elif 'SUN_ELEVATION =' in line:
-						image_feats[1] = line.strip()
-					elif 'CLOUD_COVER ' in line:
-						image_feats[2] = line.strip()
-					elif 'CLOUD_COVER_LAND ' in line:
-						image_feats[3] = line.strip()
-					elif 'DATE_ACQUIRED =' in line:
-						image_feats[4] = line.strip()
-					elif 'GRID_CELL_SIZE_REFLECTIVE =' in line:
-						image_feats[5] = line.strip()
-			savePath = resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_mtl.txt')
-			with open(savePath, 'w') as image_feats_dest_file:
-				for line in image_feats:
-					image_feats_dest_file.write(str(line) + '\n')
-	except:
-		print('No BQA/MTL found for:', subsetName)
+#	try:
+	#Gather BQA info
+#	fileSourceBQA = fileSource[:-7] + '_BQA.TIF'
+	#Save BQA subset
+#	geotiffBQA = gdal.Open(fileSourceBQA)
+#	imgBQA = geotiffBQA.GetRasterBand(1)
+#	imgBQA = imgBQA.ReadAsArray(0,0,geotiffBQA.RasterXSize,geotiffBQA.RasterYSize).astype(np.uint16)
+#	imgBQA = imgBQA[int(round(bounds.yMinimum())):int(round(bounds.yMaximum())), int(round(bounds.xMinimum())):int(round(bounds.xMaximum()))]
+	# print('Save BQA subset:', subsetPathBQA, resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_bqa.png'))
+#	if not DRY_RUN:
+		# arrayToRaster(imgBQA, geotiffBQA, bounds, subsetPathBQA)
+		# print(fileSourceBQA, geotiffBQA.RasterXSize, geotiffBQA.RasterYSize)
+		# print(int(round(bounds.yMinimum())), int(round(bounds.yMaximum())), int(round(bounds.xMinimum())), int(round(bounds.xMaximum())))
+		# imsave(resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_bqa.png'), imgBQA)
+#		pass
+	
+	#Gather MTL info
+#	fileSourceMTL = fileSource[:-7] + '_MTL.txt'
+	#Save MTL subset	
+#	if not DRY_RUN:
+#		image_feats = ['']*6
+#		with open(fileSourceMTL, 'r') as image_feats_source_file:	
+#			lines = image_feats_source_file.readlines()
+#			for line in lines:
+#				if 'SUN_AZIMUTH =' in line:
+#					image_feats[0] = line.strip()
+#				elif 'SUN_ELEVATION =' in line:
+#					image_feats[1] = line.strip()
+#				elif 'CLOUD_COVER ' in line:
+#					image_feats[2] = line.strip()
+#				elif 'CLOUD_COVER_LAND ' in line:
+#					image_feats[3] = line.strip()
+#				elif 'DATE_ACQUIRED =' in line:
+#					image_feats[4] = line.strip()
+#				elif 'GRID_CELL_SIZE_REFLECTIVE =' in line:
+#					image_feats[5] = line.strip()
+#		savePath = resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '_mtl.txt')
+#		with open(savePath, 'w') as image_feats_dest_file:
+#			for line in image_feats:
+#				image_feats_dest_file.write(str(line) + '\n')
+#	except:
+#		print('No BQA/MTL found for:', subsetName)
 	
 	return img.shape
 
@@ -475,40 +489,112 @@ def resolve(name, basepath=r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessin
 	return os.path.join(basepath, name)
 
 
-def findChildren(root:QgsLayerTree, matchString:str, yearLimit:int):
+def findChildren(root:QgsLayerTree, matchString:str):
 	"""Return a list of groups in the root that match a regex string argument."""
 	result = []
 	matchStringParts = matchString.split('/', 1)
 	for child in root.children():
 		if fnmatch.fnmatch(child.name(), matchStringParts[0]):
 			if isinstance(child, QgsLayerTreeGroup):
-				if child.name().startswith(('1', '2')):
-					if int(child.name()) < yearLimit:
-						result.extend(findChildren(child, matchStringParts[1], yearLimit))
-				else:
-					print(child.name())
-					result.extend(findChildren(child, matchStringParts[1], yearLimit))
+				result.extend(findChildren(child, matchStringParts[1]))
 			else:
 				result.append(child)
 	return result
 
+class TestTask( QgsTask ):
 
-project = QgsProject.instance()
-root = project.layerTreeRoot()
-rasterPrefix = ['B5', 'B4', 'B7']
+	def __init__(self, desc):
+		QgsTask.__init__(self, desc )
+	
+	def perform_subsetting(self, rasterLayers, domainLayers):
+		print('Performing subsetting...')
+		
+		#Make directories if not already existing
+		base_path = resolve('landsat_raw/')
+		if not os.path.exists(base_path):
+			os.mkdir(base_path)
+		for domainLayer in domainLayers:
+			domainLayer = domainLayer.layer()
+			raw_path = resolve('landsat_raw/' + domainLayer.name())
+			if not os.path.exists(raw_path):
+				os.mkdir(raw_path)
+		
+		resolutions = self.warpAndSaveSubsets(rasterLayers, domainLayers)
+		self.resizeandSaveSubsets(rasterLayers, domainLayers, resolutions)
+	
+	def resizeandSaveSubsets(self, rasterLayers, domainLayers, resolutions) -> list:
+		# Resize the images to the median size to account for reprojection differences
+		rasterLen = len(rasterLayers)
+		domainLen = len(domainLayers)
+		for i in range(rasterLen):
+			self.setProgress((i + 1) / rasterLen * 100)
+			rasterLayerNode = rasterLayers[i]
+			rasterLayer = rasterLayerNode.layer()
+			for j in range(domainLen):
+				domainLayer = domainLayers[j]
+				resolution = resolutions[j]
+				domainLayer = domainLayer.layer()
+				print('Resizing subsets to', resolution)#, ' Progress:', str((i * rasterLen + j) / total) + '%')
+				if domainInRaster(rasterLayer, domainLayer):
+					subset_name = domainLayer.name() + "_" + rasterLayer.name()
+					layerResize(rasterLayer, domainLayer, subset_name, resolution)
+	
+	def warpAndSaveSubsets(self, rasterLayers, domainLayers) -> list:
+		# Perform subsetting for each layer, extracting each subset for every domain in domainGroup
+		resolutions = defaultdict(list)
+		rasterLen = len(rasterLayers)
+		domainLen = len(domainLayers)
+		for i in range(rasterLen):
+			self.setProgress((i + 1) / rasterLen * 100)
+			rasterLayerNode = rasterLayers[i]
+			rasterLayer = rasterLayerNode.layer()
+			print('Raster (' + str(i) + '/' + str(rasterLen) + '):', rasterLayer.source())#, ' Progress:', str(i) + '/' + str(total), '(' + str((i * rasterLen) / total) + '%)')
+			for j in range(domainLen):
+				domainLayer = domainLayers[j]
+				domainLayer = domainLayer.layer()
+				rasterLayers[i] = layerWarp(rasterLayerNode, domainLayer)
+				rasterLayerNode = rasterLayers[i]
+				rasterLayer = rasterLayerNode.layer() #Reload layer in case of warping
+				subset_name = domainLayer.name() + "_" + rasterLayer.name()
+				print('Domain: ', domainLayer.name())#, ' Progress:', str((i * rasterLen + j) / total) + '%')
+				if domainInRaster(rasterLayer, domainLayer):
+					resolution = layerSubsetSave(rasterLayer, domainLayer, subset_name)
+					resolutions[domainLayer.name()].append(resolution)
+		
+		# Calculate the median resolutions for each domain	
+		median_resolutions = []
+		for i in range(len(domainLayers)):
+			domainLayer = domainLayers[i]
+			resolution = np.ceil(np.median(resolutions[domainLayer.name()], axis=0))
+			print('domainLayer (#):', i, domainLayer.name(), ' resolution:', resolution)
+			median_resolutions.append(resolution)
+		
+		return median_resolutions
+	
+	def run(self):
+		project = QgsProject.instance()
+		root = project.layerTreeRoot()
+		
+		# Get layer objects based on selection string values
+		rasterGroupName = 'CalvingFronts/Rasters/Upernavik/2004/*'
+		rasterLayers = findChildren(root, rasterGroupName)
+		domainGroupName = 'CalvingFronts/Domains/Upernavik-NE'
+		domainLayers = findChildren(root, domainGroupName)
+		
+		# Get layer objects based on selection string values
+		#rasterGroupName = 'CalvingFronts/Rasters/Helheim/1991/*'
+		#rasterLayers = findChildren(root, rasterGroupName, 1992)
+		#domainGroupName = 'CalvingFronts/Domains/Br*'
+		#domainLayers = findChildren(root, domainGroupName, 1992)
+		
+		#Save subsets of raster source files using clipping domain
+		try:
+			self.perform_subsetting(rasterLayers, domainLayers)
+		except Exception as e:
+			traceback.print_exc()
+		
+		self.completed()
 
-# Get layer objects based on selection string values
-rasterGroupName = 'CalvingFronts/Rasters/*/*/*'
-rasterLayers = findChildren(root, rasterGroupName, 1985)
-domainGroupName = 'CalvingFronts/Domains/*'
-domainLayers = findChildren(root, domainGroupName, 1985)
-
-# Get layer objects based on selection string values
-#rasterGroupName = 'CalvingFronts/Rasters/Helheim/1991/*'
-#rasterLayers = findChildren(root, rasterGroupName, 1992)
-#domainGroupName = 'CalvingFronts/Domains/Br*'
-#domainLayers = findChildren(root, domainGroupName, 1992)
-
-#Save subsets of raster source files using clipping domain
-perform_subsetting(rasterLayers, rasterPrefix, domainLayers)
-
+task = TestTask('Warp and Subsetting...') 
+QgsApplication.taskManager().addTask(task)
+	

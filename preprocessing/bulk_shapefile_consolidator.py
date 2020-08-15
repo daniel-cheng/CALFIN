@@ -51,13 +51,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 			'GlacierID': 'int',
 			'Center_X': 'float',
 			'Center_Y': 'float',
-			'Sequence#': 'int',
 			'QualFlag': 'int',
 			'Satellite': 'str',
 			'Date': 'str',
-			'Year': 'int',
-			'Month': 'int',
-			'Day': 'int',
 			'ImageID': 'str',
 			'GrnlndcN': 'str',
 			'OfficialN': 'str',
@@ -71,7 +67,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 	crs = from_epsg(3413)
 	source_manual_quality_assurance_path = os.path.join(source_path_manual, 'quality_assurance')
 	source_auto_quality_assurance_path = os.path.join(source_path_auto, 'quality_assurance')
-	output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_' + version + '.shp')
+	output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_manual_' + version + '.shp')
 	with fiona.open(output_all_shp_path, 
 		'w', 
 		driver='ESRI Shapefile', 
@@ -192,13 +188,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 								'GlacierID': closest_feature_id,
 								'Center_X': float(polyline_center[0]),
 								'Center_Y': float( polyline_center[1]),
-								'Sequence#': sequence_id,
 								'QualFlag': qual_flag,
 								'Satellite': satellite,
 								'Date': date_dashed,
-								'Year': year,
-								'Month': month,
-								'Day': day,
 								'ImageID': scene_id,
 								'GrnlndcN': closest_feature_greenlandic_name,
 								'OfficialN': closest_feature_official_name,
@@ -206,7 +198,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 								'RefName': closest_feature_reference_name,
 								'Author': 'Cheng_D'},
 						}
-						output_domain_shp_file.write(output_data)
+#						output_domain_shp_file.write(output_data)
 						output_all_shp_file.write(output_data)
 
 def center(x):
@@ -268,6 +260,7 @@ if __name__ == "__main__":
 	name_id_dict['Nordre-Parallelgletsjer'] = 32624
 	name_id_dict['Nunatakassaap'] = 32621
 	name_id_dict['Nunatakavsaup'] = 32621
+	name_id_dict['Petermann'] = 32620
 	name_id_dict['Perlerfiup'] = 32621
 	name_id_dict['Polaric'] = 32624
 	name_id_dict['Qeqertarsuup'] = 32621
@@ -281,6 +274,8 @@ if __name__ == "__main__":
 	name_id_dict['Sermeq-Kujalleq-70'] = 32621
 	name_id_dict['Sermeq-Kujalleq-73'] = 32621
 	name_id_dict['Sermeq-Silarleq'] = 32621
+	name_id_dict['Sermikassak-N'] = 32621
+	name_id_dict['Sermikassak-S'] = 32621
 	name_id_dict['Sermilik'] = 32621
 	name_id_dict['Sorgenfri'] = 32624
 	name_id_dict['Steenstrup'] = 32621
@@ -290,11 +285,12 @@ if __name__ == "__main__":
 	name_id_dict['Søndre-Parallelgletsjer'] = 32624
 	name_id_dict['Umiammakku'] = 32621
 	name_id_dict['Upernavik-NE'] = 32621
+	name_id_dict['Upernavik-NW'] = 32621
 	name_id_dict['Upernavik-SE'] =  32621
 	
 	version = "v1.0"
 	source_path_manual = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
-	source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production'
+	source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production_dummy'
 	dest_domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
 	dest_all_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-greenland-termini'
 	

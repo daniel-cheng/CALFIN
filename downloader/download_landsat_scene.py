@@ -420,7 +420,7 @@ def main():
 			os.makedirs(rep_scene)
 			
 		if produit.startswith('LC8'):
-			repert='12864'
+			repert='5e83d0b84df8d8c2'
 			stations=['LGN']
 		if produit.startswith('LE7'):
 			repert='12267'
@@ -573,7 +573,7 @@ def main():
 					produit=nom_prod.strip()
 					print(produit)
 					if produit.startswith('LC8'):
-						repert='12864'
+						repert='5e83d0b84df8d8c2'
 						stations=['LGN']
 					elif produit.startswith('LE7'):
 						repert='12267'

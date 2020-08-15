@@ -3,10 +3,8 @@
 Created on Wed Mar 25 10:15:18 2020
 @author: Daniel
 """
-from qgis.core import QgsLayerTreeGroup, QgsVectorLayer, QgsProject, QgsTask, QgsApplication, QgsSymbol, QgsRendererRange, QgsStyle, QgsGraduatedSymbolRenderer
-import os, glob, traceback, fnmatch, time, threading, qgis
-import os, glob, traceback, fnmatch, time, threading, qgis
-from datetime import datetime
+from qgis.core import QgsLayerTreeGroup, QgsVectorLayer, QgsProject, QgsTask, QgsApplication, QgsRendererRange, QgsStyle, QgsGraduatedSymbolRenderer
+import os, glob, traceback, fnmatch, time, qgis
 from osgeo import ogr
 from qgis.utils import iface
 #add vectors

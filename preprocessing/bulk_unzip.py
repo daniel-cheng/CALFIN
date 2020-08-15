@@ -9,7 +9,7 @@ import os, glob, shutil, tarfile
 from zipfile import ZipFile
   
 steps = ['landsat_unzip', 'landsat_rename', 'sentinel-1_unzip']
-steps = ['senitnel-1_unzip']
+steps = ['landsat_unzip']
 
 if 'landsat_unzip' in steps:
 	source = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland\zipped"
@@ -23,8 +23,6 @@ if 'landsat_unzip' in steps:
 	# Function to rename multiple files 
 	for domain in os.listdir(source):
 		# if domain != 'Kangerlussuaq':
-		if domain != 'Helheim':
-			continue
 		#Make unzip domain folder if not existing already
 		unzip_domain_path = os.path.join(unzip_dest, domain)
 		if not os.path.exists(unzip_domain_path):
@@ -37,7 +35,7 @@ if 'landsat_unzip' in steps:
 				os.mkdir(move_domain_path)
 		
 		#For each file in domain folder, unzip to appropiate unzip destination/year.
-		for source_path in glob.glob(os.path.join(source, domain, '*.tar.gz')):  
+		for source_path in glob.glob(os.path.join(source, domain, '*.tar.gz')): 
 			filename = source_path.split(os.path.sep)[-1]
 			basename = filename.split('.')[0]
 			basename_parts = basename.split('_')

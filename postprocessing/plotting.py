@@ -110,10 +110,13 @@ def plot_validation_results(settings, metrics):
 	scaling = settings['scaling']
 	saving = settings['saving']
 	plotting = settings['plotting']
-	rerun = 'rerun' in settings
 	show_plots = settings['show_plots']
 	dest_path_qa = settings['dest_path_qa']
 	image_settings = settings['image_settings']
+	if 'rerun' in settings:
+		rerun = settings['rerun']
+	else:
+		rerun = False
 	
 	image_name_base = image_settings['image_name_base']
 	bounding_box = image_settings['actual_bounding_box']
@@ -199,6 +202,7 @@ def plot_validation_results(settings, metrics):
 	if saving:
 		domain = image_settings['domain']
 		dest_path_qa_domain = os.path.join(dest_path_qa, domain)
+		dest_path_qa_bad_domain = os.path.join(dest_path_qa + '_bad', domain)
 		if not os.path.exists(dest_path_qa_domain):
 			os.mkdir(dest_path_qa_domain)
 		
@@ -207,7 +211,7 @@ def plot_validation_results(settings, metrics):
 			if not show_plots:
 				plt.close()
 		if rerun:
-			if os.path.exists(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png')):
+			if not os.path.exists(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_pred.png')):
 				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
 				tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
 		else:

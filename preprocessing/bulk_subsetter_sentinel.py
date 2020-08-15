@@ -13,7 +13,7 @@ import traceback
 
 DRY_RUN = 0
 nodata_threshold = 0.25
-cloud_threshold = 0.15 #.25
+cloud_threshold = 0.20 #.25
 #Clouds are 5th bit in 16 bit BQA image
 maskClouds = 0b0000000000001000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
 

@@ -5,7 +5,7 @@ from skimage.transform import resize
 
 use_reference_folder = False
 if not use_reference_folder:
-	source_path = r"./calvingfrontmachine/landsat_raw"
+	source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
 	
 	# Generate mask confidence from masks
 	for domain in os.listdir(source_path):
@@ -28,6 +28,7 @@ if not use_reference_folder:
 				print('Saving:', file_path)
 				img = resize(img, resolution, preserve_range=True).astype(np.uint16)
 				imsave(file_path, img)
+				error()
 else:
 	source_path = r"./calvingfrontmachine/landsat_raw"
 	ref_path = r"./calvingfrontmachine/landsat_raw_old"

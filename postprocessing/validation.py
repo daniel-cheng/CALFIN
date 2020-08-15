@@ -41,7 +41,7 @@ def print_calfin_domain_metrics(settings, metrics):
 		#Print output to file and to shell
 		default = sys.stdout
 		log_file_name = os.path.join(settings['dest_root_path'], settings['log_file_name'])
-		output_streams = [open(log_file_name, "w+", encoding='utf-8'), default]
+		output_streams = [open(log_file_name, "a", encoding='utf-8'), default]
 		for i in range(len(output_streams)):
 			sys.stdout = output_streams[i]
 			print("{} mean distance (averaged over points): {:.2f} ± {:.2f} meters".format(domain, domain_mean_deviation_points_meters, domain_std_deviation_points_meters))

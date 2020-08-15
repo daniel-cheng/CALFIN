@@ -54,6 +54,7 @@ name_id_dict['Nordfjord'] = 32624
 name_id_dict['Nordre-Parallelgletsjer'] = 32624
 name_id_dict['Nunatakassaap'] = 32621
 name_id_dict['Nunatakavsaup'] = 32621
+name_id_dict['Petermann'] = 32620
 name_id_dict['Perlerfiup'] = 32621
 name_id_dict['Polaric'] = 32624
 name_id_dict['Qeqertarsuup'] = 32621
@@ -67,6 +68,8 @@ name_id_dict['Sermeq-Avannarleq-73'] = 32621
 name_id_dict['Sermeq-Kujalleq-70'] = 32621
 name_id_dict['Sermeq-Kujalleq-73'] = 32621
 name_id_dict['Sermeq-Silarleq'] = 32621
+name_id_dict['Sermikassak-N'] = 32621
+name_id_dict['Sermikassak-S'] = 32621
 name_id_dict['Sermilik'] = 32621
 name_id_dict['Sorgenfri'] = 32624
 name_id_dict['Steenstrup'] = 32621
@@ -76,6 +79,7 @@ name_id_dict['Sverdrup'] = 32621
 name_id_dict['Søndre-Parallelgletsjer'] = 32624
 name_id_dict['Umiammakku'] = 32621
 name_id_dict['Upernavik-NE'] = 32621
+name_id_dict['Upernavik-NW'] = 32621
 name_id_dict['Upernavik-SE'] =  32621
 
 
@@ -148,6 +152,7 @@ fjord_boundary_source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\d
 domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\domains'
 fjord_boundary_tif_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries_tif'
 
+#Use domain shapefiles
 for fjord_boundary_path in glob.glob(os.path.join(fjord_boundary_source_path, '*')):
 	basename = os.path.basename(fjord_boundary_path)
 	stripped_basename = os.path.splitext(basename)[0]
