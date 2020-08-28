@@ -114,7 +114,6 @@ def predict_calfin(settings, metrics):
             pred_image[x_start:x_end, y_start:y_end, 0:2] += pred_patch
             
     #Normalize output by dividing by number of patches each pixel is included in
-    pred_image = np.nan_to_num(pred_image)
     pred_image_final_f32 = (pred_image / pred_norm_image).astype(np.float32)
     
     #Save results

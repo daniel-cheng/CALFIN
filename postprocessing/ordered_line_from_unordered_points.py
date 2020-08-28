@@ -64,7 +64,7 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     indices = list(range(len(x)))
     positions = list(zip(-y, x))
     node_positions = dict(zip(indices, positions))
-#    dense_graph_nx = nx.from_numpy_matrix(adjacency_matrix)
+    dense_graph_nx = nx.from_numpy_matrix(adjacency_matrix)
 #    plt.figure(300 + random.randint(1,500))
 #    nx.draw_networkx(dense_graph_nx, pos=node_positions, with_labels=False, node_size = 15)
 #    plt.show()
@@ -83,7 +83,7 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     
     
     #plot intermediate
-#    mst_nx = nx.from_scipy_sparse_matrix(mst)
+    mst_nx = nx.from_scipy_sparse_matrix(mst)
 #    plt.figure(800 + random.randint(1,500))
 #    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
 #    plt.show()
@@ -108,15 +108,15 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     # Draw the lane onto the warped blank image
 #    plt.plot(left_fitx, ploty, color='yellow')
     cv2.polylines(image,  [pts],  False,  (255, 0, 0),  1)#higher thickness may be necessary, but ddecreases accuracy...
-    # image = image[:,:,0]
+#    image = image[:,:,0]
 #    print(pts)
-    image_rescaled = rescale(image, 2, anti_aliasing=False)
+#    image_rescaled = rescale(image, 2, anti_aliasing=False)
 #    plt.figure(1300 + random.randint(1,500))
 #    plt.imshow(image_rescaled)
 #    plt.show()
-#     
+     
 #    edge_bianry = np.where(image > 127.0, 1.0, 0.0)
-#    skeleton = skeletonize(edge_bianry[:,:,0])
+#    skeleton = skeletonize(edge_bianry)
 #    skeleton = np.where(skeleton > 0.5, 255.0, 0.0)
 #    edge_bianry[:,:,0] = skeleton
 #    plt.figure(1800 + random.randint(1,500))

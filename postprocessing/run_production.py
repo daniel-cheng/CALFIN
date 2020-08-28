@@ -15,28 +15,44 @@ from postprocessing import postprocess
 
 def main(settings, metrics):
     #Begin processing validation images
-#    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-    troubled_ones = [1444, 10302, 10400, 21641]
-    troubled_ones = [10302]
+    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
+    troubled_ones = [3, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 6122, 7200, 7512, 7611, 9123, 10200, 10302, 10400, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086, 24000]
+#    troubled_ones = [1563]
+    
+#    troubled_ones = [23043, 23045, 23046, 23050, 23068, 23086   ]
+#    troubled_ones = [23050]
+    #Need  to make "consolidator" pick up fronts from qgis
+    
+#    troubled_ones = (np.random.rand(5) * 21000).astype(int)
+#    troubled_ones = [10302]
 #    troubled_ones = [21641]
 #    10302-10405
 #    for i in range(10233, 10234):
-    for i in troubled_ones:
+    
     
 #    for i in range(10303, len(settings['validation_files'])): #Kronborg
-#    for i in range(2161, len(settings['validation_files'])):
+    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
+               'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
+               'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
+#    domains = ['Upernavik-NE']
+    for i in range(0, len(settings['validation_files'])):
 #    for i in range(1444, 1445):
-#        if i % 300 == 0:
+#    for i in troubled_ones:
         name = settings['validation_files'][i]
-        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
-#        if 'Kronborg' in name:
+#        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
+#            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
+#        if 'Upernavik' in name:
+        domain = name.split(os.path.sep)[-1].split('_')[0]
+        if domain in domains:
+#        if True:
             preprocess(i, settings, metrics)
             process(settings, metrics)
             postprocess(settings, metrics)
     
     #Print statistics
-    print_calfin_domain_metrics(settings, metrics)
-    print_calfin_all_metrics(settings, metrics)
+#    print_calfin_domain_metrics(settings, metrics)
+#    print_calfin_all_metrics(settings, metrics)
+    plt.show()
     
     return settings, metrics
 
@@ -53,6 +69,7 @@ def initialize(img_size):
     font = {'family' : 'normal',
             'size'   : 14}
     plt.rc('font', **font)
+    plt.rcParams["figure.figsize"] = (16,9)
     
     validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
 
@@ -88,6 +105,7 @@ def initialize(img_size):
     settings['stride'] = stride
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
+    settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
     settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
     settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
     settings['dest_path_qa'] = dest_path_qa
@@ -101,13 +119,16 @@ def initialize(img_size):
     settings['domain_scalings'] = dict()
     settings['always_use_extracted_front'] = True
     settings['mask_confidence_strength_threshold'] = 0.875
-    settings['edge_confidence_strength_threshold'] = 0.575
+    settings['edge_confidence_strength_threshold'] = 0.55
     settings['sub_padding_ratio'] = 2.5
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-    settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-    settings['inter_box_distance_threshold'] = full_size / 16
+    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+    settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['inter_box_distance_threshold'] = full_size / 8 # seperation threshold in pixels that fronts must be from one another within same subset during reprocessing
+    settings['min_fjord_distance_threshold'] = full_size / 32 # at least one pixel in the front must exceed this threshold distance from fjord boundary walls; doubles as max threshold the difference between endpoint distances to the walls must be less than this.
+    settings['max_fjord_distance_difference'] = full_size / 32 # max difference between endpoint distances to the fjord boundary walls.
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
 
@@ -139,18 +160,20 @@ def initialize(img_size):
     #Each 256x256 image will be split into 9 overlapping 224x224 patches to reduce boundary effects
     #and ensure confident predictions. To normalize this when overlaying patches back together,
     #generate normalization image that scales the predicted image based on number of patches each pixel is in.
-    strides = int((full_size - img_size) / stride + 1) #(256-224 / 16 + 1) = 3
+    strides = int((full_size - img_size) / stride + 1) #(256 - 224) / 16 + 1 = 3
     pred_norm_image = np.zeros((full_size, full_size, 3))
-    pred_norm_patch = np.ones((img_size, img_size, 2))
+    pred_norm_patch = np.ones((img_size, img_size, 3))
     for x in range(strides):
         for y in range(strides):
             x_start = x * stride
             x_end = x_start + img_size
             y_start = y * stride
             y_end = y_start + img_size
-            pred_norm_image[x_start:x_end, y_start:y_end, 0:2] += pred_norm_patch
-    np.nan_to_num(pred_norm_image)
+            pred_norm_image[x_start:x_end, y_start:y_end] += pred_norm_patch
     settings['pred_norm_image'] = pred_norm_image
+    
+    log_path = os.path.join(dest_root_path, settings['log_file_name'])
+    sys.stdout = open(log_path, 'a')
 
     return settings, metrics
 
