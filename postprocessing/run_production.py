@@ -16,8 +16,13 @@ from postprocessing import postprocess
 def main(settings, metrics):
     #Begin processing validation images
     troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-    troubled_ones = [3, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 6122, 7200, 7512, 7611, 9123, 10200, 10302, 10400, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086, 24000]
-#    troubled_ones = [1563]
+    troubled_ones = [3, 213, 238, 246, 283, 284, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 
+                     6122, 7200, 7512, 7611, 9123, 10200, 10302, 10400, 11101, 11219, 21641, 21341, 
+                     23043, 23045, 23046, 23050, 23068, 23086, 23138, 23330, 23896, 23902, 23905,
+                     24000, 24048, 24201]
+#    troubled_ones = [23896, 23902, 23905, 24048]  
+#    troubled_ones = [1800]  
+    troubled_ones = [23896]  
     
 #    troubled_ones = [23043, 23045, 23046, 23050, 23068, 23086   ]
 #    troubled_ones = [23050]
@@ -34,8 +39,12 @@ def main(settings, metrics):
     domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
                'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
                'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-#    domains = ['Upernavik-NE']
-    for i in range(0, len(settings['validation_files'])):
+    domains = ['79North', 'Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE',
+           'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
+           'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
+    domains = ['Upernavik-SE']
+#    for i in range(23000, len(settings['validation_files'])):
+    for i in range(23897, len(settings['validation_files'])):
 #    for i in range(1444, 1445):
 #    for i in troubled_ones:
         name = settings['validation_files'][i]
@@ -48,7 +57,19 @@ def main(settings, metrics):
             preprocess(i, settings, metrics)
             process(settings, metrics)
             postprocess(settings, metrics)
-    
+    for i in range(0, 23890):
+#    for i in range(1444, 1445):
+#    for i in troubled_ones:
+        name = settings['validation_files'][i]
+#        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
+#            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
+#        if 'Upernavik' in name:
+        domain = name.split(os.path.sep)[-1].split('_')[0]
+#        if domain in domains:
+        if True:
+            preprocess(i, settings, metrics)
+            process(settings, metrics)
+            postprocess(settings, metrics)
     #Print statistics
 #    print_calfin_domain_metrics(settings, metrics)
 #    print_calfin_all_metrics(settings, metrics)
@@ -119,16 +140,14 @@ def initialize(img_size):
     settings['domain_scalings'] = dict()
     settings['always_use_extracted_front'] = True
     settings['mask_confidence_strength_threshold'] = 0.875
-    settings['edge_confidence_strength_threshold'] = 0.55
+    settings['edge_confidence_strength_threshold'] = 0.525
     settings['sub_padding_ratio'] = 2.5
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
     settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
     settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
-    settings['inter_box_distance_threshold'] = full_size / 8 # seperation threshold in pixels that fronts must be from one another within same subset during reprocessing
-    settings['min_fjord_distance_threshold'] = full_size / 32 # at least one pixel in the front must exceed this threshold distance from fjord boundary walls; doubles as max threshold the difference between endpoint distances to the walls must be less than this.
-    settings['max_fjord_distance_difference'] = full_size / 32 # max difference between endpoint distances to the fjord boundary walls.
+    settings['inter_box_distance_threshold'] = full_size / 4 # seperation threshold in pixels that fronts must be from one another within same subset during reprocessing
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
 
@@ -172,8 +191,8 @@ def initialize(img_size):
             pred_norm_image[x_start:x_end, y_start:y_end] += pred_norm_patch
     settings['pred_norm_image'] = pred_norm_image
     
-    log_path = os.path.join(dest_root_path, settings['log_file_name'])
-    sys.stdout = open(log_path, 'a')
+#    log_path = os.path.join(dest_root_path, settings['log_file_name'])
+#    sys.stdout = open(log_path, 'a')
 
     return settings, metrics
 

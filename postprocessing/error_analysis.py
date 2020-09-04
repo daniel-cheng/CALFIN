@@ -52,6 +52,7 @@ if __name__ == '__main__' and '1' in steps:
 """Front Extraction"""
 def extract_front_indicators(mask_img, z_score_cutoff=2.0):
     """Extracts an ordered polyline from the processed mask. Also returns an overlay of the extracted polyline and the raw image. Draws to the indexed figure and specified resolution."""
+#    print('\t\t\t' + 'extract_front_indicators')
     minimum_points = 4
     
     #Extract known masks
@@ -60,7 +61,7 @@ def extract_front_indicators(mask_img, z_score_cutoff=2.0):
     edge_binary = np.where(mask_img > 0.33, 1, 0)
     skeleton = skeletonize(edge_binary)
     front_pixels = np.nonzero(skeleton)
-    empty_image = np.zeros(skeleton.shape)
+#    empty_image = np.zeros(skeleton.shape)
 #    plt.imshow(np.stack((skeleton, empty_image, empty_image), axis=2))
 #    plt.show()
     

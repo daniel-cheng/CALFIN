@@ -94,7 +94,8 @@ def initialize(img_size):
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
     settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-    settings['inter_box_distance_threshold'] = full_size / 16
+    settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['inter_box_distance_threshold'] = full_size / 4 # seperation threshold in pixels that fronts must be from one another within same subset during reprocessing
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
     

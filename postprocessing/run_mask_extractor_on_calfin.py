@@ -21,17 +21,29 @@ def main(settings, metrics):
     #Begin processing validation images
 #    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
 #    troubled_ones = [0, 4]
-#    troubled_ones = [8]
+#    troubled_ones = [174]
 #    for i in range(95, 96):
 #    for i in troubled_ones:
-    for i in range(1444, len(settings['validation_files'])):
+    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
+               'Upernavik-SE', 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
+               'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
+    domains = ['Upernavik-SE']
+    for i in range(1066, len(settings['validation_files'])):
+        
 #        if 'Rink-Isbrae' in settings['validation_files'][i]:
 #        if 'Upernavik-NE' in settings['validation_files'][i]:
 #        if i % 10 != 0:
 #        if 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
-        preprocess(i, settings, metrics)
-        process(settings, metrics)
-        postprocess(settings, metrics)
+#        if '2005-05-09' in settings['validation_files'][i] and 'Akullikassaap' in settings['validation_files'][i]:
+        name = settings['validation_files'][i]
+#        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
+#            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
+#        if 'Upernavik' in name:
+        domain = name.split(os.path.sep)[-1].split('_')[0]
+        if domain in domains:
+            preprocess(i, settings, metrics)
+            process(settings, metrics)
+            postprocess(settings, metrics)
     #Print statistics
 #    print_calfin_domain_metrics(settings, metrics)
 #    print_calfin_all_metrics(settings, metrics)
@@ -104,7 +116,8 @@ def initialize(img_size):
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
     settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-    settings['inter_box_distance_threshold'] = full_size / 16
+    settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['inter_box_distance_threshold'] = full_size / 4 # seperation threshold in pixels that fronts must be from one another within same subset during reprocessing
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
 

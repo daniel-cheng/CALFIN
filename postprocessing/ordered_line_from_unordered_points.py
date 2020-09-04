@@ -43,6 +43,9 @@ def is_outlier(data, z_score_cutoff = 2.0):
 
 #disallow edges between points on boundary
 def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points, z_score_cutoff=2.0):
+    """ Algorithm for extracting a single "correct" polyline from pixel edge probablity mask.
+    """
+#    print('\t\t\t\t' + 'ordered_line_from_unordered_points_tree')
     x = points_tuple[0]
     y = points_tuple[1]
     points = np.c_[x, y]
@@ -61,10 +64,10 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #        mean_cluster_distances.append(np.mean(k_nearest_distances))
 #        k_closest_indices_list.append(k_closest_indices)
         
-    indices = list(range(len(x)))
-    positions = list(zip(-y, x))
-    node_positions = dict(zip(indices, positions))
-    dense_graph_nx = nx.from_numpy_matrix(adjacency_matrix)
+#    indices = list(range(len(x)))
+#    positions = list(zip(-y, x))
+#    node_positions = dict(zip(indices, positions))
+#    dense_graph_nx = nx.from_numpy_matrix(adjacency_matrix)
 #    plt.figure(300 + random.randint(1,500))
 #    nx.draw_networkx(dense_graph_nx, pos=node_positions, with_labels=False, node_size = 15)
 #    plt.show()
@@ -76,24 +79,45 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #        if outlier_mask[row]:
 #            k_closest_indices = k_closest_indices_list[row]
 #            adjacency_matrix[row, k_closest_indices] = 0
-    distances = distances * adjacency_matrix
+    
+    #use sqrt to penalize large jumps (shorter distances like 1 are given more weight,
+    #longer distances reduced more, but longer overall distances are still preserved)
+    distances = np.log(distances + 1) * adjacency_matrix
     
     
     mst = minimum_spanning_tree(distances)
     
     
+    
+    
     #plot intermediate
-    mst_nx = nx.from_scipy_sparse_matrix(mst)
-#    plt.figure(800 + random.randint(1,500))
+#    mst_nx = nx.from_scipy_sparse_matrix(mst)
+#    plt.figure(800 + random.randint(1,250))
+#    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
+#    plt.show()
+    
+    
+    rows, cols = mst.nonzero()
+    #penalize long distances after the mst creation
+    #this ensures that jumps can still be made, but must connect a reasonable number of new edge
+    #in order to account for negative weighting
+    #Note, this can't be done before the mst calculation since this would prevent the actual 
+    #mst from being effectively found
+    test = 5 - np.power(np.e, mst[rows, cols]) - 1
+    mst[rows, cols] = test
+    
+#    mst[rows, cols] = mst[rows, cols] - np.min([np.min(mst[rows, cols]), 0])
+    
+#    mst_nx = nx.from_scipy_sparse_matrix(mst)
+#    plt.figure(1050 + random.randint(1,250))
 #    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
 #    plt.show()
     
     #Symmetrize matrix to make undriected
-    rows, cols = mst.nonzero()
-#     mst[cols, rows] = mst[rows, cols]
     mst = mst + mst.T - np.diag(mst.diagonal())
     mst_array = np.squeeze(np.asarray(mst))
     #Find longest path
+#    print(mst_array)
     length, path_indices = longest_undirected_weighted_path(mst_array)
     
     xx = x[path_indices]

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys, cv2, random
 from scipy.ndimage.morphology import distance_transform_edt
+from scipy.signal import find_peaks
 from skimage.morphology import skeletonize
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
 sys.path.insert(2, '../training')
@@ -22,6 +23,7 @@ from ordered_line_from_unordered_points import is_outlier
 
 
 def postprocess(settings, metrics):
+    """Postprocessing main entry function."""
     if 'bypass' in settings and settings['bypass'] == True:
         return
     if settings['driver'] == 'production':
@@ -31,6 +33,7 @@ def postprocess(settings, metrics):
 
 
 def postprocess_validated(settings, metrics):    
+    """Perform initial front extraction from manually masked images."""
     kernel = settings['kernel']
     image_settings = settings['image_settings']
     resolution_1024 = image_settings['resolution_1024']
@@ -123,6 +126,7 @@ def postprocess_validated(settings, metrics):
 
 
 def reprocess_validated(settings, metrics): 
+    """Process individual isolated fronts, based on initial detection."""
     full_size = settings['full_size']
     mask_confidence_strength_threshold = settings['mask_confidence_strength_threshold']
     edge_confidence_strength_threshold = settings['edge_confidence_strength_threshold']
@@ -258,8 +262,8 @@ def reprocess_validated(settings, metrics):
         print("no front detected, skipping")
         metrics['no_detection_skip_count'] += 1
         return found_front, metrics
-    polyline_image, bounding_box_pred, polyline_coords_pred = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords=polylines_coords_pred)
-    mask_edge_f32, bounding_box_mask, polyline_coords_mask = mask_bounding_box(bounding_boxes_mask, mask_edge_f32, settings, target_box=bounding_box_pred, polylines_coords=polylines_coords_mask) #If need stricter constraints, uncomment these lines
+    polyline_image, bounding_box_pred, polyline_coords_pred = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords_pred)
+    mask_edge_f32, bounding_box_mask, polyline_coords_mask = mask_bounding_box(bounding_boxes_mask, mask_edge_f32, settings, polylines_coords_mask, target_box=bounding_box_pred) #If need stricter constraints, uncomment these lines
     mask_final_f32 = np.stack((mask_edge_f32[:,:,0], mask_image[:,:,1]), axis = -1)
 #    results_polyline = extract_front_indicators(polyline_image[:,:,0], z_score_cutoff=25.0)
 #    polyline_image = np.stack((results_polyline[0][:,:,0] / 255.0, empty_image, empty_image), axis=-1)
@@ -289,6 +293,8 @@ def reprocess_validated(settings, metrics):
 
 
 def postprocess_production(settings, metrics):
+    """Perform initial front detection using NN processed raw inputs."""
+    print('postprocess_production')
     kernel = settings['kernel']
     image_settings = settings['image_settings']
     resolution_1024 = image_settings['resolution_1024']
@@ -317,6 +323,10 @@ def postprocess_production(settings, metrics):
     polyline_image_dilated = cv2.dilate(polyline_image.astype('float64'), kernel, iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
     image_settings['polyline_image'] = polyline_image_dilated
     
+#    plt.figure(13500 + random.randint(1,500))
+#    plt.imshow(pred_image[:,:,0])
+#    plt.show()
+#    exit()
     #For each calving front, subset the image AGAIN and predict. This helps accuracy for inputs with large scaling/downsampling ratios
     box_counter = 0    
     found_front = False
@@ -363,7 +373,9 @@ def postprocess_production(settings, metrics):
     return metrics
 
 
-def reprocess_production(settings, metrics): 
+def reprocess_production(settings, metrics):
+    """Process individual isolated fronts, based on initial detection."""
+    print('' + 'reprocess_production')
     full_size = settings['full_size']
     mask_confidence_strength_threshold = settings['mask_confidence_strength_threshold']
     edge_confidence_strength_threshold = settings['edge_confidence_strength_threshold']
@@ -578,7 +590,7 @@ def reprocess_production(settings, metrics):
 #        plt.show()
         return found_front, metrics
 #    plt.show()
-    polyline_image, bounding_box_pred, polyline_coords = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords=polylines_coords, mask_pred=mask_pred)
+    polyline_image, bounding_box_pred, polyline_coords = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords, mask_pred=mask_pred)
     
     print('\t\t' + 'bounding_boxes_pred', bounding_boxes_pred)
 #    plt.figure(11500 + random.randint(1,500))
@@ -609,6 +621,7 @@ def reprocess_production(settings, metrics):
 
 
 def remove_small_components(image:np.ndarray, limit=np.inf, min_size_percentage=0.0001):
+    """Removes small connected regions from an image."""
     image = image.astype('uint8')
     #find all connected components (white blobs in image)
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
@@ -643,6 +656,7 @@ def remove_small_components(image:np.ndarray, limit=np.inf, min_size_percentage=
             number_returned += 1
             if number_returned >= limit:
                 break
+#    plt.figure(13004)
 #    plt.imshow(largeComponents)
 #    plt.show()
     #return large component image and bounding boxes for each componnet
@@ -650,10 +664,10 @@ def remove_small_components(image:np.ndarray, limit=np.inf, min_size_percentage=
 
 
 def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_percentage=0.00025, use_extracted_front=True):
-    """ Perform optimiation on fjord boundaries.
-        Continuously erode fjord boundary mask until fjord edges are masked.
-        This is detected by looking for large increases in pixels being masked,
-        followed by few pixels being masked."""
+    """ Extracts polyline from pixel masks.
+        First, perform optimiation on fjord boundaries by isolating contiginous pixels far away from fjord boundaries.
+        Then, remove pixels that are still too close to fjord boundaries.
+        Finally, return ordered polyline. If no detections exist, return None/empty results."""
 
 #    if no front, return empty image and full hounding box, no coords
 #    else if front,
@@ -661,6 +675,7 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 #        else, setup full front
 #        if fjord boundary doesn't exist, 
         
+#    print('\t\t' + 'mask_polyline')
     #get distance of each point from fjord boundary black pixel
     fjord_distances = distance_transform_edt(fjord_boundary_final_f32)
     results_polyline = extract_front_indicators(pred_image)
@@ -698,11 +713,11 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 #            polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
 #            return polyline_image, bounding_boxes, polyline_coords
 #        plt.figure(10000 + random.randint(1,500))
-#        plt.imshow(fjord_boundary_final_f32)
+#        plt.imshow(pred_image)
 #        plt.show()
-#        
+##        
 #        plt.figure(10500 + random.randint(1,500))
-#        plt.imshow(fjord_distances)
+#        plt.imshow(polyline_image)
 #        plt.show()
         #Find all pixels where distance to nearest fjord boundary is an outlier
         polyline_distances_image = fjord_distances * polyline_image
@@ -763,46 +778,64 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
         
         polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
         
+#        exit()
         #Detect fronts that do not connect to fjord boundries (but do not eliminate them, in case of Ice Shelves)
-        polylines_coords = []
+        new_polylines_coords = []
         polylines_distances = []
         bounding_boxes_final = [bounding_boxes[0]]
         for bounding_box in bounding_boxes[1:]:
-            polyline_coords = []
-            polyline_distances = []
-            image = polyline_image
-            
-            padding = int(settings['full_size'] / 16)
-                
-            sub_x1 = max(bounding_box[0] - padding, 0)
-            sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
-            sub_y1 = max(bounding_box[1] - padding, 0)
-            sub_y2 = min(bounding_box[1] + bounding_box[3] + padding, image.shape[1])
-            
-            mask = np.zeros((image.shape[0], image.shape[1])) 
-            mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
-                       
-            masked_image = None
-            if len(image.shape) > 2:
-                masked_image = image * np.stack((mask, mask, mask), axis=-1)
-                masked_image[:,:,0], new_bounding_boxes = remove_small_components(masked_image[:,:,0], limit = 1)
-                masked_image[:,:,1], new_bounding_boxes = remove_small_components(masked_image[:,:,1], limit = 1)
-                masked_image[:,:,2], new_bounding_boxes = remove_small_components(masked_image[:,:,2], limit = 1)
-            else:
-                masked_image = image * mask
-                masked_image, new_bounding_boxes = remove_small_components(masked_image, limit = 1)
-            results_polyline = extract_front_indicators(masked_image)
-            polyline_coords = results_polyline[1]
+            polyline_coords = retrace_polyline(settings, polylines_coords, polyline_image, bounding_box)
+#            print(polyline_coords)
+#            polyline_coords = []
+#            polyline_distances = []
+#            image = pred_image
+#            image = polyline_image
+#            
+#            padding = int(settings['full_size'] / 16)
+#                
+#            sub_x1 = max(bounding_box[0] - padding, 0)
+#            sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
+#            sub_y1 = max(bounding_box[1] - padding, 0)
+#            sub_y2 = min(bounding_box[1] + bounding_box[3] + padding, image.shape[1])
+#            
+#            mask = np.zeros((image.shape[0], image.shape[1])) 
+#            mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
+#                       
+#            masked_image = None
+#            if len(image.shape) > 2:
+#                masked_image = image * np.stack((mask, mask, mask), axis=-1)
+#                masked_image[:,:,0], new_bounding_boxes = remove_small_components(masked_image[:,:,0], limit = 1)
+#                masked_image[:,:,1], new_bounding_boxes = remove_small_components(masked_image[:,:,1], limit = 1)
+#                masked_image[:,:,2], new_bounding_boxes = remove_small_components(masked_image[:,:,2], limit = 1)
+#            else:
+#                masked_image = image * mask
+#                plt.figure(13000)
+#                plt.imshow(polyline_image)
+#                plt.figure(13001)
+#                plt.imshow(mask)
+#                plt.figure(13002)
+#                plt.imshow(masked_image)
+#                
+#                masked_image, new_bounding_boxes = remove_small_components(masked_image, limit = 1)
+#                plt.figure(13003)
+#                plt.imshow(masked_image)
+#                plt.show()
+##                exit()
+##            polyline_coords = 
+#            results_polyline = extract_front_indicators(masked_image)
+#            polyline_coords = results_polyline[1]
             
             polyline_distances = fjord_distances[(polyline_coords[0], polyline_coords[1])]
             
             
             num_points = len(polyline_distances)
-            min_fjord_distance_threshold = settings['min_fjord_distance_threshold']
-            max_fjord_distance_difference = settings['max_fjord_distance_difference']
-            start_min_distances = np.min(polyline_distances[:int(num_points * 0.25)])
-            middle_max_distances = np.max(polyline_distances[int(num_points * 0.25):int(num_points * 0.75)])
-            end_min_distances = np.min(polyline_distances[int(num_points * 0.75):])
+            if num_points < 10:
+                print('\t\t' + 'removing unshapely front bounding_box:', bounding_box)
+                continue
+            middle_polyline_distances = polyline_distances[int(num_points * 0.15):int(num_points * 0.85)]
+            start_min_distances = np.min(polyline_distances[:int(num_points * 0.15)])
+            middle_max_distances = np.max(middle_polyline_distances)
+            end_min_distances = np.min(polyline_distances[int(num_points * 0.85):])
             
             middle_start_diff = middle_max_distances - start_min_distances
             middle_end_diff = middle_max_distances - end_min_distances
@@ -813,9 +846,15 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 #            plt.plot(polyline_distances)
 #            plt.show()
 #            errorr()
+            
+            #Use peak analysis to lessen
+            peak_width = int(max(10.0, (num_points / 3)))
+            peaks, properties = find_peaks(polyline_distances, distance=peak_width)
+#            print(peaks, peak_width)
             triangular_distance_shape = np.sign(middle_start_diff) == np.sign(middle_end_diff) #check if the front is "shaped" like a normal one, heading away from fjord in the middle, and towards the fjord boundary at the ends.
-            if triangular_distance_shape == True and middle_max_distances > num_points / 3:
-                polylines_coords.append(polyline_coords)
+            if triangular_distance_shape == True and middle_max_distances > num_points / (4 * len(peaks)):
+#            if True:
+                new_polylines_coords.append(polyline_coords)
                 polylines_distances.append(polyline_distances)
                 bounding_boxes_final.append(bounding_box)
                 
@@ -823,13 +862,16 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
 #                plt.plot(polyline_distances)
 #                plt.show()
             else:
+#                print(middle_start_diff, middle_end_diff, end_start_diff, start_min_distances, middle_max_distances,  end_min_distances)
                 print('\t\t' + 'removing unshapely front bounding_box:', bounding_box)
+        polylines_coords = new_polylines_coords
         if len(polylines_coords) == 0:
             polylines_coords = None
             polylines_distances = None
         bounding_boxes = bounding_boxes_final
     else:
         #If no front is detected, return empty image.
+#        print('lmao')
         polyline_image = settings['empty_image']
         bounding_boxes = [[0, 0, settings['full_size'], settings['full_size']]]
         polylines_coords = None
@@ -838,7 +880,61 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
     return polyline_image, bounding_boxes, polylines_coords, polylines_distances
 
 
-def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polylines_coords = None, mask_pred = None):
+def retrace_polyline(settings, polylines_coords, polyline_image, bounding_box):
+#    print('\t\t\t' + 'retrace_polyline')
+    polyline_coords = []
+    image = polyline_image
+    
+    padding = int(settings['full_size'] / 16)
+    padding = 1
+        
+    sub_x1 = max(bounding_box[0] - padding, 0)
+    sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
+    sub_y1 = max(bounding_box[1] - padding, 0)
+    sub_y2 = min(bounding_box[1] + bounding_box[3] + padding, image.shape[1])
+    
+    mask = np.zeros((image.shape[0], image.shape[1])) 
+    mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
+               
+    masked_image = None
+    if len(image.shape) > 2:
+#        masked_image = image * np.stack((mask, mask, mask), axis=-1)
+#        masked_image[:,:,0], new_bounding_boxes = remove_small_components(masked_image[:,:,0], limit = 1)
+#        masked_image[:,:,1], new_bounding_boxes = remove_small_components(masked_image[:,:,1], limit = 1)
+#        masked_image[:,:,2], new_bounding_boxes = remove_small_components(masked_image[:,:,2], limit = 1)
+        masked_image = image[:,:,0] * mask
+    else:
+        masked_image = image * mask
+
+    masked_image, new_bounding_boxes = remove_small_components(masked_image, limit = 1)
+    masked_image_dilated = cv2.dilate(masked_image.astype('float64'), settings['kernel'], iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+    
+#    plt.figure(13000)
+#    plt.imshow(mask)
+#    plt.figure(13001)
+#    plt.imshow(polyline_image)
+#    plt.figure(13002)
+#    plt.imshow(masked_image)
+#    plt.figure(13003)
+#    plt.imshow(masked_image_dilated)
+#    plt.show()
+    
+    for polyline_coords in polylines_coords:
+        for i in range(len(polyline_coords[0])):
+            if masked_image_dilated[polyline_coords[0][i], polyline_coords[1][i]] > 0.5:
+#                print(i, 'detected')
+                for j in range(i, len(polyline_coords[0])):
+                    if masked_image_dilated[polyline_coords[0][j], polyline_coords[1][j]] < 0.5:
+                        break
+                return np.array([polyline_coords[0][i:j], polyline_coords[1][i:j]])
+#        plt.figure(13003)
+#        plt.imshow(masked_image)
+#        plt.show()
+
+def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, target_box = None, mask_pred = None):
+    """Selects a single bounding box/polyline from the detected fronts, based on various metrics.
+        Prioritizes confident, long, centralized fronts that are far away from fronts that have already been detected."""
+#    print('\t\t' + 'mask_bounding_box')
     bounding_box = bounding_boxes[1]
     polyline_coords = polylines_coords[0]
     #If more than 1 bounding box, find the one closest to the target, in case multiple fronts are close
@@ -847,58 +943,21 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polyli
             #Use fjord distances to select box ordering
             orderings = []
             weights = []
+            #Use confidence to select box
             if mask_pred is not None:
-                metric = []
-                for i in range(1, len(bounding_boxes)):
-                    bounding_box = bounding_boxes[i]
-                    polyline_coords = polylines_coords[i-1]
-                    
-                    edge_pred = np.zeros((image.shape[0], image.shape[1], 3))
-                    pts = np.vstack((polyline_coords[1],polyline_coords[0])).astype(np.int32).T
-                    cv2.polylines(edge_pred,  [pts],  False,  (255, 0, 0),  3)#higher thickness may be necessary, but ddecreases accuracy...
-                    edge_pred = edge_pred[:,:,0]
-                    
-                    edge_binary_dilated = cv2.dilate(edge_pred.astype('float64'), settings['confidence_kernel'], iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
-                    edge_binary_dilated_indices = edge_binary_dilated > 127
-                    mask_edge_buffered = np.zeros(mask_pred.shape) + 0.5
-                    mask_edge_buffered[edge_binary_dilated_indices] = mask_pred[edge_binary_dilated_indices]
-                    mask_pred_normalized = mask_edge_buffered - 0.5
-                    nonzeros_mask_edge_buffered = mask_pred_normalized[edge_binary_dilated_indices]
-                    mask_edge_buffered_confidence_strength = np.abs(np.mean(nonzeros_mask_edge_buffered))
-                    metric.append(mask_edge_buffered_confidence_strength)
-#                    plt.figure(12500 + random.randint(1,500))
-#                    plt.imshow(mask_pred_normalized)
-#                    plt.show()
-                print('\t\t\t' + 'metric confidence:', str(metric))
-                ordering = np.argsort(metric)
+                ordering = calculate_box_confidence(bounding_boxes, image, settings, polylines_coords, mask_pred)
                 orderings.append(ordering)
                 weights.append(2.0)
-#                print('mask_edge_buffered_confidence_strength', metric)
-            if polylines_coords is not None:
-                metric = []
-                for i in range(1, len(bounding_boxes)):
-                    bounding_box = bounding_boxes[i]
-                    polyline_coords_length = len(polylines_coords[i-1][0])
-                    metric.append(polyline_coords_length)
-                ordering = list(reversed(np.argsort(metric)))
-                orderings.append(ordering)
-                orderings.append(ordering)
-                weights.append(2.5)
-                print('\t\t\t' + 'metric length:', str(metric))
-            #Use distance to select box
-            metric = []
-            target_center = np.array([image.shape[0] / 2, image.shape[1] / 2])
-            for i in range(1, len(bounding_boxes)):
-                bounding_box = bounding_boxes[i]
-                bounding_box_center_x = bounding_box[0] + bounding_box[2] / 2 
-                bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
-                bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
-                distance = np.linalg.norm(target_center - bounding_box_center)
-                metric.append(distance)
-                weights.append(1.5)
-            print('\t\t\t' + 'metric distance:', str(metric))
-            ordering = np.argsort(metric)
+                
+            #Use length to select box
+            ordering = calculate_box_length(bounding_boxes, image, settings, polylines_coords)
             orderings.append(ordering)
+            weights.append(2.5)
+            
+            #Use distance to select box
+            ordering = calculate_box_distance(bounding_boxes, image, settings)
+            orderings.append(ordering)
+            weights.append(1.5)
             
             #Determine which bounding box scores best according to up to 3 metrics
             placings = np.zeros((len(bounding_boxes) - 1))
@@ -911,32 +970,28 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polyli
                     place += 1
             ordering = np.argsort(placings)
 #            print(placings, ordering)
+            
             #Go through bounding boxes in order of distance to target, picking first one that hasn't already been used
             #Determine closeness to already used bounding boxes by ensuring inter box distance is below some threshold
-            
+            #TODO: Convert this into a metric?
             image_settings = settings['image_settings']
             inter_box_distance_threshold = settings['inter_box_distance_threshold']
-            used_bounding_boxes = image_settings['used_bounding_boxes']
+            used_polyline_centers = image_settings['used_bounding_boxes']
             for i in range(len(ordering)):
                 index = ordering[i]            
                 bounding_box = bounding_boxes[index + 1]
                 polyline_coords = polylines_coords[index]
-                bounding_box_center_x = bounding_box[0] + bounding_box[2] / 2 
-                bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
-                bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
+                polyline_center = np.array([np.mean(polyline_coords[0]), np.mean(polyline_coords[1])])
                 
                 original_bounding_box = image_settings['actual_bounding_box']
                 top_left = np.array([original_bounding_box[0], original_bounding_box[1]])
                 scale = np.array([original_bounding_box[2] / settings['full_size'], original_bounding_box[3] / settings['full_size']])
-                original_bounding_box_center = bounding_box_center * scale + top_left
+                original_polyline_center = polyline_center * scale + top_left
                 
                 usable = True
-                for j in range(len(used_bounding_boxes)):
-                    used_bounding_box = used_bounding_boxes[j]
-                    used_bounding_box_center_x = used_bounding_box[0] + used_bounding_box[2] / 2 
-                    used_bounding_box_center_y = used_bounding_box[1] + used_bounding_box[3] / 2 
-                    used_bounding_box_center = np.array([used_bounding_box_center_x, used_bounding_box_center_y])
-                    inter_box_distance = np.linalg.norm(original_bounding_box_center - used_bounding_box_center)
+                for j in range(len(used_polyline_centers)):
+                    used_polyline_center = used_polyline_centers[j]
+                    inter_box_distance = np.linalg.norm(original_polyline_center - used_polyline_center)
                     print('\t\t\t' + 'inter_box_distance', inter_box_distance)
                     if inter_box_distance < inter_box_distance_threshold:
                         usable = False
@@ -944,7 +999,7 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polyli
                 if usable:
                     break
             #For now, use precense of target_box to detect if we should add bounding box to used_bounding boxes
-            image_settings['used_bounding_boxes'].append(image_settings['actual_bounding_box'])
+            image_settings['used_bounding_boxes'].append(polyline_center)
             
         else: #if target bounding box is provided, use that instead. For now, asusme this is a mask.
             target_center = np.array([target_box[0] + target_box[2] / 2, target_box[1] + target_box[3] / 2])
@@ -961,28 +1016,6 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polyli
                     closest_distance = distance
                     closest_bounding_box = bounding_box
             bounding_box = closest_bounding_box
-#    padding = int(settings['full_size'] / 16)
-#    padding =0
-#    sub_x1 = max(bounding_box[0] - padding, 0)
-#    sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
-#    sub_y1 = max(bounding_box[1] - padding, 0)
-#    sub_y2 = min(bounding_box[1] + bounding_box[3] + padding, image.shape[1])
-#    
-#    mask = np.zeros((image.shape[0], image.shape[1])) 
-#    mask[sub_x1:sub_x2, sub_y1:sub_y2] = 1.0
-#    
-#    bounding_box = [sub_x1, sub_y1, sub_x2 - sub_x1, sub_y2 - sub_y1]
-    
-#    masked_image = None
-#    if len(image.shape) > 2:
-#        masked_image = image * np.stack((mask, mask, mask), axis=-1)
-#        masked_image[:,:,0], bounding_boxes = remove_small_components(masked_image[:,:,0], limit = 1)
-#        masked_image[:,:,1], bounding_boxes = remove_small_components(masked_image[:,:,1], limit = 1)
-#        masked_image[:,:,2], bounding_boxes = remove_small_components(masked_image[:,:,2], limit = 1)
-#    else:
-#        masked_image = image * mask
-#        masked_image, bounding_boxes = remove_small_components(masked_image, limit = 1)
-    
     # Create an image to draw the lines on
     polyline_image = np.zeros((image.shape[0], image.shape[1], 3))
         
@@ -990,12 +1023,63 @@ def mask_bounding_box(bounding_boxes, image, settings, target_box = None, polyli
     pts = np.vstack((polyline_coords[1],polyline_coords[0])).astype(np.int32).T
     
     # Draw the lane onto the warped blank image
-#    plt.plot(left_fitx, ploty, color='yellow')
     cv2.polylines(polyline_image,  [pts],  False,  (255, 0, 0),  1)#higher thickness may be necessary, but ddecreases accuracy...
     return polyline_image, bounding_box, polyline_coords
 
+def calculate_box_confidence(bounding_boxes, image, settings, polylines_coords, mask_pred):
+    """Helper function for mask_bounding_box to determine masking confidence of each bounding box's polyline."""
+    metric = []
+    for i in range(1, len(bounding_boxes)):
+        polyline_coords = polylines_coords[i-1]
+        
+        edge_pred = np.zeros((image.shape[0], image.shape[1], 3))
+        pts = np.vstack((polyline_coords[1], polyline_coords[0])).astype(np.int32).T
+        cv2.polylines(edge_pred,  [pts],  False,  (255, 0, 0),  3)#higher thickness may be necessary, but ddecreases accuracy...
+        edge_pred = edge_pred[:,:,0]
+        
+        edge_binary_dilated = cv2.dilate(edge_pred.astype('float64'), settings['confidence_kernel'], iterations = 1).astype(np.float32) #np.float32 [0.0, 255.0]
+        edge_binary_dilated_indices = edge_binary_dilated > 127
+        mask_edge_buffered = np.zeros(mask_pred.shape) + 0.5
+        mask_edge_buffered[edge_binary_dilated_indices] = mask_pred[edge_binary_dilated_indices]
+        mask_pred_normalized = mask_edge_buffered - 0.5
+        nonzeros_mask_edge_buffered = mask_pred_normalized[edge_binary_dilated_indices]
+        mask_edge_buffered_confidence_strength = np.abs(np.mean(nonzeros_mask_edge_buffered))
+        metric.append(mask_edge_buffered_confidence_strength)
+#        plt.figure(12500 + random.randint(1,500))
+#        plt.imshow(mask_pred_normalized)
+#        plt.show()
+    print('\t\t\t' + 'metric confidence:', str(metric))
+    ordering = np.argsort(metric)
+    return ordering
 
+def calculate_box_length(bounding_boxes, image, settings, polylines_coords):
+    """Helper function for mask_bounding_box to determine length of each bounding box's polyline."""
+    metric = []
+    for i in range(1, len(bounding_boxes)):
+        polyline_coords_length = len(polylines_coords[i-1][0])
+        metric.append(polyline_coords_length)
+    print('\t\t\t' + 'metric length:', str(metric))
+    ordering = list(reversed(np.argsort(metric)))
+    return ordering
+
+def calculate_box_distance(bounding_boxes, image, settings):
+    """Helper function for mask_bounding_box to determine distance to center of image of each bounding box's polyline."""
+    metric = []
+    target_center = np.array([image.shape[0] / 2, image.shape[1] / 2])
+    for i in range(1, len(bounding_boxes)):
+        bounding_box = bounding_boxes[i]
+        bounding_box_center_x = bounding_box[0] + bounding_box[2] / 2 
+        bounding_box_center_y = bounding_box[1] + bounding_box[3] / 2 
+        bounding_box_center = np.array([bounding_box_center_x, bounding_box_center_y])
+        distance = np.linalg.norm(target_center - bounding_box_center)
+        metric.append(distance)
+    print('\t\t\t' + 'metric distance:', str(metric))
+    ordering = np.argsort(metric)
+    return ordering
+
+    
 def calculate_metrics_calfin(settings, metrics):
+    """Helper function to calculate evaluation metrics for validated calving fronts."""
     kernel = settings['kernel']
     image_settings = settings['image_settings']
     pred_image = image_settings['pred_image']
