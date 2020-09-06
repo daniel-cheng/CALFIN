@@ -123,19 +123,20 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
             #For each date, retrieve mask by projecting each calving front onto a single mask,
             #count "exits" to handle multi-
             for date_key in dates.keys():
-                result = process_date(counter, domain, dates, date_key, original_mask, fjord_bounds, fjord_boundary_tif, fjord_boundary_file_path)
-                if result is not None:
-                    counter = result[0]
-                    dates_exits[date_key] = result[1]
-                    dates_lambdas[date_key] = result[2]
-                
-            median_exits = np.median(dates_exits.values())
+                if date_key == '2015-09-07':
+                    result = process_date(counter, domain, dates, date_key, original_mask, fjord_bounds, fjord_boundary_tif, fjord_boundary_file_path)
+                    if result is not None:
+                        counter = result[0]
+                        dates_exits[date_key] = result[1]
+                        dates_lambdas[date_key] = result[2]
+                        # break
+            median_exits = np.median(list(dates_exits.values()))
             print(median_exits)
             plt.rcParams["figure.figsize"] = (16,9)
             f, axarr = plt.subplots(1, 1, num=domain)
-            axarr[0].hist(dates_exits.values(), bins=3)
+            axarr.hist(list(dates_exits.values()), bins=3)
             plt.show()
-
+            
             #If all available fronts are masked, proceed with Shapefile output.
             # for date_key in dates.keys():
             #     if dates_exits[date_key] <= median_exits:
@@ -166,10 +167,12 @@ def process_date(counter, domain, dates, date_key, original_mask, fjord_bounds, 
     
     new_mask = np.ones(mask.shape) * 255
     
-    plt.figure(str(counter) + '-combined_pred_mask_validity')
-    plt.imshow(combined_pred_mask_validity)
-    plt.figure(str(counter) + '-combined_pred_mask')
-    plt.imshow(combined_pred_mask)
+    # plt.figure(str(counter) + '-combined_pred_mask_validity')
+    # plt.imshow(combined_pred_mask_validity)
+    # plt.figure(str(counter) + '-combined_pred_mask')
+    # plt.imshow(combined_pred_mask)
+    # plt.figure(str(counter) + '-mask')
+    # plt.imshow(mask)
     for i in range(len(sizes)):
         if sizes[ordering[i]] >= min_size_floor:
             mask_indices = output == ordering[i]
@@ -179,19 +182,19 @@ def process_date(counter, domain, dates, date_key, original_mask, fjord_bounds, 
             mean_value = np.mean(image_component)
             # mean_values.append(mean_value)
             
-            image_component_mask = np.zeros(mask.shape)
-            image_component_mask[valid_mask_indices] = 1.0
-            plt.figure(str(counter) + '-image_component_mask-' + str(i))
-            plt.imshow(image_component_mask)
-            plt.figure(str(counter) + '-image_component-' + str(i))
-            plt.imshow(combined_pred_mask * image_component_mask)
-            
+            # image_component_mask = np.zeros(mask.shape)
+            # image_component_mask[valid_mask_indices] = 1.0
+            # plt.figure(str(counter) + '-image_component_mask-' + str(i))
+            # plt.imshow(image_component_mask)
+            # plt.figure(str(counter) + '-image_component-' + str(i))
+            # plt.imshow(combined_pred_mask * image_component_mask)
+            # print(mean_value)
             if mean_value < 128:
                 new_mask[mask_indices] = 0
     plt.figure(date_key + '-' + str(counter) + '-Final')
     plt.imshow(new_mask)
     plt.show()
-    exit()
+    # exit()
 
     # replace all values in land/ice mask with correct color
     new_mask = median_filter(new_mask, size=3)
@@ -274,31 +277,40 @@ def process_file(combined_pred_mask, combined_pred_mask_validity, counter, domai
             # plt.close('all')
             # bounding_boxes_pred = results_pred[1]
             
-            plt.figure(str(counter) + '-fjord_boundary_original')
-            plt.imshow(mask)
+            # plt.figure(str(counter) + '-fjord_boundary_original')
+            # plt.imshow(mask)
             
-            plt.figure(str(counter) + '-fjord_boundary')
-            plt.imshow(original_mask)
+            # plt.figure(str(counter) + '-fjord_boundary')
+            # plt.imshow(original_mask)
                                         
-            plt.figure(str(counter) + '-pred_mask')
-            plt.imshow(pred_mask)
+            # plt.figure(str(counter) + '-pred_mask')
+            # plt.imshow(pred_mask)
             
-            plt.figure(str(counter) + '-original_pred_mask')
-            plt.imshow(original_pred_mask)
+            # plt.figure(str(counter) + '-original_pred_mask')
+            # plt.imshow(original_pred_mask)
             
-            plt.figure(str(counter) + '-validity')
-            plt.imshow(validity)
+            # plt.figure(str(counter) + '-validity')
+            # plt.imshow(validity)
             
-            plt.figure(str(counter) + '-combined_pred_mask_validity')
-            plt.imshow(combined_pred_mask_validity)
+            # plt.figure(str(counter) + '-combined_pred_mask_validity')
+            # plt.imshow(combined_pred_mask_validity)
             
-            plt.figure(str(counter) + '-combined_pred_mask')
-            plt.imshow(combined_pred_mask)
-            plt.show()
+            # plt.figure(str(counter) + '-combined_pred_mask')
+            # plt.imshow(combined_pred_mask)
+            # plt.show()
             # exit()
             
             polyline_coords = source_shp[0]['geometry']['coordinates']
             fjord_distances, fjord_indices = distance_transform_edt(original_mask, return_indices=True)
+            
+            #Clip coordinates on boundary to ensure no negative indexing occurs during coordinate transform
+            polyline_coords_x = np.array(polyline_coords)[:,0]
+            polyline_coords_y = np.array(polyline_coords)[:,1]
+            polyline_coords_x_clipped = np.clip(polyline_coords_x, x_min_fjord, x_max_fjord)
+            polyline_coords_y_clipped = np.clip(polyline_coords_y, y_min_fjord, y_max_fjord)
+            polyline_coords = list(zip(polyline_coords_x_clipped, polyline_coords_y_clipped))
+            
+            #Find closest boundary positions 
             endpoint_pixel_coord_1 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[0][0], polyline_coords[0][1])
             endpoint_pixel_coord_2 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[-1][0], polyline_coords[-1][1])
             closest_pixel_1 = [fjord_indices[0][endpoint_pixel_coord_1], fjord_indices[1][endpoint_pixel_coord_1]]
@@ -316,8 +328,8 @@ def process_file(combined_pred_mask, combined_pred_mask_validity, counter, domai
                 out=mask,
                 out_shape=fjord_boundary_tif.shape,
                 transform=fjord_boundary_tif.transform)
-            plt.figure(str(counter) + '-mask')
-            plt.imshow(mask)
+            # plt.figure(str(counter) + '-mask')
+            # plt.imshow(mask)
             # plt.show()
             # exit()
             return counter, mask, combined_pred_mask, combined_pred_mask_validity
@@ -326,10 +338,13 @@ def count_exits(image):
     """Given an image, detects the number of exits (mask boundary changes / 2) in a land-ice/ocean mask."""
     top_row = image[0, :]
     right_col = image[1:-1, -1]
-    bottom_row = reversed(image[-1, :])
-    left_col = reversed(image[0:-1, 0]) #add top left pixel again to "loop" the border and detect the edge case there
-    border = top_row + right_col + bottom_row + left_col
+    bottom_row = np.array(list(reversed(image[-1, :])))
+    left_col = np.array(list(reversed(image[0:-1, 0]))) #add top left pixel again to "loop" the border and detect the edge case there
+    border = np.concatenate((top_row, right_col, bottom_row, left_col), axis=0)
+    border = border / border.max()
     exits = np.sum(np.abs(np.diff(border))) / 2
+    # print(exits)
+    # exit()
     return exits
     
 if __name__ == "__main__":

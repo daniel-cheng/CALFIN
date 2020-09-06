@@ -64,9 +64,9 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
 #        mean_cluster_distances.append(np.mean(k_nearest_distances))
 #        k_closest_indices_list.append(k_closest_indices)
         
-#    indices = list(range(len(x)))
-#    positions = list(zip(-y, x))
-#    node_positions = dict(zip(indices, positions))
+    indices = list(range(len(x)))
+    positions = list(zip(-y, x))
+    node_positions = dict(zip(indices, positions))
 #    dense_graph_nx = nx.from_numpy_matrix(adjacency_matrix)
 #    plt.figure(300 + random.randint(1,500))
 #    nx.draw_networkx(dense_graph_nx, pos=node_positions, with_labels=False, node_size = 15)
@@ -103,8 +103,12 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     #in order to account for negative weighting
     #Note, this can't be done before the mst calculation since this would prevent the actual 
     #mst from being effectively found
-    test = 5 - np.power(np.e, mst[rows, cols]) - 1
-    mst[rows, cols] = test
+    #zero point is when the distance weighting starts being negative.
+    #power is the exponential penalty for longer distances.
+    zero_point = 5
+    power = 1.5
+    new_distances = np.power(zero_point, power) - np.power(np.power(np.e, mst[rows, cols]) - 1, power)
+    mst[rows, cols] = new_distances
     
 #    mst[rows, cols] = mst[rows, cols] - np.min([np.min(mst[rows, cols]), 0])
     
