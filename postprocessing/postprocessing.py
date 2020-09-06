@@ -286,6 +286,7 @@ def postprocess_production(settings, metrics):
     #if no fronts are found yet, fallback to box that encloses entire image
     if not found_front:
         box_counter = 0
+        print('Rehandling bounding_box:', bounding_boxes[0])
         image_settings['box_counter'] = box_counter
         image_settings['bounding_box'] = bounding_boxes[0]
         found_front, metrics = reprocess_production(settings, metrics)
@@ -382,16 +383,21 @@ def reprocess_production(settings, metrics):
         print('\t' + "no front detected, skipping")
         metrics['no_detection_skip_count'] += 1
         return found_front, metrics
-    polyline_image, bounding_box_pred, polyline_coords = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords, mask_pred)
+    results_bounded = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords, mask_pred)
     
-    print('\t\t' + 'bounding_boxes_pred', bounding_boxes_pred)
-#    plt.figure(11500 + random.randint(1,500))
-#    plt.imshow(polyline_image)
-#    plt.show()
+    #Fail if the bounded front isn't within the original detection
+    if results_bounded is None:
+        print('\t' + "not confident (results_bounded out of range), skipping")
+        metrics['confidence_skip_count'] += 1
+        return found_front, metrics
     
+    polyline_image, bounding_box_pred, polyline_coords = results_bounded
     image_settings['polyline_coords'] = polyline_coords
     image_settings['bounding_box_pred'] = bounding_box_pred
     image_settings['polyline_image'] = polyline_image
+#    plt.figure(11500 + random.randint(1,500))
+#    plt.imshow(polyline_image)
+#    plt.show()
     
     #Plot and save results
     kernel = settings['kernel']
@@ -773,13 +779,10 @@ def retrace_polyline(settings, polylines_coords, polyline_image, bounding_box):
                         break
                 return np.array([polyline_coords[0][i:j], polyline_coords[1][i:j]])
 
-#reprocess
-#Store original boxes in used
-#reprocess
-#Check with previous in used
+
 def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, mask_pred):
     """Selects a single bounding box/polyline from the detected fronts, based on various metrics.
-        Prioritizes confident, long, centralized fronts that are far away from fronts that have already been detected."""
+        Capable of prioritizing confident, long, centralized fronts that are far away from fronts that have already been detected, and close to original detections in the first processing pass."""
 #    print('\t\t' + 'mask_bounding_box')
     full_size = settings['full_size']
     image_settings = settings['image_settings']
@@ -820,11 +823,18 @@ def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, mask_pr
         polyline_coords = polylines_coords[index]
     
     polyline_center = np.array([np.mean(polyline_coords[0]), np.mean(polyline_coords[1])])
-    original_bounding_box = image_settings['actual_bounding_box']
-    top_left = np.array([original_bounding_box[0], original_bounding_box[1]])
-    scale = np.array([original_bounding_box[2] / full_size, original_bounding_box[3] / full_size])
+    actual_bounding_box = image_settings['actual_bounding_box']
+    top_left = np.array([actual_bounding_box[0], actual_bounding_box[1]])
+    scale = np.array([actual_bounding_box[2] / full_size, actual_bounding_box[3] / full_size])
     original_polyline_center = polyline_center * scale + top_left
     
+    #Exit early if front is not within bounds of original bounding box
+    original_bounding_box = image_settings['bounding_box']
+    if not (original_polyline_center[0] > original_bounding_box[0] and 
+        original_polyline_center[0] < original_bounding_box[0] + original_bounding_box[2] and
+        original_polyline_center[1] > original_bounding_box[1] and 
+        original_polyline_center[1] < original_bounding_box[1] + original_bounding_box[3]):
+        return None
     #Store used bounding box to prevent overlap in reprocessed fronts
     image_settings['used_bounding_boxes'].append(original_polyline_center)
     
@@ -832,7 +842,9 @@ def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, mask_pr
     polyline_image = np.zeros((image.shape[0], image.shape[1], 3))
     pts = np.vstack((polyline_coords[1], polyline_coords[0])).astype(np.int32).T
     cv2.polylines(polyline_image, [pts], False, (255, 0, 0), 1) #higher thickness may be necessary, but decreases accuracy...
-    
+#    plt.figure(14000 + random.randint(1,500))
+#    plt.imshow(polyline_image)
+#    plt.show()
     return polyline_image, bounding_box, polyline_coords
 
 

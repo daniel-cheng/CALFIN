@@ -17,13 +17,11 @@ def main(settings, metrics):
     #Begin processing validation images
     troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
     troubled_ones = [3, 213, 238, 246, 283, 284, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 
-                     6122, 7200, 7512, 7611, 9123, 10200, 10302, 10400, 11101, 11219, 21641, 21341, 
-                     23043, 23045, 23046, 23050, 23068, 23086, 23091, 23138, 23330, 23896, 23902, 23905,
-                     24000, 24048, 24201, 24242]
-#    troubled_ones = [23896, 23902, 23905, 24048]  
-#    troubled_ones = [1800]  
-#    troubled_ones = [23966, 23963, 23965] 
-#    troubled_ones = [24238] 
+                     6122, 7200, 7512, 7611, 9123, 10200, 10302, 10395, 10396, 10397, 10398, 10399,
+                     10400, 11101, 11219, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086,
+                     23091, 23138, 23330, 23896, 23902, 23905, 23963, 23965, 23966, 24000, 24048,
+                     24201, 24242]
+    troubled_ones = [10427] 
     
     
 #    troubled_ones = [23043, 23045, 23046, 23050, 23068, 23086   ]
@@ -43,9 +41,10 @@ def main(settings, metrics):
 #    domains = ['79North', 'Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE',
 #           'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
 #           'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    domains = ['Upernavik-SE']
-    for i in range(23000, len(settings['validation_files'])):
-#    for i in range(24048, len(settings['validation_files'])):
+#    domains = []
+    domains = ['Kakiffaat', 'Perlerfiup', 'Upernavik-NW', 'Upernavik-SE']
+#    for i in range(23000, len(settings['validation_files'])):
+    for i in range(0, len(settings['validation_files'])):
 #    for i in range(1444, 1445):
 #    for i in troubled_ones:
         name = settings['validation_files'][i]
@@ -92,7 +91,7 @@ def initialize(img_size):
             'size'   : 14}
     plt.rc('font', **font)
     plt.rcParams["figure.figsize"] = (16,9)
-    np.set_printoptions(precision=3)
+#    np.set_printoptions(precision=3)
     
     validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
 
@@ -192,8 +191,8 @@ def initialize(img_size):
             pred_norm_image[x_start:x_end, y_start:y_end] += pred_norm_patch
     settings['pred_norm_image'] = pred_norm_image
     
-#    log_path = os.path.join(dest_root_path, settings['log_file_name'])
-#    sys.stdout = open(log_path, 'a')
+    log_path = os.path.join(dest_root_path, settings['log_file_name'])
+    sys.stdout = open(log_path, 'a')
 
     return settings, metrics
 
