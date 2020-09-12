@@ -31,8 +31,6 @@ def tif_save(settings, metrics, dest_path, array):
     tif_name = image_name_base + '.tif'
     source_tif_path = os.path.join(settings['tif_source_path'], domain, year, tif_name)
     
-    if date == '2005-05-09':
-        print('alert')
     # Load geotiff and get domain layer/bounding box of area to mask
     geotiff = gdal.Open(source_tif_path)
     

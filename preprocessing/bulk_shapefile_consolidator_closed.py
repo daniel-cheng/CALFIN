@@ -18,6 +18,7 @@ from rasterio import features
 from fiona.crs import from_epsg
 from dateutil.parser import parse
 import matplotlib.pyplot as plt
+from osgeo import gdal, osr
 
 #level 0 should inlcude all subsets (preprocessed)
 #Make individual ones, domain ones, and all available
@@ -46,7 +47,7 @@ def duplicate_prefix_filter(file_list):
             print('override:', prefix)
     return results
 
-def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, fjord_boundary_path, version):
+def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, fjord_boundary_path, domain_path, version):
     schema = {
         'geometry': 'Polygon',
         'properties': {
@@ -81,7 +82,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
         domains = ['Kakiffaat', 'Alangorssup', 'Akullikassaap', 'Kangerlussuup', 'Kangerdluarssup', 'Kangilleq', 'Lille']
         domains = ['Qeqertarsuup', 'Nunatakavsaup', 'Sermeq-Silarleq', 'Sermilik', 'Store']
         domains = ['Akullikassaap']
-        for domain in os.listdir(source_manual_domain_path):
+        domains = ['Kakiffaat', 'Kangilleq']
+        domains = ['Kakiffaat']
+        for domain in os.listdir(source_auto_domain_path):
             if '.' in domain:
                 continue
             if domain not in domains:
@@ -146,7 +149,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
     #                print(old_file_shp_file_path)
                     with fiona.open(old_file_shp_file_path, 'r', encoding='utf-8') as source_shp:
                         coords = np.array(list(source_shp)[0]['geometry']['coordinates'])
-                        inProj = Proj('epsg:' + str(name_id_dict[domain]), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
+                        inProj = Proj('epsg:' + epsg_from_domain(domain_path, domain), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
                         x = coords[0,:,0]
                         y = coords[0,:,1]
                         x2, y2 = transform(inProj, outProj, x, y)
@@ -248,83 +251,24 @@ def landsat_output_lookup(domain, date, orbit, satellite, level):
 def landsat_scene_id_lookup(date, orbit, satellite, level):
     return scene_hash_table[date][orbit][satellite][level]
 
+def epsg_from_domain(domain_path, domain):
+    """Returns the epsg code as an integer, given the domain shpaefile path and the domain name."""
+    domain_prj_path = os.path.join(domain_path, domain + '.prj')
+    prj_txt = open(domain_prj_path, 'r').read()
+    srs = osr.SpatialReference()
+    srs.ImportFromESRI([prj_txt])
+    srs.AutoIdentifyEPSG()
+    return srs.GetAuthorityCode(None)
+    
 if __name__ == "__main__":
-    name_id_dict = dict()
-    name_id_dict['Akullikassaap'] = 32621
-    name_id_dict['Alangorssup'] = 32621
-    name_id_dict['Alanngorliup'] = 32621
-    name_id_dict['Brückner'] = 32624
-    name_id_dict['Christian-IV'] = 32624
-    name_id_dict['Cornell'] = 32621
-    name_id_dict['Courtauld'] = 32624
-    name_id_dict['Dietrichson'] = 32621
-    name_id_dict['Docker-Smith'] = 32621
-    name_id_dict['Eqip'] = 32621
-    name_id_dict['Fenris'] = 32624
-    name_id_dict['Frederiksborg'] = 32624
-    name_id_dict['Gade'] = 32621
-    name_id_dict['Glacier-de-France'] = 32624
-    name_id_dict['Hayes'] = 32621
-    name_id_dict['Heim'] = 32624
-    name_id_dict['Helheim'] = 32624
-    name_id_dict['Hutchinson'] = 32624
-    name_id_dict['Illullip'] = 32621
-    name_id_dict['Inngia'] = 32621
-    name_id_dict['Issuusarsuit'] = 32621
-    name_id_dict['Jakobshavn'] = 32621
-    name_id_dict['Kakiffaat'] = 32621
-    name_id_dict['Kangerdluarssup'] = 32621
-    name_id_dict['Kangerlussuaq'] = 32624
-    name_id_dict['Kangerlussuup'] = 32621
-    name_id_dict['Kangiata-Nunaata'] = 32621
-    name_id_dict['Kangilerngata'] = 32621
-    name_id_dict['Kangilinnguata'] = 32621
-    name_id_dict['Kangilleq'] = 32621
-    name_id_dict['Kjer'] = 32621
-    name_id_dict['Kong-Oscar'] = 32621
-    name_id_dict['Kælvegletscher'] = 32624
-    name_id_dict['Lille'] = 32621
-    name_id_dict['Midgård'] = 32624
-    name_id_dict['Morell'] = 32621
-    name_id_dict['Nansen'] = 32621
-    name_id_dict['Narsap'] = 32621
-    name_id_dict['Nordenskiold'] = 32621
-    name_id_dict['Nordfjord'] = 32624
-    name_id_dict['Nordre-Parallelgletsjer'] = 32624
-    name_id_dict['Nunatakassaap'] = 32621
-    name_id_dict['Nunatakavsaup'] = 32621
-    name_id_dict['Petermann'] = 32620
-    name_id_dict['Perlerfiup'] = 32621
-    name_id_dict['Polaric'] = 32624
-    name_id_dict['Qeqertarsuup'] = 32621
-    name_id_dict['Rink-Gletsjer'] = 32621
-    name_id_dict['Rink-Isbrae'] = 32621
-    name_id_dict['Rosenborg'] = 32624
-    name_id_dict['Saqqarliup'] = 32621
-    name_id_dict['Sermeq-Avannarleq-69'] = 32621
-    name_id_dict['Sermeq-Avannarleq-70'] = 32621
-    name_id_dict['Sermeq-Avannarleq-73'] = 32621
-    name_id_dict['Sermeq-Kujalleq-70'] = 32621
-    name_id_dict['Sermeq-Kujalleq-73'] = 32621
-    name_id_dict['Sermeq-Silarleq'] = 32621
-    name_id_dict['Sermilik'] = 32621
-    name_id_dict['Sorgenfri'] = 32624
-    name_id_dict['Steenstrup'] = 32621
-    name_id_dict['Store'] = 32621
-    name_id_dict['Styrtegletsjer'] = 32624
-    name_id_dict['Sverdrup'] = 32621
-    name_id_dict['Søndre-Parallelgletsjer'] = 32624
-    name_id_dict['Umiammakku'] = 32621
-    name_id_dict['Upernavik-NE'] = 32621
-    name_id_dict['Upernavik-SE'] =  32621
-
     version = "v1.0"
     source_path_manual = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
     source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production_staging'
     fjord_boundary_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries_tif'
     dest_domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
     dest_all_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-greenland-termini'
-
+    domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\domains'
+    
     glacierIds = fiona.open(r'D:\Daniel\Downloads\GlacierIDs\GlacierIDsRef.shp', 'r', encoding='utf-8')
     glacier_centers = []
     glacier_properties = []
@@ -351,5 +295,5 @@ if __name__ == "__main__":
 
     output_hash_table = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(int)))))
 
-    consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, fjord_boundary_path, version)
+    consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, fjord_boundary_path, domain_path, version)
     plt.show()

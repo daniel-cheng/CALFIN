@@ -18,10 +18,10 @@ def main(settings, metrics):
     troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
     troubled_ones = [3, 213, 238, 246, 283, 284, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 
                      6122, 7200, 7512, 7611, 9123, 10200, 10302, 10395, 10396, 10397, 10398, 10399,
-                     10400, 11101, 11219, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086,
+                     10400, 10427, 11101, 11219, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086,
                      23091, 23138, 23330, 23896, 23902, 23905, 23963, 23965, 23966, 24000, 24048,
                      24201, 24242]
-    troubled_ones = [10427] 
+    troubled_ones = [18063] 
     
     
 #    troubled_ones = [23043, 23045, 23046, 23050, 23068, 23086   ]
@@ -35,41 +35,27 @@ def main(settings, metrics):
     
     
 #    for i in range(10303, len(settings['validation_files'])): #Kronborg
-    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
-               'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup',
-               'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-#    domains = ['79North', 'Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE',
-#           'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
-#           'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-#    domains = []
-    domains = ['Kakiffaat', 'Perlerfiup', 'Upernavik-NW', 'Upernavik-SE']
-#    for i in range(23000, len(settings['validation_files'])):
-    for i in range(0, len(settings['validation_files'])):
-#    for i in range(1444, 1445):
-#    for i in troubled_ones:
+#    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
+#               'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup',
+#               'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
+    domains = ['Qeqertarsuup', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
+               'Upernavik-SE', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 'Kakiffaat', 'Perlerfiup', 'Sermikassak-N', 'Sermikassak-S',
+               'Kangerdluarssup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
+#    domains = ['Kakiffaat']
+#    domains = ['Kakiffaat', 'Perlerfiup', 'Upernavik-NW', 'Upernavik-SE']
+#    for i in range(23000, len(settings['validation_files'])):    
+#    for i in range(12976, len(settings['validation_files'])):
+    for i in troubled_ones:
         name = settings['validation_files'][i]
-#        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
-#            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
-#        if 'Upernavik' in name:
         domain = name.split(os.path.sep)[-1].split('_')[0]
-        if domain in domains:
-#        if True:
-            preprocess(i, settings, metrics)
-            process(settings, metrics)
-            postprocess(settings, metrics)
-#    for i in range(0, 23890):
-##    for i in range(1444, 1445):
-##    for i in troubled_ones:
-#        name = settings['validation_files'][i]
-##        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
-##            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
-##        if 'Upernavik' in name:
-#        domain = name.split(os.path.sep)[-1].split('_')[0]
-##        if domain in domains:
-#        if True:
-#            preprocess(i, settings, metrics)
-#            process(settings, metrics)
-#            postprocess(settings, metrics)
+        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name:
+#            if domain in domains:
+#            if domain not in domains:
+            if True:
+                preprocess(i, settings, metrics)
+                process(settings, metrics)
+                postprocess(settings, metrics)
+    
     #Print statistics
 #    print_calfin_domain_metrics(settings, metrics)
 #    print_calfin_all_metrics(settings, metrics)
@@ -191,8 +177,8 @@ def initialize(img_size):
             pred_norm_image[x_start:x_end, y_start:y_end] += pred_norm_patch
     settings['pred_norm_image'] = pred_norm_image
     
-    log_path = os.path.join(dest_root_path, settings['log_file_name'])
-    sys.stdout = open(log_path, 'a')
+#    log_path = os.path.join(dest_root_path, settings['log_file_name'])
+#    sys.stdout = open(log_path, 'a')
 
     return settings, metrics
 

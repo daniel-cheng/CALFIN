@@ -16,6 +16,7 @@ from collections import defaultdict
 import fiona
 from fiona.crs import from_epsg
 from dateutil.parser import parse
+from osgeo import gdal, osr
 
 #level 0 should inlcude all subsets (preprocessed)
 #Make individual ones, domain ones, and all available
@@ -44,7 +45,7 @@ def duplicate_prefix_filter(file_list):
             print('override:', prefix)
     return results
 
-def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version):
+def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, domain_path, version):
     schema = {
         'geometry': 'LineString',
         'properties': {
@@ -72,25 +73,27 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
     output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_manual_' + version + '.shp')
     # domains = 
     domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
-               'Upernavik-SE', 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
+               'Upernavik-SE', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
                'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
     # domains = ['Jakobshavn', 'Sermeq-Avannarleq-69', 'Petermann']
-    domains = ['Akullikassaap']
+    # domains = ['Umiammakku']
     with fiona.open(output_all_shp_path, 
         'w', 
         driver='ESRI Shapefile', 
         crs=fiona.crs.from_epsg(3413), 
         schema=schema, 
         encoding='utf-8') as output_all_shp_file:
-        for domain in os.listdir(source_manual_quality_assurance_path):
+        # domains =  os.listdir(source_manual_quality_assurance_path)
+        for domain in os.listdir(source_auto_quality_assurance_path):
             if '.' in domain:
                 continue
-            if domain not in domains:
-                continue
-            file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_validation.png'))
-            file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_results.png'))
+            # if domain not in domains:
+            #     continue
+            file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_overlay_front.png'))
+            file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_overlay_front.png'))
             file_list_bad_manual = glob.glob(os.path.join(source_manual_quality_assurance_bad_path, domain, '*_overlay_front.png'))
             file_list_bad_auto = glob.glob(os.path.join(source_auto_quality_assurance_bad_path, domain, '*_overlay_front.png'))
+            # file_list_bad_poly_auto = glob.glob(os.path.join(source_auto_quality_assurance_bad_path, domain, '*_overlay_polygon.png'))
             file_list_bad = file_list_bad_manual + file_list_bad_auto
             file_list_bad.sort(key=landsat_sort)
             file_list_bad = [os.path.basename(x) for x in file_list_bad]
@@ -101,9 +104,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                 
                 file_name = os.path.basename(file_path)
                 file_name_parts = file_name.split('_')
-                file_basename = "_".join(file_name_parts[0:-2])
-                file_overlay_name = "_".join(file_name_parts[0:-1]) + '_overlay_front.png'
-                if file_overlay_name in file_list_bad:
+                file_basename = "_".join(file_name_parts[0:-3])
+                # file_overlay_name = "_".join(file_name_parts[0:-1]) + '_overlay_front.png'
+                if file_name in file_list_bad:
                     print('Skipping manually pruned:', file_basename)
                     continue
                 satellite = file_name_parts[1]
@@ -136,21 +139,21 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                     print('Unrecognized sattlelite!')
                     continue
                 
-                if 'validation' in file_path:
+                if 'mask_extractor' in file_path:
                     source_domain_path = os.path.join(source_path_manual, 'domain')
-                elif 'results' in file_path:
+                elif 'production' in file_path:
                     source_domain_path = os.path.join(source_path_auto, 'domain')
                 
 #                if not landsat_output_lookup(domain, date, orbit, satellite, level):
 #                    print('duplicate pick, continuing:', date, orbit, satellite, level, domain)
 #                    continue
-                reprocessing_id = file_name_parts[-2][-1]
+                reprocessing_id = file_name_parts[-3][-1]
                 old_file_shp_name = file_basename + '_' + reprocessing_id + '_cf.shp'    
                 old_file_shp_file_path = os.path.join(source_domain_path, domain, old_file_shp_name)
 #                print(old_file_shp_file_path)
                 with fiona.open(old_file_shp_file_path, 'r', encoding='utf-8') as source_shp:
                     coords = np.array(list(source_shp)[0]['geometry']['coordinates'])
-                    inProj = Proj('epsg:' + str(name_id_dict[domain]), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
+                    inProj = Proj('epsg:' + epsg_from_domain(domain_path, domain), preserve_units=True) #32621 or 32624 (WGS 84 / UTM zone 21N or WGS 84 / UTM zone 24N)
                     x = coords[:,0]
                     y = coords[:,1]
                     x2, y2 = transform(inProj, outProj, x, y)
@@ -190,14 +193,14 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                         date_parsed = parse(date_dashed)
                         date_cutoff = parse('2003-05-31')
                         if satellite == 'LE07' and date_parsed > date_cutoff:
-                            if 'validation' in file_path:
+                            if 'mask_extractor' in file_path:
                                 qual_flag = 3
-                            elif 'results' in file_path:
+                            elif 'production' in file_path:
                                 qual_flag = 13
                         else:
-                            if 'validation' in file_path:
+                            if 'mask_extractor' in file_path:
                                 qual_flag = 0
-                            elif 'results' in file_path:
+                            elif 'production' in file_path:
                                 qual_flag = 10
                         
                         sequence_id = len(output_domain_shp_file)
@@ -224,7 +227,6 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
 def center(x):
     return x['geometry']['coordinates']
 
-
 def landsat_output_lookup(domain, date, orbit, satellite, level):
     output_hash_table[domain][date][orbit][satellite][level] += 1
     if output_hash_table[domain][date][orbit][satellite][level] > 1:
@@ -235,86 +237,24 @@ def landsat_output_lookup(domain, date, orbit, satellite, level):
 def landsat_scene_id_lookup(date, orbit, satellite, level):
     return scene_hash_table[date][orbit][satellite][level]
 
+def epsg_from_domain(domain_path, domain):
+    """Returns the epsg code as an integer, given the domain shpaefile path and the domain name."""
+    domain_prj_path = os.path.join(domain_path, domain + '.prj')
+    prj_txt = open(domain_prj_path, 'r').read()
+    srs = osr.SpatialReference()
+    srs.ImportFromESRI([prj_txt])
+    srs.AutoIdentifyEPSG()
+    return srs.GetAuthorityCode(None)
+
 if __name__ == "__main__":
-    name_id_dict = dict()
-    name_id_dict['Akullikassaap'] = 32621
-    name_id_dict['Alangorssup'] = 32621
-    name_id_dict['Alanngorliup'] = 32621
-    name_id_dict['Brückner'] = 32624
-    name_id_dict['Christian-IV'] = 32624
-    name_id_dict['Cornell'] = 32621
-    name_id_dict['Courtauld'] = 32624
-    name_id_dict['Dietrichson'] = 32621
-    name_id_dict['Docker-Smith'] = 32621
-    name_id_dict['Eqip'] = 32621
-    name_id_dict['Fenris'] = 32624
-    name_id_dict['Frederiksborg'] = 32624
-    name_id_dict['Gade'] = 32621
-    name_id_dict['Glacier-de-France'] = 32624
-    name_id_dict['Hayes'] = 32621
-    name_id_dict['Heim'] = 32624
-    name_id_dict['Helheim'] = 32624
-    name_id_dict['Hutchinson'] = 32624
-    name_id_dict['Illullip'] = 32621
-    name_id_dict['Inngia'] = 32621
-    name_id_dict['Issuusarsuit'] = 32621
-    name_id_dict['Jakobshavn'] = 32621
-    name_id_dict['Kakiffaat'] = 32621
-    name_id_dict['Kangerdluarssup'] = 32621
-    name_id_dict['Kangerlussuaq'] = 32624
-    name_id_dict['Kangerlussuup'] = 32621
-    name_id_dict['Kangiata-Nunaata'] = 32621
-    name_id_dict['Kangilerngata'] = 32621
-    name_id_dict['Kangilinnguata'] = 32621
-    name_id_dict['Kangilleq'] = 32621
-    name_id_dict['Kjer'] = 32621
-    name_id_dict['Kong-Oscar'] = 32621
-    name_id_dict['Kælvegletscher'] = 32624
-    name_id_dict['Lille'] = 32621
-    name_id_dict['Midgård'] = 32624
-    name_id_dict['Morell'] = 32621
-    name_id_dict['Nansen'] = 32621
-    name_id_dict['Narsap'] = 32621
-    name_id_dict['Nordenskiold'] = 32621
-    name_id_dict['Nordfjord'] = 32624
-    name_id_dict['Nordre-Parallelgletsjer'] = 32624
-    name_id_dict['Nunatakassaap'] = 32621
-    name_id_dict['Nunatakavsaup'] = 32621
-    name_id_dict['Petermann'] = 32620
-    name_id_dict['Perlerfiup'] = 32621
-    name_id_dict['Polaric'] = 32624
-    name_id_dict['Qeqertarsuup'] = 32621
-    name_id_dict['Rink-Gletsjer'] = 32621
-    name_id_dict['Rink-Isbrae'] = 32621
-    name_id_dict['Rosenborg'] = 32624
-    name_id_dict['Saqqarliup'] = 32621
-    name_id_dict['Sermeq-Avannarleq-69'] = 32621
-    name_id_dict['Sermeq-Avannarleq-70'] = 32621
-    name_id_dict['Sermeq-Avannarleq-73'] = 32621
-    name_id_dict['Sermeq-Kujalleq-70'] = 32621
-    name_id_dict['Sermeq-Kujalleq-73'] = 32621
-    name_id_dict['Sermeq-Silarleq'] = 32621
-    name_id_dict['Sermikassak-N'] = 32621
-    name_id_dict['Sermikassak-S'] = 32621
-    name_id_dict['Sermilik'] = 32621
-    name_id_dict['Sorgenfri'] = 32624
-    name_id_dict['Steenstrup'] = 32621
-    name_id_dict['Store'] = 32621
-    name_id_dict['Styrtegletsjer'] = 32624
-    name_id_dict['Sverdrup'] = 32621
-    name_id_dict['Søndre-Parallelgletsjer'] = 32624
-    name_id_dict['Umiammakku'] = 32621
-    name_id_dict['Upernavik-NE'] = 32621
-    name_id_dict['Upernavik-NW'] = 32621
-    name_id_dict['Upernavik-SE'] =  32621
-    
     version = "v1.0"
     source_path_manual = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
     source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production_staging'
     dest_domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
     dest_all_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-greenland-termini'
+    domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\domains'
     
-    glacierIds = fiona.open(r'D:\Daniel\Downloads\GlacierIDs\GlacierIDsRef.shp', 'r', encoding='utf-8')
+    glacierIds = fiona.open(r'D:\Daniel\Documents\Github\CALFIN Repo\postprocessing\GlacierIDsRef.shp', 'r', encoding='utf-8')
     glacier_centers = np.array(list(map(center, glacierIds)))
     centers_kdtree = KDTree(glacier_centers)
     
@@ -335,4 +275,4 @@ if __name__ == "__main__":
     
     output_hash_table = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(int)))))
     
-    consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, version)
+    consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_path, dest_all_path, domain_path, version)

@@ -78,6 +78,7 @@ def initialize(img_size):
     settings['stride'] = stride
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
+    settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
     settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
     settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
     settings['dest_path_qa'] = dest_path_qa

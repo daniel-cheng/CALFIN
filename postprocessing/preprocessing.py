@@ -121,6 +121,7 @@ def read_image_calfin(i, settings, metrics):
         with open("missing.txt", "a") as missing:
             missing.write(str(i) + ' ' + tif_path)
         print('Saving list for future extraction...')
+        settings['bypass'] = True #skip execution of the rest of this subset
         return
     geotiff = gdal.Open(tif_path)
     geoTransform = geotiff.GetGeoTransform()

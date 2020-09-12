@@ -21,14 +21,19 @@ def main(settings, metrics):
     #Begin processing validation images
 #    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
 #    troubled_ones = [0, 4]
-#    troubled_ones = [174]
-#    for i in range(95, 96):
-#    for i in troubled_ones:
+    troubled_ones = [16]
     domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
                'Upernavik-SE', 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 
                'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    domains = ['Upernavik-SE']
-    for i in range(1066, len(settings['validation_files'])):
+    domains = ['Akullikassaap']
+    
+    
+#    for i in range(95, 96):
+#    for i in troubled_ones:
+    
+#    for i in range(617, len(settings['validation_files'])):
+#    for i in range(617, 1208):
+    for i in range(0, int(len(settings['validation_files'])/2)):
         
 #        if 'Rink-Isbrae' in settings['validation_files'][i]:
 #        if 'Upernavik-NE' in settings['validation_files'][i]:
@@ -36,14 +41,18 @@ def main(settings, metrics):
 #        if 'Upernavik' in settings['validation_files'][i] or 'Umiammakku' in settings['validation_files'][i] or 'Inngia' in settings['validation_files'][i]:
 #        if '2005-05-09' in settings['validation_files'][i] and 'Akullikassaap' in settings['validation_files'][i]:
         name = settings['validation_files'][i]
+        
 #        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name and 'Upernavik-NW' not in name and 'Kronborg' not in name:
 #            if 'Upernavik-NW' in name or '79North' in name or 'Spaltegletsjer' in name or 'Sermikassak' in name:
 #        if 'Upernavik' in name:
         domain = name.split(os.path.sep)[-1].split('_')[0]
-        if domain in domains:
+#        if domain not in domains:
+#        if name not in settings['validation_files_val']:
+        if True:
             preprocess(i, settings, metrics)
             process(settings, metrics)
             postprocess(settings, metrics)
+#            break
     #Print statistics
 #    print_calfin_domain_metrics(settings, metrics)
 #    print_calfin_all_metrics(settings, metrics)
@@ -55,7 +64,7 @@ def main(settings, metrics):
 def initialize(img_size):
     #initialize settings and model if not already done
     plotting = True
-    show_plots = False
+    show_plots = True
     saving = True
     rerun = False
 
@@ -65,27 +74,34 @@ def initialize(img_size):
             'size'   : 14}
     plt.rc('font', **font)
 
-    validation_files_train = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train\*B[0-9].png")
-    validation_files_val = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation\*B[0-9].png")
+    validation_files_train = glob.glob(r"../training/data/train/*B[0-9].png")
+    validation_files_val = glob.glob(r"../training/data/train/training/data/validation/*B[0-9].png")
     validation_files = validation_files_val + validation_files_train
 #    validation_files = validation_files_val
     
     #Initialize output folders
-    dest_root_path = r"..\outputs\mask_extractor"
+    dest_root_path = r"../outputs/mask_extractor"
     dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
+    dest_path_qa_bad = os.path.join(dest_root_path, 'quality_assurance_bad')
     if not os.path.exists(dest_root_path):
         os.mkdir(dest_root_path)
     if not os.path.exists(dest_path_qa):
         os.mkdir(dest_path_qa)
+    if not os.path.exists(dest_path_qa_bad):
+        os.mkdir(dest_path_qa_bad)
+    for domain in os.listdir(dest_path_qa):
+        os.mkdir(os.path.join(dest_path_qa_bad, domain))
+            
 
     scaling = 96.3 / 1.97
-    full_size = 512
-    stride = 32
+    full_size = 256
+    stride = 16
 
     #Intialize processing pipeline variables
     settings = dict()
     settings['driver'] = 'mask_extractor'
     settings['validation_files'] = validation_files
+    settings['validation_files_val'] = validation_files_val
     settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
     settings['log_file_name'] = 'logs_mask_extractor.txt'
 #    settings['model'] = model
@@ -99,11 +115,12 @@ def initialize(img_size):
     settings['stride'] = stride
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
-    settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-    settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
+    settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
+    settings['fjord_boundaries_path'] = r"../training/data/fjord_boundaries"
+    settings['tif_source_path'] = r"../preprocessing/calvingfrontmachine/CalvingFronts/tif"
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
-    settings['save_path'] = r"..\processing\landsat_preds"
+    settings['save_path'] = r"../processing/landsat_preds"
     settings['total'] = len(validation_files)
     settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
     settings['scaling'] = scaling
@@ -165,7 +182,7 @@ def initialize(img_size):
 
 if __name__ == '__main__':
     #Initialize model once, and setup variable passing/main function. Must be done in global namespace to benefit from model reuse.
-    img_size = 448
+    img_size = 224
 #    try:
 #        model
 #    except NameError:
@@ -173,6 +190,6 @@ if __name__ == '__main__':
     settings, metrics = initialize(img_size)
 
     #Execute calving front extraction pipeline.
-    main(settings, metrics)
+#    main(settings, metrics)
 
 
