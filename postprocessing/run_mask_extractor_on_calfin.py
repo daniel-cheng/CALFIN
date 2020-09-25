@@ -101,7 +101,6 @@ def initialize(img_size):
     settings = dict()
     settings['driver'] = 'mask_extractor'
     settings['validation_files'] = validation_files
-    settings['validation_files_val'] = validation_files_val
     settings['date_index'] = 3 #The position of the date when the name is split by '_'. Used to differentiate between TerraSAR-X images.
     settings['log_file_name'] = 'logs_mask_extractor.txt'
 #    settings['model'] = model
@@ -121,18 +120,19 @@ def initialize(img_size):
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
     settings['save_path'] = r"../processing/landsat_preds"
+    settings['dest_path_qa_bad'] = dest_path_qa_bad
+    settings['save_to_all'] = False
     settings['total'] = len(validation_files)
     settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
     settings['scaling'] = scaling
     settings['domain_scalings'] = dict()
-    settings['always_use_extracted_front'] = False
     settings['mask_confidence_strength_threshold'] = 0.5
     settings['edge_confidence_strength_threshold'] = 0.5
     settings['sub_padding_ratio'] = 1.5
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-    settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
     settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []

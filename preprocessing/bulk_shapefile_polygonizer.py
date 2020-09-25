@@ -68,7 +68,7 @@ def get_file_lists(file_list, bad_file_list):
             #Brückner_LC08_L1TP_2015-06-14_232-014_T1_B5_66-1_validation
             date_dashed = file_name_parts[3]
         bad_dates[date_dashed].append(file_path)
-        bad_file_name_list[file_name] = True
+        bad_file_name_list[file_name.split('_overlay_front.png')[0]] = True
     for file_path in file_list:
         file_name = os.path.basename(file_path)
         file_name_parts = file_name.split('_')
@@ -109,10 +109,13 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
     domains = ['Akullikassaap', 'Alanngorliup', 'Brückner', 'Christian-IV', 'Cornell', 'Courtauld', 'Upernavik-NE', 'Upernavik-SE']
     domains = ['Dietrichson', 'Docker-Smith', 'Eqip', 'Fenris', 'Frederiksborg', 'Gade', 'Glacier-de-France', 'Hayes', 'Heim', 'Helheim', 'Hutchinson', 'Illullip']
     domains = ['Issuusarsuit', 'Kælvegletscher', 'Kangiata-Nunaata', 'Kangilerngata', 'Kangilinnguata', 'Kjer', 'Kong-Oscar']
-    domains = ['Nansen', 'Narsap', 'Nordenskiold', 'Nordfjord', 'Nordre-Parallelgletsjer', 'Nunatakassaap', 'Petermann', 'Polaric', 'Rink-Gletsjer', 'Rosenborg', 'Saqqarliup', 'Sermeq-Avannarleq-69']
-    domains = ['Upernavik-NE', 'Søndre-Parallelgletsjer']
-    sections = [[3, 11], [11, 20], [20, 28], [28, 37], [37, 46], [46, 55]]
-    section = sections[5]
+    domains = ['Nansen', 'Narsap', 'Nordenskiold', 'Nordfjord', 'Nordre-Parallelgletsjer', 'Søndre-Parallelgletsjer', 'Nunatakassaap', 'Petermann', 'Polaric', 'Rink-Gletsjer', 'Rosenborg', 'Saqqarliup', 'Sermeq-Avannarleq-69']
+    domains = ['Kakiffaat', 'Brückner', 'Søndre-Parallelgletsjer', 'Kjer']
+    domains = ['Nordenskiold']
+    domains = ['Steenstrup']
+    # domains = ['Kjer']
+    sections = [[0, 17], [17, 35], [35, 52], [52, 69]]
+    section = sections[3]
     # section = [37, 55]
     # section = [0, 15]
     # for domain in os.listdir(source_auto_qa_path)[section[0]:section[1]]:
@@ -126,7 +129,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
         file_list_auto = glob.glob(os.path.join(source_auto_qa_path, domain, '*_pred.tif'))
         file_list = file_list_manual + file_list_auto
         file_list = file_list_auto
-        # file_list = file_list_manual
+        file_list = file_list_manual
         file_list.sort(key=landsat_sort)
         
         bad_file_list_manual = glob.glob(os.path.join(source_manual_qa_path + '_bad', domain, '*_pred.tif'))
@@ -135,7 +138,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
         bad_file_list_auto_pruned = glob.glob(os.path.join(source_auto_qa_path + '_bad', domain, '*_overlay_front.png'))
         bad_file_list = bad_file_list_manual + bad_file_list_auto + bad_file_list_manual_pruned + bad_file_list_auto_pruned
         bad_file_list = bad_file_list_auto + bad_file_list_auto_pruned
-        # bad_file_list = bad_file_list_manual + bad_file_list_manual_pruned
+        bad_file_list = bad_file_list_manual + bad_file_list_manual_pruned
 
         bad_file_list.sort(key=landsat_sort)
                 
@@ -155,8 +158,8 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
             dates, bad_file_name_list = get_file_lists(file_list, bad_file_list)
             #For each date, retrieve mask by projecting each calving front onto a single mask
             for date_key in dates.keys():
-                # if date_key >= '2005-04-09':
-                if True:
+                if date_key == '2019-04-23' or date_key == '2018-07-09':
+                # if True:
                     counter = process_date(counter, domain, dates, bad_file_name_list, date_key, original_mask, fjord_bounds, fjord_boundary_tif, fjord_boundary_file_path, original_mask_overrides, domain_exits)
                 # exit()
         print('Completed', counter, 'out of', len(dates.keys()))
@@ -168,10 +171,15 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
     np.copyto(mask, original_mask)
     combined_pred_mask = 255 - (mask / mask.max() * 255)
     combined_pred_mask_validity = 1 - mask / mask.max()
+    count = 0
     for file_path in dates[date_key]:
         file_name = os.path.basename(file_path)
-        if file_name not in bad_file_name_list:
-            mask, combined_pred_mask, combined_pred_mask_validity = process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_path, fjord_bounds, fjord_boundary_tif, mask, original_mask)
+        file_basename = file_name.split('_pred.tif')[0]
+        if file_basename not in bad_file_name_list:
+            mask, combined_pred_mask, combined_pred_mask_validity, count = process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_path, fjord_bounds, fjord_boundary_tif, mask, original_mask, count)
+    if count == 0:
+        print('No contours (all pruned) for:' + domain + ' ' + date_key)
+        return counter
     
     #connectedComponentswithStats yields every seperated component with information on each of them, such as size
     nb_components, output, stats, centroids = cv2.connectedComponentsWithStats(mask.astype(np.uint8), connectivity=4)
@@ -224,7 +232,7 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
         # plt.imshow(new_mask)
         # plt.show()
         # exit()
-        print(mean_values)
+        # print(mean_values)
         return counter
     
     # plt.figure(date_key + '-' + str(counter) + '-Final')
@@ -251,8 +259,8 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
     elif 'mask_extractor' in file_path:
         dest_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
                 
-    #count exits, and return function ready to generate the shp if the number of exits is <= the median # of  exits for the domain
-    # exits = count_exits(new_mask)
+    #count exits to ensure certain pre-selected areas are always masked 
+    #(and whose failure to be masked indicates missing contours)
     if exits_excluded(new_mask, fjord_boundary_tif, exits):
         mask_to_polygon_shp(image_name_base, id_str, front_lines, fjord_boundary_tif, source_tif_path, dest_root_path, domain)
         # plt.figure(date_key + '-' + str(counter) + '-Final')
@@ -260,17 +268,18 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
         # plt.show()
         print('#' + str(counter) + ': ' + domain + ' ' + date_key + ' complete')
         counter += 1
+        # exit
     else:
         print('Missing contours for:' + domain + ' ' + date_key)
         
         # plt.figure(date_key + '-' + str(counter) + '-mask')
         # plt.imshow(mask)
         # plt.show()
-        print(mean_values)
+        # print(mean_values)
     return counter
 
 
-def process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_path, fjord_bounds, fjord_boundary_tif, mask, original_mask):
+def process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_path, fjord_bounds, fjord_boundary_tif, mask, original_mask, count):
     """Processes each file of possibly many within a single date. 
         Returns the validity mask and polyline projected onto the land-ice/ocean mask."""
     # print('\t' + file_path)
@@ -320,47 +329,19 @@ def process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_p
             combined_pred_mask_validity = np.maximum(combined_pred_mask_validity, validity)
             
             polyline_coords = source_shp[0]['geometry']['coordinates']
-            fjord_distances, fjord_indices = distance_transform_edt(original_mask, return_indices=True)
-            
-            #Clip coordinates on boundary to ensure no negative indexing occurs during coordinate transform
-            polyline_coords_x = np.array(polyline_coords)[:,0]
-            polyline_coords_y = np.array(polyline_coords)[:,1]
-            polyline_coords_x_clipped = np.clip(polyline_coords_x, x_min_fjord, x_max_fjord)
-            polyline_coords_y_clipped = np.clip(polyline_coords_y, y_min_fjord, y_max_fjord)
-            polyline_coords = list(zip(polyline_coords_x_clipped, polyline_coords_y_clipped))
-            
-            #Find closest fjord boundary positions
-            endpoint_pixel_coord_1 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[0][0], polyline_coords[0][1])
-            endpoint_pixel_coord_2 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[-1][0], polyline_coords[-1][1])
-            closest_pixel_1 = [fjord_indices[0][endpoint_pixel_coord_1], fjord_indices[1][endpoint_pixel_coord_1]]
-            closest_pixel_2 = [fjord_indices[0][endpoint_pixel_coord_2], fjord_indices[1][endpoint_pixel_coord_2]]
-            closest_coord_1 = rasterio.transform.xy(fjord_boundary_tif.transform, closest_pixel_1[0], closest_pixel_1[1])
-            closest_coord_2 = rasterio.transform.xy(fjord_boundary_tif.transform, closest_pixel_2[0], closest_pixel_2[1])
-            
-            #If endpoints are not on image border, add the closest point to a fjord boundary.
-            threshold = original_mask.shape[0] / 256 #Equal to a 1 pixel error at default NN output
-            if endpoint_pixel_coord_1[0] <= threshold or endpoint_pixel_coord_1[0] >= original_mask.shape[0] - threshold:
-                if np.abs(closest_pixel_1[0] - endpoint_pixel_coord_1[0]) > threshold * 4:
-                    closest_coord_1 = (np.round(endpoint_pixel_coord_1[0] / original_mask.shape[0]) * original_mask.shape[0], endpoint_pixel_coord_1[1])
-            elif endpoint_pixel_coord_1[1] <= threshold or endpoint_pixel_coord_1[1] >= original_mask.shape[1] - threshold:
-                if np.abs(closest_pixel_1[1] - endpoint_pixel_coord_1[1]) > threshold * 4:
-                    closest_coord_1 = (endpoint_pixel_coord_1[0], np.round(endpoint_pixel_coord_1[1] / original_mask.shape[0]) * original_mask.shape[0])
-            if endpoint_pixel_coord_2[0] <= threshold or endpoint_pixel_coord_2[0] >= original_mask.shape[0] - threshold:
-                if np.abs(closest_pixel_2[0] - endpoint_pixel_coord_2[0]) > threshold * 4:
-                    closest_coord_2 = (np.round(endpoint_pixel_coord_2[0] / original_mask.shape[0]) * original_mask.shape[0], endpoint_pixel_coord_2[1])
-            elif endpoint_pixel_coord_2[1] <= threshold or endpoint_pixel_coord_2[1] >= original_mask.shape[1] - threshold:
-                if np.abs(closest_pixel_2[1] - endpoint_pixel_coord_2[1]) > threshold * 4:
-                    closest_coord_2 = (endpoint_pixel_coord_2[0], np.round(endpoint_pixel_coord_2[1] / original_mask.shape[0]) * original_mask.shape[0])
+            polyline_coords = snap_polyline_to_boundaries(original_mask, polyline_coords, x_min_fjord, x_max_fjord, y_min_fjord, y_max_fjord, fjord_boundary_tif)
+            if polyline_coords is None:
+                return mask, combined_pred_mask, combined_pred_mask_validity, count
             
             #Rasterize the polyline
             geometry = {'type': 'LineString'}
-            geometry['coordinates'] =  [closest_coord_1] + polyline_coords + [closest_coord_2]
+            geometry['coordinates'] = polyline_coords
             mask = features.rasterize([(geometry, 0)],
                 # all_touched=True,
                 out=mask,
                 out_shape=fjord_boundary_tif.shape,
                 transform=fjord_boundary_tif.transform)
-            return mask, combined_pred_mask, combined_pred_mask_validity
+            return mask, combined_pred_mask, combined_pred_mask_validity, count + 1
 
 def exits_excluded(mask, fjord_boundary_tif, domain_exits):
     """Detects if all exits are excluded from the polygon mask."""
@@ -409,9 +390,57 @@ def filter_domain_exits(fjord_bounds, domain_path, domain, exits):
     print('domain_exits:', domain_exits)
     return domain_exits
 
+
+def snap_polyline_to_boundaries(original_mask, polyline_coords, x_min_fjord, x_max_fjord, y_min_fjord, y_max_fjord, fjord_boundary_tif):
+    """Connects the polyline to the nearest fjord boundary or image edge."""
+    edge_image = np.pad(np.ones((original_mask.shape[0] - 1, original_mask.shape[1] - 1)), 1)
+    edge_distances, edge_indices = distance_transform_edt(edge_image, return_indices=True)      
+    fjord_distances, fjord_indices = distance_transform_edt(original_mask, return_indices=True)
     
-#TODO: Make fjord boundary overrides - subsitute calving fronts that can be overlaid, then removed, from the delineation. 1pixel wide.
-#if it exists, use it. should be average of detected ones.
+    #Clip coordinates on boundary to ensure no negative indexing occurs during coordinate transform
+    polyline_coords_x = np.array(polyline_coords)[:,0]
+    polyline_coords_y = np.array(polyline_coords)[:,1]
+    polyline_coords_x_clipped = np.clip(polyline_coords_x, x_min_fjord, x_max_fjord)
+    polyline_coords_y_clipped = np.clip(polyline_coords_y, y_min_fjord, y_max_fjord)
+    polyline_coords = list(zip(polyline_coords_x_clipped, polyline_coords_y_clipped))
+    
+    #Find closest fjord boundary/image edge positions
+    endpoint_pixel_coord_1 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[0][0], polyline_coords[0][1])
+    endpoint_pixel_coord_2 = rasterio.transform.rowcol(fjord_boundary_tif.transform, polyline_coords[-1][0], polyline_coords[-1][1])
+    closest_edge_pixel_1 = np.array([edge_indices[0][endpoint_pixel_coord_1], edge_indices[1][endpoint_pixel_coord_1]])
+    closest_edge_pixel_2 = np.array([edge_indices[0][endpoint_pixel_coord_2], edge_indices[1][endpoint_pixel_coord_2]])
+    closest_fjord_pixel_1 = np.array([fjord_indices[0][endpoint_pixel_coord_1], fjord_indices[1][endpoint_pixel_coord_1]])
+    closest_fjord_pixel_2 = np.array([fjord_indices[0][endpoint_pixel_coord_2], fjord_indices[1][endpoint_pixel_coord_2]])
+    
+    #If endpoints are not on image edge, add the closest point to a fjord boundary.
+    endpoint_pixel_coord_array_1 = np.array(endpoint_pixel_coord_1)
+    endpoint_pixel_coord_array_2 = np.array(endpoint_pixel_coord_2)
+    dist_edge_1 = np.linalg.norm(endpoint_pixel_coord_array_1 - closest_edge_pixel_1)
+    dist_edge_2 = np.linalg.norm(endpoint_pixel_coord_array_2 - closest_edge_pixel_2)
+    dist_fjord_1 = np.linalg.norm(endpoint_pixel_coord_array_1 - closest_fjord_pixel_1)
+    dist_fjord_2 = np.linalg.norm(endpoint_pixel_coord_array_2 - closest_fjord_pixel_2)
+    
+    #If the jump distance is too large, discard the front.
+    jump_limit = 0.15 * np.mean([original_mask.shape[0], original_mask.shape[1]])
+    if min(dist_edge_1, dist_fjord_1) > jump_limit or min(dist_edge_2, dist_fjord_2) > jump_limit:
+        print('Large jump detected, discarding front...')
+        return None
+    
+    #Snape to closest fjord boundary/image edge
+    edge_bias = 1.5 #edge bias ratio (edge must be X times as fjord to endpoints to be chosen), allows for fjord close to image edges.
+    if dist_edge_1 * edge_bias < dist_fjord_1:
+        closest_pixel_1 = closest_edge_pixel_1
+    else:
+        closest_pixel_1 = closest_fjord_pixel_1
+    if dist_edge_2 * edge_bias < dist_fjord_2:
+        closest_pixel_2 = closest_edge_pixel_2
+    else:
+        closest_pixel_2 = closest_fjord_pixel_2
+            
+    closest_coord_1 = rasterio.transform.xy(fjord_boundary_tif.transform, closest_pixel_1[0], closest_pixel_1[1])
+    closest_coord_2 = rasterio.transform.xy(fjord_boundary_tif.transform, closest_pixel_2[0], closest_pixel_2[1])
+    return [closest_coord_1] + polyline_coords + [closest_coord_2]
+
 if __name__ == "__main__":
     #Initialize plots
     plt.close('all')

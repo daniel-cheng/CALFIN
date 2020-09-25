@@ -958,8 +958,9 @@ def calculate_metrics_calfin(settings, metrics):
     image_settings['mask_final_dilated_f32'] = mask_final_dilated_f32
     
     #Calculate and save IoU metric
-    pred_edge_patch_4d = np.expand_dims(polyline_image_dilated[:, :, 0], axis=0)
-    mask_edge_patch_4d = np.expand_dims(mask_final_dilated_f32[:, :, 0], axis=0)
+
+    pred_edge_patch_4d = np.expand_dims(polyline_image_dilated[:, :, 0] / 255.0, axis=0)
+    mask_edge_patch_4d = np.expand_dims(mask_final_dilated_f32[:, :, 0] / 255.0, axis=0)
     pred_mask_patch_4d = np.expand_dims(pred_image[:, :, 1], axis=0)
     mask_mask_patch_4d = np.expand_dims(mask_final_dilated_f32[:, :, 1], axis=0)
     edge_iou_score_subset = calculate_iou(mask_edge_patch_4d, pred_edge_patch_4d)

@@ -54,6 +54,8 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
             'GlacierID': 'int',
             'Center_X': 'float',
             'Center_Y': 'float',
+            'Latitude': 'float',
+            'Longitude': 'float',
             'QualFlag': 'int',
             'Satellite': 'str',
             'Date': 'str',
@@ -67,9 +69,14 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
     }
 
     outProj = Proj('epsg:3413') #3413 (NSIDC Polar Stereographic North)
+    latlongProj = Proj('epsg:4326') #4326 (WGS 84)
     crs = from_epsg(3413)
     source_manual_domain_path = os.path.join(source_path_manual, 'domain')
     source_auto_domain_path = os.path.join(source_path_auto, 'domain')
+    source_manual_quality_assurance_path = os.path.join(source_path_manual, 'quality_assurance')
+    source_auto_quality_assurance_path = os.path.join(source_path_auto, 'quality_assurance')
+    source_manual_quality_assurance_bad_path = os.path.join(source_path_manual, 'quality_assurance_bad')
+    source_auto_quality_assurance_bad_path = os.path.join(source_path_auto, 'quality_assurance_bad')
     output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_calfin_' + version + '_closed.shp')
     plt.close('all')
     counter = 0
@@ -95,10 +102,21 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                 fjord_boundary_mask = fjord_boundary_tif.read(1)
                 fjord_boundary_mask = np.where(fjord_boundary_mask > np.mean(fjord_boundary_mask), 0.0, 1.0)
                 
-                file_list_manual = glob.glob(os.path.join(source_manual_domain_path, domain, '*_cf_closed.shp'))
-                file_list_auto = glob.glob(os.path.join(source_auto_domain_path, domain, '*_cf_closed.shp'))
+                file_list_manual = glob.glob(os.path.join(source_manual_quality_assurance_path, domain, '*_overlay_polygon.png'))
+                file_list_auto = glob.glob(os.path.join(source_auto_quality_assurance_path, domain, '*_overlay_polygon.png'))
+                file_list_bad_manual = glob.glob(os.path.join(source_manual_quality_assurance_bad_path, domain, '*_overlay_polygon.png'))
+                file_list_bad_auto = glob.glob(os.path.join(source_auto_quality_assurance_bad_path, domain, '*_overlay_polygon.png'))
+                # file_list_bad_poly_auto = glob.glob(os.path.join(source_auto_quality_assurance_bad_path, domain, '*_overlay_polygon.png'))
+                file_list_bad = file_list_bad_manual + file_list_bad_auto
+                file_list_bad.sort(key=landsat_sort)
+                file_list_bad = [os.path.basename(x) for x in file_list_bad]
                 file_list = file_list_manual + file_list_auto
                 file_list.sort(key=landsat_sort)
+            
+                # file_list_manual = glob.glob(os.path.join(source_manual_domain_path, domain, '*_cf_closed.shp'))
+                # file_list_auto = glob.glob(os.path.join(source_auto_domain_path, domain, '*_cf_closed.shp'))
+                # file_list = file_list_manual + file_list_auto
+                # file_list.sort(key=landsat_sort)
     #            file_list = duplicate_prefix_filter(file_list)
                 for file_path in file_list:
                     print(file_path)
@@ -136,9 +154,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                         continue
     
                     if 'mask_extractor' in file_path:
-                        source_domain_path = os.path.join(source_path_manual, 'domain')
+                        source_domain_path = source_manual_domain_path
                     elif 'production' in file_path:
-                        source_domain_path = os.path.join(source_path_auto, 'domain')
+                        source_domain_path = source_auto_domain_path
     
     #                if not landsat_output_lookup(domain, date, orbit, satellite, level):
     #                    print('duplicate pick, continuing:', date, orbit, satellite, level, domain)
@@ -154,6 +172,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                         y = coords[0,:,1]
                         x2, y2 = transform(inProj, outProj, x, y)
                         polyline = np.stack((x2, y2), axis=-1)
+                        latitude, longitude = transform(inProj, latlongProj, polyline_center[0], polyline_center[1])
                         
                         geojson = [{'type': 'feature', 'geometry': mapping(Polygon(polyline))}]
                         geometry = copy.deepcopy(source_shp[0]['geometry'])
@@ -226,7 +245,9 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
                                 'properties': {
                                     'GlacierID': closest_feature_id,
                                     'Center_X': float(polyline_center[0]),
-                                    'Center_Y': float( polyline_center[1]),
+                                    'Center_Y': float(polyline_center[1]),
+                                    'Latitude': float(latitude),
+                                    'Longitude': float(longitude),    
                                     'QualFlag': qual_flag,
                                     'Satellite': satellite,
                                     'Date': date_dashed,

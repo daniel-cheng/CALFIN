@@ -77,12 +77,11 @@ def initialize(img_size):
             'size'   : 14}
     plt.rc('font', **font)
     plt.rcParams["figure.figsize"] = (16,9)
-#    np.set_printoptions(precision=3)
     
-    validation_files = glob.glob(r"..\processing\landsat_raw_processed\*B[0-9].png")
+    validation_files = glob.glob(r"../processing/landsat_raw_processed/*B[0-9].png")
 
     #Initialize output folders
-    dest_root_path = r"..\outputs\production_staging"
+    dest_root_path = r"../outputs/production_staging"
     dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
     dest_path_qa_bad = os.path.join(dest_root_path, 'quality_assurance_bad')
     if not os.path.exists(dest_root_path):
@@ -114,18 +113,17 @@ def initialize(img_size):
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
     settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
-    settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-    settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
+    settings['fjord_boundaries_path'] = r"../training/data/fjord_boundaries"
+    settings['tif_source_path'] = r"../preprocessing/calvingfrontmachine/CalvingFronts/tif"
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
-    settings['save_path'] = r"..\processing\landsat_preds"
+    settings['save_path'] = r"../processing/landsat_preds"
     settings['dest_path_qa_bad'] = dest_path_qa_bad
     settings['save_to_all'] = False
     settings['total'] = len(validation_files)
     settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
     settings['scaling'] = scaling
     settings['domain_scalings'] = dict()
-    settings['always_use_extracted_front'] = True
     settings['mask_confidence_strength_threshold'] = 0.875
     settings['edge_confidence_strength_threshold'] = 0.525
     settings['sub_padding_ratio'] = 2.5
