@@ -203,29 +203,29 @@ def plot_validation_results(image_name_base, raw_image, original_raw, pred_image
 	original_raw_gray = np.stack((original_raw[:,:,0], original_raw[:,:,0], original_raw[:,:,0]), axis=-1)
 	raw_image_gray = np.stack((raw_image[:,:,0], raw_image[:,:,0], raw_image[:,:,0]), axis=-1)
 	axarr[0,0].imshow(np.clip(original_raw_gray, 0.0, 1.0))
-	axarr[0,0].set_title(r'$\bf{a)}$ Raw Subset')
+	axarr[0,0].set_title(r'$/bf{a)}$ Raw Subset')
 	
 	raw_image = np.clip(raw_image, 0.0, 1.0)
 	axarr[0,1].imshow(raw_image)
-	axarr[0,1].set_title(r'$\bf{b)}$ Preprocessed Input')
+	axarr[0,1].set_title(r'$/bf{b)}$ Preprocessed Input')
 	axarr[0,1].legend(preprocess_legend, ['Raw', 'HDR', 'S/H'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=3)
 	axarr[0,1].axis('off')
 	
 	pred_image = np.clip(pred_image, 0.0, 1.0)
 	axarr[0,2].imshow(pred_image)
-	axarr[0,2].set_title(r'$\bf{c)}$ NN Output')
+	axarr[0,2].set_title(r'$/bf{c)}$ NN Output')
 	axarr[0,2].legend(nn_legend, ['Land/Ice', 'Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=2)
 	axarr[0,2].axis('off')
 	
 	extracted_front = np.clip(np.stack((polyline_image[:,:,0], empty_image, empty_image), axis=-1) + raw_image * 0.8, 0.0, 1.0)
 	axarr[1,0].imshow(extracted_front)
-	axarr[1,0].set_title(r'$\bf{d)}$ Extracted Front')
+	axarr[1,0].set_title(r'$/bf{d)}$ Extracted Front')
 	axarr[1,0].legend(front_legend, ['Front'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, 0.0), shadow=True, ncol=1)
 	axarr[1,0].axis('off')
 	
 	overlay = np.clip(np.stack((polyline_image[:,:,0], mask_image, empty_image), axis=-1) + raw_image_gray * 0.8, 0.0, 1.0)
 	axarr[1,1].imshow(overlay)
-	axarr[1,1].set_title(r'$\bf{e)}$ NN vs Ground Truth Front')
+	axarr[1,1].set_title(r'$/bf{e)}$ NN vs Ground Truth Front')
 	axarr[1,1].set_xlabel('Jaccard Index: {:.4f}'.format(edge_iou))
 	axarr[1,1].legend(comparison_legend, ['NN', 'GT'], prop={'weight': 'normal'}, facecolor='#eeeeee', loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=3)
 	axarr[1,1].tick_params(axis='both', which='both', bottom='off', top='off', labelbottom='off', right='off', left='off', labelleft='off') # labels along the bottom edge are off
@@ -234,7 +234,7 @@ def plot_validation_results(image_name_base, raw_image, original_raw, pred_image
 	axarr[1,2].hist(distances_meters, bins=hist_bins, range=[0.0, 8.0 * scaling])
 	axarr[1,2].set_xlabel('Distance to nearest point (mean=' + '{:.2f}m)'.format(np.mean(distances_meters)))
 	axarr[1,2].set_ylabel('Number of points')
-	axarr[1,2].set_title(r'$\bf{f)}$ Per-pixel Pairwise Error (meters)')
+	axarr[1,2].set_title(r'$/bf{f)}$ Per-pixel Pairwise Error (meters)')
 	
 	
 	#Refresh plot if necessary
@@ -469,14 +469,14 @@ if __name__ == '__main__':
 
 
 		validation_files = []
-		calfin_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
-		validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation\*B[0-9].png")
-		fjord_boundaries_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries"
-		tif_source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\CalvingFronts\tif"
-		dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\validation"
-		save_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_preds"
+		calfin_path = r"../training/data/validation"
+		validation_files = glob.glob(r"../training/data/validation/*B[0-9].png")
+		fjord_boundaries_path = r"../training/data/fjord_boundaries"
+		tif_source_path = r"../preprocessing/CalvingFronts/tif"
+		dest_path = r"../outputs/validation"
+		save_path = r"../processing/landsat_preds"
 		
-		coordinates_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\postprocessing\output_helheim_calfin'
+		coordinates_path = r'D:/Daniel/Documents/Github/CALFIN Repo Intercomp/postprocessing/output_helheim_calfin'
 		for csv_path in glob.glob(os.path.join(coordinates_path, '*')):
 			coordinates = genfromtxt(csv_path, delimiter=',')
 			csv_name = os.path.basename(csv_path)

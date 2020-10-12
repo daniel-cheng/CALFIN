@@ -18,13 +18,15 @@ def filter_files(source_path, reference_path, dest_path):
 			if png_name in reference_files:
 				print('moving:', png_name)
 				shutil.move(file_path, os.path.join(dest_path, file_name))
+
+
 if __name__ == "__main__":
-	source_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\preprocessing\tif'
-	reference_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_yara'
-	dest_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\preprocessing\train'
+	source_path = r'../../CALFIN Repo Intercomp/preprocessing/tif'
+	reference_path = r'../training/data/train_yara'
+	dest_path = r'../../CALFIN Repo Intercomp/preprocessing/train'
 	filter_files(source_path, reference_path, dest_path)
 	
-	source_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\preprocessing\tif'
-	reference_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_yara'
-	dest_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\preprocessing\validation'
+	source_path = r'../../CALFIN Repo Intercomp/preprocessing/tif'
+	reference_path = r'../training/data/validation_yara'
+	dest_path = r'../../CALFIN Repo Intercomp/preprocessing/validation'
 	filter_files(source_path, reference_path, dest_path)

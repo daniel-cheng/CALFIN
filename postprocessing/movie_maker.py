@@ -297,6 +297,6 @@ def images_to_video():
 			print('Error in:', domain)
 			traceback.print_exc()
 	
-video_output_path = r"D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_videos"	
-image_paths = glob.glob(os.path.join(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_videos", '*.png'))
+video_output_path = r"../paper/qgis_videos"	
+image_paths = glob.glob(os.path.join(r"../paper/qgis_videos", '*.png'))
 make_video(image_paths, os.path.join(video_output_path, 'Upernavik'))

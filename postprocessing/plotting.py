@@ -223,8 +223,13 @@ def plot_validation_results(settings, metrics):
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_front_only.png'), (np.clip(polyline_image, 0.0, 1.0) * 255).astype(np.uint8))
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_comparison.png'), (overlay * 255).astype(np.uint8))
-            tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
-            tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+            try:
+                tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+                tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+            except AttributeError as e:
+                print(e)
+                print('No source tif found for', image_name_base)
+            
 
 
 def plot_production_results(settings, metrics):

@@ -439,7 +439,7 @@ def resizeandSaveSubsets(rasterLayers, rasterPrefix, domainLayers, resolutions) 
                     subset_name = domainLayer.name() + "_" + rasterLayer.name()
                     layerResize(rasterLayer, domainLayer, subset_name, resolution)
 
-def resolve(name, basepath=r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontmachine'):
+def resolve(name, basepath=r'../preprocessing\calvingfrontmachine'):
     if not os.path.exists(basepath):
         basepath = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(basepath, name)

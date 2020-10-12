@@ -46,10 +46,10 @@ def initialize(img_size):
             'size'   : 14}
     plt.rc('font', **font)
         
-    validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\validation\*Subset.png")
+    validation_files = glob.glob(r"../../CALFIN Repo Intercomp/training/data/validation/*Subset.png")
     
     #Initialize output folders
-    dest_root_path = r"..\outputs\calfin_on_mohajerani_staging"
+    dest_root_path = r"../outputs/calfin_on_mohajerani"
     dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
     if not os.path.exists(dest_root_path):
         os.mkdir(dest_root_path)
@@ -78,11 +78,11 @@ def initialize(img_size):
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
     settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
-    settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-    settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
+    settings['fjord_boundaries_path'] = r"../training/data/fjord_boundaries"
+    settings['tif_source_path'] = r"../preprocessing/calvingfrontmachine/CalvingFronts/tif"
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
-    settings['save_path'] = r"..\processing\landsat_preds"
+    settings['save_path'] = r"../processing/landsat_preds"
     settings['total'] = len(validation_files)
     settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
     settings['scaling'] = scaling
@@ -95,7 +95,7 @@ def initialize(img_size):
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
     settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-    settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['mask_edge_buffered_mean_threshold'] = 1.0 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
     

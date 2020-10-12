@@ -342,12 +342,12 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 		arrayToRaster(img, geotiff, bounds, subsetPath)
 		imsave(resolve('sentinel_raw/' + domainLayer.name() + '/' + subsetName + '.png'), img)
 		# imsave(resolve('small/' + domainLayer.name() + '/' + subsetName + '.png'), img)
-		# imsave(os.path.join(r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
+		# imsave(os.path.join(r'../reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
 	
 	return img.shape
 
 
-def resolve(name, basepath=r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontmachine'):
+def resolve(name, basepath=r'../preprocessing\calvingfrontmachine'):
 	if not os.path.exists(basepath):
 		basepath = os.path.dirname(os.path.realpath(__file__))
 	return os.path.join(basepath, name)

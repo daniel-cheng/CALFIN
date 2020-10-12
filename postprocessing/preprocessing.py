@@ -260,7 +260,7 @@ def read_image_mohajerani(i, settings, metrics):
 #    raw_save_path = os.path.join(save_path, image_name_base + '_raw.png')
 #    mask_save_path = os.path.join(save_path, image_name_base + '_mask.png')
 #    pred_save_path = os.path.join(save_path, image_name_base + '_pred.png')
-    fjord_boundary_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\training\data\fjord_boundaries\Helheim_fjord_boundaries.png"
+    fjord_boundary_path = r"../../CALFIN Repo Intercomp/training/data/fjord_boundaries/Helheim_fjord_boundaries.png"
     
     #Read in raw/mask image pair
     img_3_uint8 = imread(image_path) #np.uint8 [0, 255]

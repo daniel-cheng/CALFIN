@@ -9,7 +9,7 @@ import os, shutil, glob
 from skimage.io import imsave, imread
 
 def filter_files(source_path, dest_path):
-	sh_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_temp'
+	sh_path = r'../processing/landsat_raw_temp'
 	threshold = 0.05
 	min_threshold = 65535 * threshold
 	max_threshold = 65535 - min_threshold
@@ -33,6 +33,6 @@ def filter_files(source_path, dest_path):
 				if os.path.exists(sh_file_path):
 					os.remove(sh_file_path)
 if __name__ == "__main__":
-	source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontmachine\landsat_raw'
-	dest_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontmachine\dumpster'
+	source_path = r'../preprocessing/calvingfrontmachine/landsat_raw'
+	dest_path = r'../preprocessing/calvingfrontmachine/dumpster'
 	filter_files(source_path, dest_path)

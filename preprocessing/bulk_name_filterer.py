@@ -10,9 +10,9 @@ from skimage.io import imsave, imread
 import sys
 sys.path.insert(0, '../training')
 
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\all"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train"
-source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
+dest_path = r"../training\data\all"
+dest_path = r"../training\data\train"
+source_path = r"../training\data\validation"
 
 domains = sorted(os.listdir(source_path))
 domains_count = len(domains)

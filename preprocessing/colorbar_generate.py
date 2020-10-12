@@ -21,7 +21,7 @@ labels = np.linspace(1972, 2019, num_ticks)
 ticks_int = ticks[::2].astype(int)
 labels_int = labels[::2].astype(int)
 
-for file_path in glob.glob(r'D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_screenshots\*'):
+for file_path in glob.glob(r'../paper/qgis_screenshots/*'):
 	
 
 	cb1 = mpl.colorbar.ColorbarBase(ax, cmap=cmap,

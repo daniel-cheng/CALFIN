@@ -12,9 +12,9 @@ steps = ['landsat_unzip', 'landsat_rename', 'sentinel-1_unzip']
 steps = ['landsat_unzip']
 
 if 'landsat_unzip' in steps:
-	source = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland\zipped"
-	unzip_dest = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland"
-	move_dest = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland\zipped"
+	source = r"../downloader\rasters\Landsat\Greenland\zipped"
+	unzip_dest = r"../downloader\rasters\Landsat\Greenland"
+	move_dest = r"../downloader\rasters\Landsat\Greenland\zipped"
 	dry_run = False
 	# domains_to_move = ['Hayes', 'Kangiata-Nunata', 'Kong-Oscar', 'Rink-Isbrae']
 	# domains_to_move = ['Helheim', 'Kangerlussuaq']
@@ -137,9 +137,9 @@ if 'landsat_rename' in steps:
 
 
 if 'senitnel-1_unzip' in steps:
-	source = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Sentinel-1\Antarctica\zipped"
-	unzip_dest = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Sentinel-1\Antarctica"
-	move_dest = r"D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Sentinel-1\Antarctica\zipped"
+	source = r"../downloader\rasters\Sentinel-1\Antarctica\zipped"
+	unzip_dest = r"../downloader\rasters\Sentinel-1\Antarctica"
+	move_dest = r"../downloader\rasters\Sentinel-1\Antarctica\zipped"
 	dry_run = False
 	# domains_to_move = ['Hayes', 'Kangiata-Nunata', 'Kong-Oscar', 'Rink-Isbrae']
 	# domains_to_move = ['Helheim', 'Kangerlussuaq']

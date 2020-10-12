@@ -13,8 +13,8 @@ def landsat_sort(file_name):
 
 
 def concatenate_and_move_scene_lists():
-	input_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\scenes'
-	output_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\scenes'
+	input_path = r'../downloader/scenes'
+	output_path = r'../downloader/scenes'
 	
 	domains = defaultdict(int)
 	
@@ -33,11 +33,11 @@ def concatenate_and_move_scene_lists():
 							lines.append(line)
 			lines.sort(key = landsat_sort)
 			for line in lines:
-				scene_file.write(line.strip() + '\n')
+				scene_file.write(line.strip() + '/n')
 
 def concatenate_all_scene_lists():
-	input_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\scenes'
-	output_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\scenes'
+	input_path = r'../downloader/scenes'
+	output_path = r'../downloader/scenes'
 	
 	domains = defaultdict(int)
 	
@@ -56,7 +56,7 @@ def concatenate_all_scene_lists():
 		lines.sort(key = landsat_sort)
 		lines = list(dict.fromkeys(lines)) #remove duplicates
 		for line in lines:
-			all_scene_file.write(line.strip() + '\n')
+			all_scene_file.write(line.strip() + '/n')
 if __name__ == '__main__':
 #	concatenate_and_move_scene_lists()
 	concatenate_all_scene_lists()

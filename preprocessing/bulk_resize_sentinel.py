@@ -6,7 +6,7 @@ sys.path.insert(0, '../training')
 from aug_generators import aug_resize
 import numpngw
 
-source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
+source_path = r"../training\data\validation"
 dest_path = source_path
 # Generate mask confidence from masks
 augs = aug_resize(img_size=1024)

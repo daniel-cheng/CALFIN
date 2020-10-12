@@ -1,6 +1,6 @@
 import os, glob
 import numpy as np
-os.environ['GDAL_DATA'] = r'D:\\ProgramData\\Anaconda3\\envs\\cfm\\Library\\share\\gdal' #Ensure crs are exported correctly by gdal/osr/fiona
+os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//share//gdal' #Ensure crs are exported correctly by gdal/osr/fiona
 import fiona
 
 from osgeo import gdal, osr
@@ -49,13 +49,21 @@ def png_to_geotiff(array, bounds, dest_path, srs):
     dataset.SetProjection(srs.ExportToWkt())
     dataset.GetRasterBand(1).WriteArray(array)
     dataset.FlushCache()  # Write to disk.
+    
+    #Compress it
+    base_command = ['gdal_translate', '-co', 'compress=lzw']
+    temp_path = dest_path[0:-4] + '_temp.tif'
+    command = base_command + [dest_path, temp_path]
+    status = subprocess.run(command)
+    shutil.move(temp_name, src_name)
+
     return dataset, dataset.GetRasterBand(1)  #If you need to return, remenber to return  also the dataset because the band don`t live without dataset.
 
         
 if __name__ == "__main__":
-    fjord_boundary_source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries'
-    domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\domains'
-    fjord_boundary_tif_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries_tif'
+    fjord_boundary_source_path = r'../training/data/fjord_boundaries'
+    domain_path = r'../preprocessing/domains'
+    fjord_boundary_tif_path = r'../training/data/fjord_boundaries_tif'
     
     #Use domain shapefiles
     for fjord_boundary_path in glob.glob(os.path.join(fjord_boundary_source_path, '*overrides.png')):

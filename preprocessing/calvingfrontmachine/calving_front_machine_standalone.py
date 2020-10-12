@@ -531,7 +531,7 @@ def layerSubsetSave(rasterLayer:QgsRasterLayer, domainLayer:QgsVectorLayer, subs
 		arrayToRaster(img, geotiff, bounds, subsetPath)
 		imsave(resolve('landsat_raw/' + domainLayer.name() + '/' + subsetName + '.png'), img)
 		# imsave(resolve('small/' + domainLayer.name() + '/' + subsetName + '.png'), img)
-		# imsave(os.path.join(r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
+		# imsave(os.path.join(r'../reprocessing\images_1024', domainLayer.name(), subsetName + '.png'), img)
 	try:
 		#Gather BQA info
 		fileSourceBQA = fileSource[:-7] + '_BQA.TIF'

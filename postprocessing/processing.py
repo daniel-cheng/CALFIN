@@ -129,7 +129,7 @@ def process_mohajerani_on_calfin(settings, metrics):
     bounding_box = image_settings['actual_bounding_box']
     unprocessed_original_raw = image_settings['unprocessed_original_raw']
     
-    coordinates_path = r'D:\Daniel\Documents\Github\CALFIN Repo Intercomp\postprocessing\output_helheim_calfin'
+    coordinates_path = r'../../CALFIN Repo Intercomp/postprocessing/output_helheim_calfin'
     image_name_base_parts = image_name_base.split('_')
     domain = image_settings['domain']
     satellite = image_name_base_parts[1]
@@ -161,8 +161,8 @@ def process_mohajerani_on_calfin(settings, metrics):
     path_row_string = '-'.join([path, row])
     #Akullikassaap_LE07_L1TP_2000-03-17_014-009_T1_B4.png
     
-#    calfin_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation"
-    tif_source_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\CalvingFronts\tif"
+#    calfin_path = r"../training/data/validation"
+    tif_source_path = r"../preprocessing/calvingfrontmachine/CalvingFronts/tif"
     
     calfin_name = '_'.join([domain, satellite, level, date_string, path_row_string, tier, band])
 #    calfin_raw_path = os.path.join(calfin_path, calfin_name + '.png')

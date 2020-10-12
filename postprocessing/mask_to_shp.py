@@ -64,7 +64,13 @@ def mask_to_shp(settings):
     geotiff = gdal.Open(source_tif_path)
 
     #Get bounds
-    geotransform = geotiff.GetGeoTransform()
+    try:
+        geotransform = geotiff.GetGeoTransform()
+    except AttributeError as e:
+        print(e)
+        print('No source tif found for', image_name_base)
+        return
+    
     x_min = geotransform[0]
     y_max = geotransform[3]
     x_max = x_min + geotransform[1] * geotiff.RasterXSize

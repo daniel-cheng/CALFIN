@@ -11,8 +11,8 @@ import sys
 sys.path.insert(0, '../training')
 from aug_generators import aug_resize
 
-source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\sentinel_raw'
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\sentinel_raw"
+source_path = r'../reprocessing\sentinel_raw'
+dest_path = r"../reprocessing\sentinel_raw"
 
 domains = sorted(os.listdir(source_path))
 domains_count = len(domains)

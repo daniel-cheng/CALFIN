@@ -30,7 +30,7 @@ def get_title(image_path):
         mask = 'mask'
     else:
         mask = ''
-    title = domain + '\n' + date + ' ' + mask
+    title = domain + '/n' + date + ' ' + mask
     return title
 
 def get_title_mohajerani(image_path):
@@ -52,7 +52,7 @@ def get_title_zhang(image_path):
     domain = 'Jakobshavn'
     #Jakobshavn-post-2010_TSX-1_2010-05-06T10_05_2027425_modified_2-1_overlay_comparison
     date_dashed = name_split[2].split('T')[0]
-    title = domain + '\n' + date_dashed
+    title = domain + '/n' + date_dashed
     return title
 
 def training_grid():
@@ -61,7 +61,7 @@ def training_grid():
     The more columns you use, the more labels you will have to set. If there is an 'index out of range error',
     make sure the files have the right ending (.TIF).
     """
-    folder_all = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train\*B[0-9].png")
+    folder_all = glob.glob(r"../training/data/train/*B[0-9].png")
     total = len(folder_all)
     offset = int(round(total * 0.04))
     folder = folder_all[::offset]
@@ -95,7 +95,7 @@ def training_grid():
             grid[index].get_yaxis().set_ticks([])
             grid[index].get_xaxis().set_ticks([])
             grid[index].tick_params(axis='both', which='both', labelsize=0, bottom=False, top=False, left=False)
-    fig.savefig(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\grid_training.png", bbox_inches='tight', pad_inches=0, frameon=False)
+    fig.savefig(r"../paper/grid_training.png", bbox_inches='tight', pad_inches=0, frameon=False)
 
 def validation_grid():
     """Run this script in the folder the images are in and and image pdf should be produced.
@@ -103,7 +103,7 @@ def validation_grid():
     The more columns you use, the more labels you will have to set. If there is an 'index out of range error',
     make sure the files have the right ending (.TIF).
     """
-    folder = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\calfin_on_calfin_validation\quality_assurance\*\*overlay_comparison.png")
+    folder = glob.glob(r"../outputs/calfin_on_calfin_validation/quality_assurance/*/*overlay_comparison.png")
     x = 6 # number of columns in resulting image. Make sure the number of images is divideable by x
     y = 8
     
@@ -112,7 +112,7 @@ def validation_grid():
     total = len(folder)
     fig_counter = 0
     plt.rcParams["figure.figsize"] = (11.75*1.5,8.25*1.5)
-    legend = mpl.image.imread(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\legend_validation.png")
+    legend = mpl.image.imread(r"../paper/legend_validation.png")
     legend = resize(legend, (540, 1024))
     while index < total - 1:
         fig = plt.figure(fig_counter, dpi=300, figsize=(11.75*1.5,8.25*1.5))
@@ -145,7 +145,7 @@ def validation_grid():
             index = index + 1
             if index >= total - 1 or grid_index >= grid_size - 1:
                 break
-        fig.savefig(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\grid_validation_calfin_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
+        fig.savefig(r"../paper/grid_validation_calfin_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
         fig_counter = fig_counter + 1
 
 def validation_mohajerani_grid():
@@ -154,7 +154,7 @@ def validation_mohajerani_grid():
     The more columns you use, the more labels you will have to set. If there is an 'index out of range error',
     make sure the files have the right ending (.TIF).
     """
-    folder = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\calfin_on_mohajerani\quality_assurance\Helheim\*overlay_comparison.png")
+    folder = glob.glob(r"../outputs/calfin_on_mohajerani/quality_assurance/Helheim/*overlay_comparison.png")
     x = 2 # number of columns in resulting image. Make sure the number of images is divideable by x
     y = 6
     
@@ -171,7 +171,7 @@ def validation_mohajerani_grid():
                          axes_pad=0.1,
                          share_all = True)
         grid_size = int(x * y)
-        legend = mpl.image.imread(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\legend_validation.png")
+        legend = mpl.image.imread(r"../paper/legend_validation.png")
         legend = resize(legend, (540, 1024))
         grid[0].imshow(legend)
         grid[0].get_yaxis().set_ticks([])
@@ -198,7 +198,7 @@ def validation_mohajerani_grid():
             index = index + 1
             if index > total - 1 or grid_index >= grid_size - 1:
                 break
-        fig.savefig(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\grid_validation_mohajerani_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
+        fig.savefig(r"../paper/grid_validation_mohajerani_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
         fig_counter = fig_counter + 1
 
 
@@ -208,7 +208,7 @@ def validation_zhang_grid():
     The more columns you use, the more labels you will have to set. If there is an 'index out of range error',
     make sure the files have the right ending (.TIF).
     """
-    folder = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\calfin_on_zhang\quality_assurance\*\*overlay_comparison.png")
+    folder = glob.glob(r"../outputs/calfin_on_zhang/quality_assurance/*/*overlay_comparison.png")
     x = 1 # number of columns in resulting image. Make sure the number of images is divideable by x
     y = 9
     
@@ -225,7 +225,7 @@ def validation_zhang_grid():
                          axes_pad=0.1,
                          share_all = True)
         grid_size = int(x * y)
-        legend = mpl.image.imread(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\legend_validation.png")
+        legend = mpl.image.imread(r"../paper/legend_validation.png")
         legend = resize(legend, (540, 1024))
         grid[0].imshow(legend)
         grid[0].get_yaxis().set_ticks([])
@@ -252,7 +252,7 @@ def validation_zhang_grid():
             index = index + 1
             if index > total - 1 or grid_index >= grid_size - 1:
                 break
-        fig.savefig(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\grid_validation_zhang_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
+        fig.savefig(r"../paper/grid_validation_zhang_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
         fig_counter = fig_counter + 1
         plt.show()
      
@@ -262,7 +262,7 @@ def validation_baumhoer_grid():
     The more columns you use, the more labels you will have to set. If there is an 'index out of range error',
     make sure the files have the right ending (.TIF).
     """
-    folder = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\outputs\calfin_on_baumhoer\quality_assurance\*\*overlay_comparison.png")
+    folder = glob.glob(r"../outputs/calfin_on_baumhoer/quality_assurance/*/*overlay_comparison.png")
     x_list = [4, 6] # number of columns in resulting image. Make sure the number of images is divideable by x
     y_list = [8, 8]
     
@@ -281,7 +281,7 @@ def validation_baumhoer_grid():
                          axes_pad=0.1,
                          share_all = True)
         grid_size = int(x * y)
-        legend = mpl.image.imread(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\legend_validation.png")
+        legend = mpl.image.imread(r"../paper/legend_validation.png")
         legend = resize(legend, (540, 1024))
         grid[0].imshow(legend)
         grid[0].get_yaxis().set_ticks([])
@@ -308,7 +308,7 @@ def validation_baumhoer_grid():
             index = index + 1
             if index > total - 1 or grid_index >= grid_size - 1:
                 break
-        fig.savefig(r"D:\Daniel\Documents\Github\CALFIN Repo\paper\grid_validation_baumhoer_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
+        fig.savefig(r"../paper/grid_validation_baumhoer_" + str(fig_counter) + ".png", bbox_inches='tight', pad_inches=0.02, frameon=False)
         fig_counter = fig_counter + 1
         x = fig_counter
         plt.show()

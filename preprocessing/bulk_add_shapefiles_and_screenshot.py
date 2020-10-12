@@ -81,7 +81,7 @@ class TestTask( QgsTask ):
 		
 	def bulkAdd(self):
 		rootGroupName = 'Shapefiles'
-		sourcePath = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
+		sourcePath = r'../outputs\upload_production\v1.0\level-1_shapefiles-domain-termini'
 		project = QgsProject.instance()
 		root = project.layerTreeRoot()
 		rootGroup = findGroup(root, rootGroupName)
@@ -106,7 +106,7 @@ class TestTask( QgsTask ):
 		numDomain = len(domainLayers)
 		
 		view = iface.layerTreeView()
-		saveDir = r'D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_screnshots'
+		saveDir = r'../paper\qgis_screnshots'
 		for i in range(numDomain):
 			self.setProgress((i) / numDomain * 50)
 			domainLayer = domainLayers[i].layer()
@@ -151,7 +151,7 @@ domainLayers = findChildren(root, domainGroupName)
 # For each domain in CalvingFronts...
 numDomain = len(domainLayers)
 view = qgis.utils.iface.layerTreeView()
-saveDir = r'D:\Daniel\Documents\Github\CALFIN Repo\paper\qgis_screenshots'
+saveDir = r'../paper\qgis_screenshots'
 domainLayer = domainLayers[-1].layer()
 view.setCurrentLayer(domainLayer)
 qgis.utils.iface.zoomToActiveLayer()

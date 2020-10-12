@@ -12,8 +12,8 @@ augs = aug_resize(img_size=1024)
 
 dry_run = False
 
-root_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw"
-dest_path = r"..\reprocessing\fjord_boundaries" 
+root_path = r"../processing/landsat_raw"
+dest_path = r"../reprocessing/fjord_boundaries" 
 
 for domain in os.listdir(root_path):		
 	print(domain)

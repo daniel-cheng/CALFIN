@@ -4,7 +4,7 @@ from qgis.core import QgsTask, QgsApplication, QgsLayerTreeGroup, QgsProject, Qg
 from qgis.utils import iface
 
 root_group_name = 'Rasters'
-source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Landsat\Greenland'
+source_path = r'../downloader/rasters/Landsat/Greenland'
 dry_run = 1
 
 def landsat_sort(file_path):

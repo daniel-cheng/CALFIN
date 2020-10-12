@@ -41,7 +41,7 @@ def layerFromPath(file_path:str, group:QgsLayerTreeGroup) -> (QgsRasterLayer):
 
 def bulkAdd():
 	root_group_name = 'Rasters'
-	source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\downloader\rasters\Sentinel-1\Antarctica'
+	source_path = r'../downloader/rasters/Sentinel-1/Antarctica'
 	dry_run = 1
 
 	project = QgsProject.instance()

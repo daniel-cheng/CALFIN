@@ -11,9 +11,9 @@ import sys
 sys.path.insert(0, '../training')
 from aug_generators import aug_resize
 
-source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw'
-source_processed_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\reprocessing\landsat_raw"
+source_path = r'../processing\landsat_raw'
+source_processed_path = r"../processing\landsat_raw_processed"
+dest_path = r"../reprocessing\landsat_raw"
 
 domains = sorted(os.listdir(source_path))
 domains_count = len(domains)

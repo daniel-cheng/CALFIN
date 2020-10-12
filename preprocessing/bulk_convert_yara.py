@@ -54,12 +54,12 @@ def convert(raw_path, temp_path, dest_path, domains, dry_run = True):
 	
 if __name__ == "__main__":
 	domains = ["Jakobshavn", "Helheim", "Sverdrup", "Kangerlussuaq"]
-	raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_original"
-	temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_temp"
-	dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_yara"
+	raw_path = r"../training/data/train_original"
+	temp_path = r"../training/data/train_temp"
+	dest_path = r"../training/data/train_yara"
 	convert(raw_path, temp_path, dest_path, domains, dry_run = False)
 		 
-	raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_original"
-	temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_temp"
-	dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_yara"
+	raw_path = r"../training/data/validation_original"
+	temp_path = r"../training/data/validation_temp"
+	dest_path = r"../training/data/validation_yara"
 	convert(raw_path, temp_path, dest_path, domains, dry_run = False)

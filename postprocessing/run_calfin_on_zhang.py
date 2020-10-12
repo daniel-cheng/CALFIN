@@ -45,10 +45,10 @@ def initialize(img_size):
             'size'   : 14}
     plt.rc('font', **font)
         
-    validation_files = glob.glob(r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_zhang\*modified.png")
+    validation_files = glob.glob(r"../training/data/validation_zhang/*modified.png")
     
     #Initialize output folders
-    dest_root_path = r"..\outputs\calfin_on_zhang"
+    dest_root_path = r"../outputs/calfin_on_zhang"
     dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
     if not os.path.exists(dest_root_path):
         os.mkdir(dest_root_path)
@@ -77,11 +77,11 @@ def initialize(img_size):
     settings['line_thickness'] = 3
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
     settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
-    settings['fjord_boundaries_path'] = r"..\training\data\fjord_boundaries"
-    settings['tif_source_path'] = r"..\preprocessing\calvingfrontmachine\CalvingFronts\tif"
+    settings['fjord_boundaries_path'] = r"../training/data/fjord_boundaries"
+    settings['tif_source_path'] = r"../preprocessing/calvingfrontmachine/CalvingFronts/tif"
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
-    settings['save_path'] = r"..\processing\landsat_preds"
+    settings['save_path'] = r"../processing/landsat_preds"
     settings['total'] = len(validation_files)
     settings['empty_image'] = np.zeros((settings['full_size'], settings['full_size']))
     settings['scaling'] = scaling

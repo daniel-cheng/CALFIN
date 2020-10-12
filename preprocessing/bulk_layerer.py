@@ -6,29 +6,29 @@ import numpngw
 #skimage.io.use_plugin('freeimage')
 
 dry_run = False
-#raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_raw"
-#temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_temp"
-#dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\train_processed"
+#raw_path = r"../training/data/train_raw"
+#temp_path = r"../training/data/train_temp"
+#dest_path = r"../training/data/train_processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\validation_processed"
+# raw_path = r"../training/data/validation_raw"
+# temp_path = r"../training/data/validation_temp"
+# dest_path = r"../training/data/validation_processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\training\data\temp_processed"
+# raw_path = r"../training/data/temp_raw"
+# temp_path = r"../training/data/temp_temp"
+# dest_path = r"../training/data/temp_processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo Intercomp\processing\processed"
+# raw_path = r"../../CALFIN Repo Intercomp/processing/raw"
+# temp_path = r"../../CALFIN Repo Intercomp/processing/temp"
+# dest_path = r"../../CALFIN Repo Intercomp/processing/processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\calvingfrontmachine\landsat_raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
+# raw_path = r"../preprocessing/calvingfrontmachine/landsat_raw"
+# temp_path = r"../processing/landsat_raw_temp"
+# dest_path = r"../processing/landsat_raw_processed"
 
-raw_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw"
-temp_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_temp"
-dest_path = r"D:\Daniel\Documents\Github\CALFIN Repo\processing\landsat_raw_processed"
+raw_path = r"../processing/landsat_raw"
+temp_path = r"../processing/landsat_raw_temp"
+dest_path = r"../processing/landsat_raw_processed"
 
 for file_path in glob.glob(os.path.join(raw_path, '**', '*')):
 	base_name = file_path.split(os.path.sep)[-1]

@@ -14,10 +14,6 @@ import matplotlib.pyplot as plt
 import numpngw
 from dateutil.parser import parse
 
-import sys
-sys.path.insert(0, '../postprocessing')
-from poisson_line import ordered_line_from_unordered_points_tree
-
 data_path = 'data/'
 temp_path = 'temp/'
 

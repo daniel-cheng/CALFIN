@@ -8,10 +8,10 @@ import numpy as np
 import os, shutil, glob
 from skimage.io import imsave, imread
 
-source_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\all'
-dest_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\all'
+source_path = r'../training/data/all'
+dest_path = r'../training/data/all'
 
-for file_path in glob.glob(source_path + '\\*_mask.png'):
+for file_path in glob.glob(source_path + '//*_mask.png'):
 	mask = imread(file_path, as_gray=True)
 	print(mask.dtype, mask.max())
 	if mask.dtype == np.uint8:
@@ -21,7 +21,7 @@ for file_path in glob.glob(source_path + '\\*_mask.png'):
 	print(mask.dtype, mask.max()) 
 	imsave(file_path, mask)
 				
-for file_path in glob.glob(source_path + '\\*B[0-9].png'):
+for file_path in glob.glob(source_path + '//*B[0-9].png'):
 	img = imread(file_path, as_gray=True)
 	print(img.dtype, img.max())
 	if img.dtype == np.uint8:

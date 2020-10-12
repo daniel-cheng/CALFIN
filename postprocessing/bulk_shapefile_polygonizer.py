@@ -14,7 +14,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 #Ensure crs are exported correctly by gdal/osr/fiona
-os.environ['GDAL_DATA'] = r'D:\\ProgramData\\Anaconda3\\envs\\cfm\\Library\\share\\gdal'
+os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//share//gdal'
 from osgeo import gdal, osr
 import rasterio
 from rasterio import features
@@ -23,9 +23,6 @@ import fiona
 from shapely.geometry import mapping, Point
 from shapely.geometry.polygon import Polygon
 from pyproj import Proj, transform
-
-sys.path.insert(1, '../postprocessing')
-from mask_to_shp import mask_to_polygon_shp
 
 #level 0 should inlcude all subsets (preprocessed)
 #Make individual ones, domain ones, and all available
@@ -255,9 +252,9 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
     
     source_tif_path = fjord_boundary_file_path
     if 'production' in file_path:
-        dest_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production_staging'
+        dest_root_path = r'../outputs/production_staging'
     elif 'mask_extractor' in file_path:
-        dest_root_path = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
+        dest_root_path = r'../outputs/mask_extractor'
                 
     #count exits to ensure certain pre-selected areas are always masked 
     #(and whose failure to be masked indicates missing contours)
@@ -282,7 +279,7 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
 def process_file(combined_pred_mask, combined_pred_mask_validity, domain, file_path, fjord_bounds, fjord_boundary_tif, mask, original_mask, count):
     """Processes each file of possibly many within a single date. 
         Returns the validity mask and polyline projected onto the land-ice/ocean mask."""
-    # print('\t' + file_path)
+    # print('/t' + file_path)
     file_name = os.path.basename(file_path)
     file_name_parts = file_name.split('_')
     file_basename = "_".join(file_name_parts[0:-2])
@@ -445,11 +442,11 @@ if __name__ == "__main__":
     #Initialize plots
     plt.close('all')
     
-    source_path_manual = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\mask_extractor'
-    source_path_auto = r'D:\Daniel\Documents\Github\CALFIN Repo\outputs\production_staging'
-    fjord_boundary_path = r'D:\Daniel\Documents\Github\CALFIN Repo\training\data\fjord_boundaries_tif'
-    domain_path = r'D:\Daniel\Documents\Github\CALFIN Repo\preprocessing\domains'
-    exits_path = r"D:\Daniel\Documents\Github\CALFIN Repo\postprocessing\GlacierExclusionRef.shp"
+    source_path_manual = r'../outputs/mask_extractor'
+    source_path_auto = r'../outputs/production_staging'
+    fjord_boundary_path = r'../training/data/fjord_boundaries_tif'
+    domain_path = r'../preprocessing/domains'
+    exits_path = r"../postprocessing/GlacierExclusionRef.shp"
             
     exits_shp = fiona.open(exits_path, 'r', encoding='utf-8')
     exits = []
