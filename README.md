@@ -18,7 +18,7 @@ To continue, select the desired section(s) from the table of contents below.
 ### Installation
 1. Download the repository with `git clone https://github.com/daniel-cheng/CALFIN`.
 2. Install dependencies using [Anaconda package manager](https://www.anaconda.com/products/individual#Downloads) with `conda env create -f training/dependencies/environment_<os>_cfm.yaml`, selecting your OS, or `base` otherwise. If performing Shapefile postprocessing, also install `environment_<os>_rasterio.yaml` similarly in a second environment, to avoid package conflicts.
-4. Download the trained network weights from [DataDryad](https://doi.org/10.7280/D1FH5D) and place them in `training/cfm_weights_patched_dual_wide_x65_224_e17_iou0.5236.h5`.
+4. Download the trained network weights from [DataDryad](https://doi.org/10.7280/D1FH5D) or the [v1.0.0 Release](https://github.com/daniel-cheng/CALFIN/releases/tag/v1.0.0) and extract them to `training/cfm_weights_patched_dual_wide_x65_224_e17_iou0.5236.h5`.
 3. Run CALFIN in a Python console such as Spyder, or on the command line by prepending `python ` before the path to each script. Modify script parameters as required.
 
 ### Preprocessing
@@ -75,9 +75,9 @@ If you find this code helpful, please cite as below:
 [2] CALFIN: Calving Front Dataset for East/West Greenland, 1972-2019. Daniel Cheng, Wayne Hayes, and Eric Larour. 
 
 ## Acknowledgements
-This work was conducted as a collaboration between NASA’s Jet Propulsion Laboratory and the University of California, Irvine.
+This work was conducted as a collaboration between NASAâ€™s Jet Propulsion Laboratory and the University of California, Irvine.
 
-The CALFIN neural network architecture implementation is derived from [Emil Zakirov’s Deeplabv3+ Xception codebase](github.com/bonlime/keras-deeplab-v3-plus). 
+The CALFIN neural network architecture implementation is derived from [Emil Zakirovâ€™s Deeplabv3+ Xception codebase](github.com/bonlime/keras-deeplab-v3-plus). 
 
 We acknowledge the USGS for providing Landsat-1-8 images, the ESA for their Sentinel-1 images, as well as the ESA-CCI, PROMICE, and MEaSUREs programs for providing calving front data used in this study.
 
