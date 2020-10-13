@@ -35,7 +35,7 @@ To continue, select the desired section(s) from the table of contents below.
 1. Execute [`run_production.py`](https://github.com/daniel-cheng/CALFIN/blob/master/postprocessing/run_production.py). Results will be generated in `outputs/production`.
 
 ### Postprocessing
-1. Optionally, veify the results of `outputs/production/quality_assurance/<domain>`, and copy any `*overlay_front.png` files that are incorrect to the corresponding `outputs/production/quality_assurance_bad/<domain>` folder to eliminate it from the final output.
+1. Optionally, verify the results of `outputs/production/quality_assurance/<domain>`, and copy any `*overlay_front.png` files that are incorrect to the corresponding `outputs/production/quality_assurance_bad/<domain>` folder to eliminate it from the final output.
 2. Finally, switch to the rasterio environment to avoid pacakge conflicts, and run the [`postprocessing/bulk_shapefile_polygonizer.py`](https://github.com/daniel-cheng/CALFIN/tree/master/postprocessing/bulk_shapefile_polygonizer.py), then the [`postprocessing/bulk_shapefile_consolidator.py`](https://github.com/daniel-cheng/CALFIN/tree/master/postprocessing/bulk_shapefile_consolidator.py) to create the final outputs in `outputs/upload_production/v1.0/level-1_shapefiles-domain-termini`.
 
 ## Training
