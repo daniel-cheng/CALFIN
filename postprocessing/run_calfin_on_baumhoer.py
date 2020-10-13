@@ -15,10 +15,8 @@ from postprocessing import postprocess
 
 def main(settings, metrics):
     #Begin processing validation images
-#    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-
-#    troubled_ones = list(range(0, 10))
-#    troubled_ones = [1]
+#    troubled_ones = [8, 24, 37, 58]
+#    troubled_ones = [58]
     for i in range(0, len(settings['validation_files'])):
 #    for i in troubled_ones:
         preprocess(i, settings, metrics)
@@ -47,7 +45,6 @@ def initialize(img_size):
         
     validation_files = glob.glob(r"../training/data/validation_baumhoer/*.png")
     validation_files = list(filter(lambda x: '_mask' not in x, validation_files))
-    print(validation_files)
     
     #Initialize output folders
     dest_root_path = r"../outputs/calfin_on_baumhoer"
@@ -94,9 +91,11 @@ def initialize(img_size):
     settings['sub_padding_ratio'] = 1.75
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-    settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to mask size
+    settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
     settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['polyline_zero_point'] = 10 #Zero point is the pixel distance when the polyline pathfinding weighting starts being penalized (i.e., jumps of 'polyline_zero_point' pixels are penalized)
+    settings['polyline_distance_power'] = 1.45 #power is the exponential penalty for longer distances during the polyline pathfinding long distance weighting.
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
     

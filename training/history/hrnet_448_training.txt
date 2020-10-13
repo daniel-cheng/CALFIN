@@ -1,0 +1,144 @@
+------------------------------
+Fitting model...
+------------------------------
+Epoch 1/80
+2020-07-19 01:32:05.339951: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcudnn.so.7
+2020-07-19 01:32:06.610342: I tensorflow/stream_executor/platform/default/dso_loader.cc:44] Successfully opened dynamic library libcublas.so.10
+16000/16000 [==============================] - 20614s 1s/step - loss: 3.1081 - weighted_iou_score: 0.1013 - edge_iou_score: 0.0809 - mask_iou_score: 0.6097 - deviation: 8715.3574 - val_loss: 4.7450 - val_weighted_iou_score: 0.1440 - val_edge_iou_score: 0.1195 - val_mask_iou_score: 0.7555 - val_deviation: 11713.6709
+ - Upernavik_edge_iou_score: 0.0948
+ - Jakobshavn_edge_iou_score: 0.1075
+ - Kong-Oscar_edge_iou_score: 0.1435
+ - Kangiata-Nunaata_edge_iou_score: 0.1153
+ - Hayes_edge_iou_score: 0.0785
+ - Rink-Isbrae_edge_iou_score: 0.1034
+ - Kangerlussuaq_edge_iou_score: 0.1371
+ - Helheim_edge_iou_score: 0.1307
+Epoch 2/80
+16000/16000 [==============================] - 20589s 1s/step - loss: 1.8132 - weighted_iou_score: 0.2369 - edge_iou_score: 0.2155 - mask_iou_score: 0.7711 - deviation: 5182.5405 - val_loss: 4.0497 - val_weighted_iou_score: 0.2604 - val_edge_iou_score: 0.2374 - val_mask_iou_score: 0.8358 - val_deviation: 5236.7192
+ - Upernavik_edge_iou_score: 0.2322
+ - Jakobshavn_edge_iou_score: 0.2125
+ - Kong-Oscar_edge_iou_score: 0.2251
+ - Kangiata-Nunaata_edge_iou_score: 0.2849
+ - Hayes_edge_iou_score: 0.2066
+ - Rink-Isbrae_edge_iou_score: 0.2696
+ - Kangerlussuaq_edge_iou_score: 0.2994
+ - Helheim_edge_iou_score: 0.2762
+Epoch 3/80
+16000/16000 [==============================] - 20594s 1s/step - loss: 1.2700 - weighted_iou_score: 0.3631 - edge_iou_score: 0.3446 - mask_iou_score: 0.8264 - deviation: 4692.3823 - val_loss: 3.6704 - val_weighted_iou_score: 0.3584 - val_edge_iou_score: 0.3377 - val_mask_iou_score: 0.8753 - val_deviation: 6198.0039
+ - Upernavik_edge_iou_score: 0.2698
+ - Jakobshavn_edge_iou_score: 0.2742
+ - Kong-Oscar_edge_iou_score: 0.3737
+ - Kangiata-Nunaata_edge_iou_score: 0.2240
+ - Hayes_edge_iou_score: 0.3196
+ - Rink-Isbrae_edge_iou_score: 0.3938
+ - Kangerlussuaq_edge_iou_score: 0.4145
+ - Helheim_edge_iou_score: 0.3620
+Epoch 4/80
+16000/16000 [==============================] - 20590s 1s/step - loss: 1.1065 - weighted_iou_score: 0.4346 - edge_iou_score: 0.4179 - mask_iou_score: 0.8520 - deviation: 4388.6851 - val_loss: 3.6593 - val_weighted_iou_score: 0.3850 - val_edge_iou_score: 0.3662 - val_mask_iou_score: 0.8564 - val_deviation: 5347.2178
+ - Upernavik_edge_iou_score: 0.2852
+ - Jakobshavn_edge_iou_score: 0.3669
+ - Kong-Oscar_edge_iou_score: 0.3994
+ - Kangiata-Nunaata_edge_iou_score: 0.4251
+ - Hayes_edge_iou_score: 0.3278
+ - Rink-Isbrae_edge_iou_score: 0.4677
+ - Kangerlussuaq_edge_iou_score: 0.4098
+ - Helheim_edge_iou_score: 0.4133
+Epoch 5/80
+16000/16000 [==============================] - 20590s 1s/step - loss: 0.9839 - weighted_iou_score: 0.4756 - edge_iou_score: 0.4599 - mask_iou_score: 0.8703 - deviation: 4242.0288 - val_loss: 3.6133 - val_weighted_iou_score: 0.4038 - val_edge_iou_score: 0.3848 - val_mask_iou_score: 0.8781 - val_deviation: 2333.3811
+ - Upernavik_edge_iou_score: 0.3424
+ - Jakobshavn_edge_iou_score: 0.4067
+ - Kong-Oscar_edge_iou_score: 0.4674
+ - Kangiata-Nunaata_edge_iou_score: 0.3150
+ - Hayes_edge_iou_score: 0.3741
+ - Rink-Isbrae_edge_iou_score: 0.4530
+ - Kangerlussuaq_edge_iou_score: 0.4249
+ - Helheim_edge_iou_score: 0.4089
+Epoch 6/80
+16000/16000 [==============================] - 20590s 1s/step - loss: 0.9137 - weighted_iou_score: 0.5036 - edge_iou_score: 0.4883 - mask_iou_score: 0.8855 - deviation: 3901.2808 - val_loss: 3.5940 - val_weighted_iou_score: 0.4184 - val_edge_iou_score: 0.4005 - val_mask_iou_score: 0.8652 - val_deviation: 7954.7153
+ - Upernavik_edge_iou_score: 0.3481
+ - Jakobshavn_edge_iou_score: 0.4464
+ - Kong-Oscar_edge_iou_score: 0.4715
+ - Kangiata-Nunaata_edge_iou_score: 0.4678
+ - Hayes_edge_iou_score: 0.3546
+ - Rink-Isbrae_edge_iou_score: 0.4612
+ - Kangerlussuaq_edge_iou_score: 0.4259
+ - Helheim_edge_iou_score: 0.4336
+Epoch 7/80
+16000/16000 [==============================] - 20594s 1s/step - loss: 0.8971 - weighted_iou_score: 0.5142 - edge_iou_score: 0.4991 - mask_iou_score: 0.8928 - deviation: 3671.2427 - val_loss: 3.1621 - val_weighted_iou_score: 0.4700 - val_edge_iou_score: 0.4528 - val_mask_iou_score: 0.9022 - val_deviation: 4025.2144
+ - Upernavik_edge_iou_score: 0.3193
+ - Jakobshavn_edge_iou_score: 0.4962
+ - Kong-Oscar_edge_iou_score: 0.4957
+ - Kangiata-Nunaata_edge_iou_score: 0.5754
+ - Hayes_edge_iou_score: 0.3995
+ - Rink-Isbrae_edge_iou_score: 0.4749
+ - Kangerlussuaq_edge_iou_score: 0.4514
+ - Helheim_edge_iou_score: 0.4555
+Epoch 8/80
+16000/16000 [==============================] - 20601s 1s/step - loss: 0.8768 - weighted_iou_score: 0.5266 - edge_iou_score: 0.5116 - mask_iou_score: 0.9002 - deviation: 3876.2058 - val_loss: 3.5880 - val_weighted_iou_score: 0.4054 - val_edge_iou_score: 0.3868 - val_mask_iou_score: 0.8684 - val_deviation: 8952.5859
+ - Upernavik_edge_iou_score: 0.2681
+ - Jakobshavn_edge_iou_score: 0.3292
+ - Kong-Oscar_edge_iou_score: 0.4067
+ - Kangiata-Nunaata_edge_iou_score: 0.3772
+ - Hayes_edge_iou_score: 0.3129
+ - Rink-Isbrae_edge_iou_score: 0.4814
+ - Kangerlussuaq_edge_iou_score: 0.3773
+ - Helheim_edge_iou_score: 0.4282
+Epoch 9/80
+16000/16000 [==============================] - 20601s 1s/step - loss: 0.8056 - weighted_iou_score: 0.5407 - edge_iou_score: 0.5259 - mask_iou_score: 0.9086 - deviation: 3560.0615 - val_loss: 3.4313 - val_weighted_iou_score: 0.4481 - val_edge_iou_score: 0.4305 - val_mask_iou_score: 0.8886 - val_deviation: 6539.8325
+ - Upernavik_edge_iou_score: 0.2985
+ - Jakobshavn_edge_iou_score: 0.5123
+ - Kong-Oscar_edge_iou_score: 0.4329
+ - Kangiata-Nunaata_edge_iou_score: 0.4400
+ - Hayes_edge_iou_score: 0.3438
+ - Rink-Isbrae_edge_iou_score: 0.5005
+ - Kangerlussuaq_edge_iou_score: 0.3877
+ - Helheim_edge_iou_score: 0.4672
+Epoch 10/80
+16000/16000 [==============================] - 20606s 1s/step - loss: 0.7805 - weighted_iou_score: 0.5483 - edge_iou_score: 0.5337 - mask_iou_score: 0.9148 - deviation: 3530.1521 - val_loss: 3.6537 - val_weighted_iou_score: 0.4153 - val_edge_iou_score: 0.3968 - val_mask_iou_score: 0.8774 - val_deviation: 8837.9043
+ - Upernavik_edge_iou_score: 0.2492
+ - Jakobshavn_edge_iou_score: 0.2957
+ - Kong-Oscar_edge_iou_score: 0.4796
+ - Kangiata-Nunaata_edge_iou_score: 0.4687
+ - Hayes_edge_iou_score: 0.3528
+ - Rink-Isbrae_edge_iou_score: 0.5081
+ - Kangerlussuaq_edge_iou_score: 0.4779
+ - Helheim_edge_iou_score: 0.4442
+16000/16000 [==============================] - 20614s 1s/step - loss: 0.7830 - weighted_iou_score: 0.5577 - edge_iou_score: 0.5432 - mask_iou_score: 0.9195 - deviation: 3444.7683 - val_loss: 3.4433 - val_weighted_iou_score: 0.4486 - val_edge_iou_score: 0.4320 - val_mask_iou_score: 0.8619 - val_deviation: 13010.3965 mask_iou_score: 0.9177 - deviation: 3522.4714
+ - Upernavik_edge_iou_score: 0.3115
+ - Jakobshavn_edge_iou_score: 0.5581
+ - Kong-Oscar_edge_iou_score: 0.5054
+ - Kangiata-Nunaata_edge_iou_score: 0.5253
+ - Hayes_edge_iou_score: 0.3759
+ - Rink-Isbrae_edge_iou_score: 0.4474
+ - Kangerlussuaq_edge_iou_score: 0.4588
+ - Helheim_edge_iou_score: 0.4623
+Epoch 12/80
+16000/16000 [==============================] - 21183s 1s/step - loss: 0.7726 - weighted_iou_score: 0.5612 - edge_iou_score: 0.5467 - mask_iou_score: 0.9222 - deviation: 3276.9668 - val_loss: 3.5223 - val_weighted_iou_score: 0.4395 - val_edge_iou_score: 0.4222 - val_mask_iou_score: 0.8738 - val_deviation: 7892.9951
+ - Upernavik_edge_iou_score: 0.2710
+ - Jakobshavn_edge_iou_score: 0.5235
+ - Kong-Oscar_edge_iou_score: 0.5287
+ - Kangiata-Nunaata_edge_iou_score: 0.4153
+ - Hayes_edge_iou_score: 0.4011
+ - Rink-Isbrae_edge_iou_score: 0.5038
+ - Kangerlussuaq_edge_iou_score: 0.4239
+ - Helheim_edge_iou_score: 0.4493
+Epoch 13/80
+16000/16000 [==============================] - 24717s 2s/step - loss: 0.7814 - weighted_iou_score: 0.5666 - edge_iou_score: 0.5522 - mask_iou_score: 0.9256 - deviation: 3246.3982 - val_loss: 3.3896 - val_weighted_iou_score: 0.4512 - val_edge_iou_score: 0.4338 - val_mask_iou_score: 0.8861 - val_deviation: 8763.6016
+ - Upernavik_edge_iou_score: 0.2968
+ - Jakobshavn_edge_iou_score: 0.5192
+ - Kong-Oscar_edge_iou_score: 0.4608
+ - Kangiata-Nunaata_edge_iou_score: 0.5347
+ - Hayes_edge_iou_score: 0.3884
+ - Rink-Isbrae_edge_iou_score: 0.4502
+ - Kangerlussuaq_edge_iou_score: 0.5047
+ - Helheim_edge_iou_score: 0.4462
+Epoch 14/80
+16000/16000 [==============================] - 22324s 1s/step - loss: 0.7741 - weighted_iou_score: 0.5660 - edge_iou_score: 0.5517 - mask_iou_score: 0.9243 - deviation: 3288.8987 - val_loss: 3.6304 - val_weighted_iou_score: 0.4291 - val_edge_iou_score: 0.4112 - val_mask_iou_score: 0.8773 - val_deviation: 10511.1006
+ - Upernavik_edge_iou_score: 0.2806
+ - Jakobshavn_edge_iou_score: 0.4879
+ - Kong-Oscar_edge_iou_score: 0.5044
+ - Kangiata-Nunaata_edge_iou_score: 0.5908
+ - Hayes_edge_iou_score: 0.3489
+ - Rink-Isbrae_edge_iou_score: 0.5062
+ - Kangerlussuaq_edge_iou_score: 0.3663
+ - Helheim_edge_iou_score: 0.4465

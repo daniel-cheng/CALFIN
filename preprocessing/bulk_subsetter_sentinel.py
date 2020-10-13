@@ -365,7 +365,7 @@ def findChildren(root:QgsLayerTree, matchString:str):
 				result.append(child)
 	return result
 
-class TestTask( QgsTask ):
+class SubsettingTask( QgsTask ):
 
 	def __init__(self, desc):
 		QgsTask.__init__(self, desc )
@@ -385,6 +385,7 @@ class TestTask( QgsTask ):
 		
 		resolutions = self.warpAndSaveSubsets(rasterLayers, domainLayers)
 		self.resizeandSaveSubsets(rasterLayers, domainLayers, resolutions)
+		print('Subsetting completed!')
 	
 	def resizeandSaveSubsets(self, rasterLayers, domainLayers, resolutions) -> list:
 		# Resize the images to the median size to account for reprojection differences
@@ -459,7 +460,7 @@ class TestTask( QgsTask ):
 		
 		self.completed()
 
-task = TestTask('Warp and Subsetting...') 
+task = SubsettingTask('Warp and Subsetting...') 
 QgsApplication.taskManager().addTask(task)
 	
 

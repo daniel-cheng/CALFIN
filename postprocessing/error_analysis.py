@@ -16,7 +16,7 @@ from cv2 import VideoWriter, VideoWriter_fourcc, resize
 from collections import defaultdict
 
 """Front Extraction"""
-def extract_front_indicators(mask_img, z_score_cutoff=2.0):
+def extract_front_indicators(mask_img, settings):
     """Extracts an ordered polyline from the processed mask. Also returns an overlay of the extracted polyline and the raw image. Draws to the indexed figure and specified resolution."""
 #    print('/t/t/t' + 'extract_front_indicators')
     minimum_points = 4
@@ -36,7 +36,7 @@ def extract_front_indicators(mask_img, z_score_cutoff=2.0):
         return None
     
     #Perform mask to polyline extraction.
-    results = ordered_line_from_unordered_points_tree(front_pixels, mask_img.shape, minimum_points, z_score_cutoff)
+    results = ordered_line_from_unordered_points_tree(front_pixels, mask_img.shape, minimum_points, settings)
     overlay = results[2]
     front_line = np.array((results[0], results[1]))
     number_of_points = front_line.shape[1]

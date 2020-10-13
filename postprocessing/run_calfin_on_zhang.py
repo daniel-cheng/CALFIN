@@ -17,7 +17,7 @@ def main(settings, metrics):
     #Begin processing validation images
 #    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
 #    [1.5, 0][2.25, [1, 2, 3, 5]], 
-#    troubled_ones = [0, 1, 2, 3, 5] #2.25 = 115
+#    troubled_ones = [0, 1, 2, 4] #2.25 = 115
 #    troubled_ones = [4]
     for i in range(0, len(settings['validation_files'])):
 #    for i in troubled_ones:
@@ -88,13 +88,15 @@ def initialize(img_size):
     settings['domain_scalings'] = dict()
     settings['always_use_extracted_front'] = True
     settings['mask_confidence_strength_threshold'] = 0.875
-    settings['edge_confidence_strength_threshold'] = 0.575
+    settings['edge_confidence_strength_threshold'] = 0.525
     settings['sub_padding_ratio'] = 2.25 # 1.25
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
-    settings['mask_detection_ratio_threshold'] = 16 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
-    settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['mask_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to mask size
+    settings['mask_detection_ratio_threshold'] = 512 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
+    settings['mask_edge_buffered_mean_threshold'] = 1.0 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['polyline_zero_point'] = 5 #Zero point is the pixel distance when the polyline pathfinding weighting starts being penalized (i.e., jumps of 'polyline_zero_point' pixels are penalized)
+    settings['polyline_distance_power'] = 1.5 #power is the exponential penalty for longer distances during the polyline pathfinding long distance weighting.
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
     

@@ -160,10 +160,4 @@ if __name__ == '__main__':
 	img_size = 224
 	stride = 16
 	id_str = str(full_size) + '_' + str(img_size) + '_' + str(stride)
-	#load_validation_data(full_size, img_size, stride, regen=True)
-
-	input_data_path = 'data/train_petermann'
-	output_data_path = 'data/train_patched_dual_' + id_str 
-	if not os.path.exists('data/train_patched_dual_' + id_str):
-		os.mkdir(output_data_path)
-	create_data_from_directory(input_data_path, output_data_path, full_size, img_size, stride)
+	load_validation_data(full_size, img_size, stride, regen=True)

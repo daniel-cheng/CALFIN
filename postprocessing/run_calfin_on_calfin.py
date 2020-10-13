@@ -101,9 +101,11 @@ def initialize(img_size, suffix, l7=True):
     settings['sub_padding_ratio'] = 2.5
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to mask size
     settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
     settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['polyline_zero_point'] = 5 #Zero point is the pixel distance when the polyline pathfinding weighting starts being penalized (i.e., jumps of 'polyline_zero_point' pixels are penalized)
+    settings['polyline_distance_power'] = 1.5 #power is the exponential penalty for longer distances during the polyline pathfinding long distance weighting.
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
         

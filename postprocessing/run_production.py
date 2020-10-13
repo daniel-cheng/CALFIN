@@ -14,52 +14,11 @@ from processing import process, compile_model, compile_hrnet_model
 from postprocessing import postprocess
 
 def main(settings, metrics):
-    #Begin processing validation images
-    troubled_ones = [3, 14, 22, 43, 66, 83, 97, 114, 161]
-    troubled_ones = [3, 213, 238, 246, 283, 284, 1231, 1294, 1297, 1444, 1563, 1800, 2903, 6523, 
-                     6122, 7200, 7512, 7611, 9123, 10200, 10302, 10395, 10396, 10397, 10398, 10399,
-                     10400, 10427, 11101, 11219, 21641, 21341, 23043, 23045, 23046, 23050, 23068, 23086,
-                     23091, 23138, 23330, 23896, 23902, 23905, 23963, 23965, 23966, 24000, 24048,
-                     24201, 24242]
-    troubled_ones = [18063] 
-    
-    
-#    troubled_ones = [23043, 23045, 23046, 23050, 23068, 23086   ]
-#    troubled_ones = [23050]
-    
-#    troubled_ones = (np.random.rand(5) * 21000).astype(int)
-#    troubled_ones = [10302]
-#    troubled_ones = [21641]
-#    10302-10405
-#    for i in range(10233, 10234):
-    
-    
-#    for i in range(10303, len(settings['validation_files'])): #Kronborg
-#    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
-#               'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup',
-#               'Kangerdluarssup', 'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    domains = ['Qeqertarsuup', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap', 'Upernavik-NE', 'Upernavik-NW',
-               'Upernavik-SE', 'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 'Kakiffaat', 'Perlerfiup', 'Sermikassak-N', 'Sermikassak-S',
-               'Kangerdluarssup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-#    domains = ['Kakiffaat']
-#    domains = ['Kakiffaat', 'Perlerfiup', 'Upernavik-NW', 'Upernavik-SE']
-#    for i in range(23000, len(settings['validation_files'])):    
-#    for i in range(12976, len(settings['validation_files'])):
-    for i in troubled_ones:
-        name = settings['validation_files'][i]
-        domain = name.split(os.path.sep)[-1].split('_')[0]
-        if '79North' not in name and '79North' not in name and 'Spaltegletsjer' not in name and 'Sermikassak' not in name:
-#            if domain in domains:
-#            if domain not in domains:
-            if True:
-                preprocess(i, settings, metrics)
-                process(settings, metrics)
-                postprocess(settings, metrics)
-    
-    #Print statistics
-#    print_calfin_domain_metrics(settings, metrics)
-#    print_calfin_all_metrics(settings, metrics)
-    plt.show()
+    #Begin processing images
+    for i in range(0, len(settings['validation_files'])):
+        preprocess(i, settings, metrics)
+        process(settings, metrics)
+        postprocess(settings, metrics)
     
     return settings, metrics
 
@@ -81,7 +40,7 @@ def initialize(img_size):
     validation_files = glob.glob(r"../processing/landsat_raw_processed/*B[0-9].png")
 
     #Initialize output folders
-    dest_root_path = r"../outputs/production_staging"
+    dest_root_path = r"../outputs/production"
     dest_path_qa = os.path.join(dest_root_path, 'quality_assurance')
     dest_path_qa_bad = os.path.join(dest_root_path, 'quality_assurance_bad')
     if not os.path.exists(dest_root_path):
@@ -129,9 +88,11 @@ def initialize(img_size):
     settings['sub_padding_ratio'] = 2.5
     settings['edge_detection_threshold'] = 0.25 #Minimum confidence threshold for a prediction to be contribute to edge size
     settings['edge_detection_size_threshold'] = full_size / 8 #32 minimum pixel length required for an edge to trigger a detection
-    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to edge size
+    settings['mask_detection_threshold'] = 0.5 #Minimum confidence threshold for a prediction to be contribute to mask size
     settings['mask_detection_ratio_threshold'] = 32 #if land/ice area is 32 times bigger than ocean/mélange, classify as no front/unconfident prediction
     settings['mask_edge_buffered_mean_threshold'] = 0.13 #threshold deviation of the mean of mask pixels around the deteccted edge from 0 (mask-edge agreement = 0.0 deviation
+    settings['polyline_zero_point'] = 5 #Zero point is the pixel distance when the polyline pathfinding weighting starts being penalized (i.e., jumps of 'polyline_zero_point' pixels are penalized)
+    settings['polyline_distance_power'] = 1.5 #power is the exponential penalty for longer distances during the polyline pathfinding long distance weighting.
     settings['image_settings'] = dict()
     settings['negative_image_names'] = []
 

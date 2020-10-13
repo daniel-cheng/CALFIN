@@ -12,8 +12,8 @@ from skimage.transform import resize
 import traceback
 
 DRY_RUN = 0
-nodata_threshold = 1.0
-cloud_threshold = 1.0 #.25
+nodata_threshold = 0.25
+cloud_threshold = 0.20 #.25
 #Clouds are 5th bit in 16 bit BQA image
 cloudsBitMask         = 0b0000000000010000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
 cloudsConfBitMask     = 0b0000000001100000 #https://www.usgs.gov/land-resources/nli/landsat/landsat-collection-1-level-1-quality-assessment-band?qt-science_support_page_related_con=0#qt-science_support_page_related_con
@@ -457,7 +457,7 @@ def findChildren(root:QgsLayerTree, matchString:str):
                 result.append(child)
     return result
 
-class TestTask( QgsTask ):
+class SubsettingTask( QgsTask ):
 
     def __init__(self, desc):
         QgsTask.__init__(self, desc )
@@ -477,6 +477,7 @@ class TestTask( QgsTask ):
         
         resolutions = self.warpAndSaveSubsets(rasterLayers, domainLayers)
         self.resizeandSaveSubsets(rasterLayers, domainLayers, resolutions)
+		print('Subsetting completed!')
     
     def resizeandSaveSubsets(self, rasterLayers, domainLayers, resolutions) -> list:
         # Resize the images to the median size to account for reprojection differences
@@ -530,25 +531,12 @@ class TestTask( QgsTask ):
     def run(self):
         project = QgsProject.instance()
         root = project.layerTreeRoot()
-        
+		
         # Get layer objects based on selection string values
-        rasterGroupName = 'CalvingFronts/Rasters/Upernavik/1986/LT05_L1TP_1986-04-25_017-008_T1_B4'
-        rasterLayers = findChildren(root, rasterGroupName)
-        # rasterGroupName = 'CalvingFronts/Rasters/Upernavik/2006/LE07_L1TP_2006-05-21_014-009_T1_B4'
-        # rasterLayers += findChildren(root, rasterGroupName)
-        # rasterGroupName = 'CalvingFronts/Rasters/Upernavik/2008/LE07_L1TP_2008-04-24_014-009_T1_B4'
-        # rasterLayers += findChildren(root, rasterGroupName)
-        # rasterGroupName = 'CalvingFronts/Rasters/Upernavik/2008/LE07_L1TP_2008-07-29_014-009_T1_B4'
-        # rasterLayers += findChildren(root, rasterGroupName)
-        
-        domainGroupName = 'CalvingFronts/Domains/Sermeq-Kujalleq-73'
-        domainLayers = findChildren(root, domainGroupName)
-        
-        # Get layer objects based on selection string values
-        #rasterGroupName = 'CalvingFronts/Rasters/Helheim/1991/*'
-        #rasterLayers = findChildren(root, rasterGroupName, 1992)
-        #domainGroupName = 'CalvingFronts/Domains/Br*'
-        #domainLayers = findChildren(root, domainGroupName, 1992)
+        rasterGroupName = 'CalvingFronts/Rasters/*/*/*'
+        rasterLayers = findChildren(root, rasterGroupName, 1972)
+        domainGroupName = 'CalvingFronts/Domains/*'
+        domainLayers = findChildren(root, domainGroupName, 1972)
         
         #Save subsets of raster source files using clipping domain
         try:
@@ -558,6 +546,6 @@ class TestTask( QgsTask ):
         
         self.completed()
 
-task = TestTask('Warp and Subsetting...') 
+task = SubsettingTask('Warp and Subsetting...') 
 QgsApplication.taskManager().addTask(task)
 

@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.morphology import distance_transform_edt
 from scipy.signal import find_peaks
+from skimage.transform import resize
 from skimage.morphology import skeletonize
 
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
@@ -34,6 +35,7 @@ def postprocess(settings, metrics):
 
 def postprocess_validated(settings, metrics):
     """Perform initial front extraction from manually masked images."""
+    print('postprocess_validated')
     kernel = settings['kernel']
     image_settings = settings['image_settings']
     resolution_1024 = image_settings['resolution_1024']
@@ -128,6 +130,7 @@ def postprocess_validated(settings, metrics):
 
 def reprocess_validated(settings, metrics):
     """Process individual isolated fronts, based on initial detection."""
+    print('\t' + 'reprocess_validated')
     domain_scalings = settings['domain_scalings']
     empty_image = settings['empty_image']
     
@@ -140,10 +143,15 @@ def reprocess_validated(settings, metrics):
     fjord_boundary = image_settings['unprocessed_original_fjord_boundary']
     meters_per_1024_pixel = image_settings['meters_per_1024_pixel']
     resolution_256 = image_settings['resolution_256']
-            
+    
+    print('\t\t' + 'bounding_box', image_settings['bounding_box'])
     image_settings['box_counter'] += 1
     box_counter += 1
     found_front = False
+    
+    #Ensure oversized fjord boundaries are resized upon reprocessing
+    if fjord_boundary.shape[0] != img_3_uint8.shape[0] or fjord_boundary.shape[1] != img_3_uint8.shape[1]:
+        fjord_boundary = resize(fjord_boundary, (img_3_uint8.shape[0], img_3_uint8.shape[1]), order=0, preserve_range=True) #np.float64 [0.0, 255.0]
     
     #Perform subsetting
     sub_x1, sub_x2, sub_y1, sub_y2, sub_padding = resubset(settings)
@@ -152,6 +160,18 @@ def reprocess_validated(settings, metrics):
     img_3_subset_uint8 = img_3_uint8[sub_x1:sub_x2, sub_y1:sub_y2, :]
     mask_subset_uint8 = mask_uint8[sub_x1:sub_x2, sub_y1:sub_y2]
     fjord_subset_boundary = fjord_boundary[sub_x1:sub_x2, sub_y1:sub_y2]
+    
+#    plt.figure(16000 + random.randint(1,500))
+#    plt.imshow(img_3_subset_uint8)
+#    plt.show()
+#    
+#    plt.figure(16500 + random.randint(1,500))
+#    plt.imshow(fjord_subset_boundary)
+#    plt.show()
+#    
+#    plt.figure(17000 + random.randint(1,500))
+#    plt.imshow(fjord_boundary)
+#    plt.show()
     
     #Repredict
     image_settings['unprocessed_raw_image'] = img_3_subset_uint8
@@ -208,9 +228,9 @@ def reprocess_validated(settings, metrics):
     results_bounded_pred = mask_bounding_box(bounding_boxes_pred, polyline_image, settings, polylines_coords_pred, pred_image[:, :, 1], store_box=False)
     results_bounded_mask = mask_bounding_box(bounding_boxes_mask, mask_edge_f32, settings, polylines_coords_mask, mask_image[:, :, 1])
     
-        #Fail if the bounded front isn't within the original detection
+    #Fail if the bounded front isn't within the original detection
     if results_bounded_pred is None or results_bounded_mask is None:
-        print('\t' + "not confident (results_bounded out of range), skipping")
+        print('\t' + "not confident (detection mismatch/out of range), skipping")
         metrics['confidence_skip_count'] += 1
         return found_front, metrics
     
@@ -326,7 +346,7 @@ def postprocess_production(settings, metrics):
 
 def reprocess_production(settings, metrics):
     """Process individual isolated fronts, based on initial detection."""
-    print('' + 'reprocess_production')
+    print('\t' + 'reprocess_production')
     domain_scalings = settings['domain_scalings']
     empty_image = settings['empty_image']
     
@@ -338,10 +358,15 @@ def reprocess_production(settings, metrics):
     fjord_boundary = image_settings['unprocessed_original_fjord_boundary']
     meters_per_1024_pixel = image_settings['meters_per_1024_pixel']
     resolution_256 = image_settings['resolution_256']
-            
+    
+    print('\t\t' + 'bounding_box', image_settings['bounding_box'])
     image_settings['box_counter'] += 1
     box_counter += 1
     found_front = False
+    
+    #Ensure oversized fjord boundaries are resized upon reprocessing
+    if fjord_boundary.shape[0] != img_3_uint8.shape[0] or fjord_boundary.shape[1] != img_3_uint8.shape[1]:
+        fjord_boundary = resize(fjord_boundary, (img_3_uint8.shape[0], img_3_uint8.shape[1]), order=0, preserve_range=True) #np.float64 [0.0, 255.0]
     
     #Perform subsetting
     sub_x1, sub_x2, sub_y1, sub_y2, sub_padding = resubset(settings)
@@ -600,29 +625,25 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
         First, perform optimiation on fjord boundaries by isolating contiginous pixels far away from fjord boundaries.
         Then, remove pixels that are still too close to fjord boundaries.
         Finally, return ordered polyline. If no detections exist, return None/empty results."""
-#    print('\t\t' + 'mask_polyline')
-    #get distance of each point from fjord boundary black pixel
-    fjord_distances = distance_transform_edt(fjord_boundary_final_f32)
-    results_polyline = extract_front_indicators(pred_image)
+    print('\t\t' + 'mask_polyline')
+#    plt.close('all')
+    #get distance of each point from fjord boundary black pixel or image border
+    fjord_boundary_padded = np.pad(fjord_boundary_final_f32, 1, 'constant')
+    fjord_distances = distance_transform_edt(fjord_boundary_padded)[1:-1, 1:-1]
+    results_polyline = extract_front_indicators(pred_image, settings)
     #If front is detected, proceed with extraction
     if not results_polyline is None:
         polyline_image = results_polyline[0][:, :, 0] / 255.0
         polylines_coords = [results_polyline[1]]
-
-        #Check to see if there are any fjord boundaries to mask
-        if fjord_boundary_final_f32.min() > 127:
-            polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
-            return polyline_image, bounding_boxes, polylines_coords
         
-        #No intersections with fjord - just treat as if no boundaries
-#        if fjord_distances.min() > 4:
-#            polyline_image, bounding_boxes = remove_small_components(polyline_image, min_size_percentage=min_size_percentage)
-#            return polyline_image, bounding_boxes, polyline_coords
+#        plt.figure(9500 + random.randint(1,500))
+#        plt.imshow(fjord_boundary_padded)
+#        plt.show()
         
 #        plt.figure(10000 + random.randint(1,500))
 #        plt.imshow(pred_image)
 #        plt.show()
-#        
+        
 #        plt.figure(10500 + random.randint(1,500))
 #        plt.imshow(polyline_image)
 #        plt.show()
@@ -694,7 +715,7 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
         
         #Perform final dummy remove_small_components to retrieve bounding boxes
         polyline_image = np.where(isolated_fronts > 0, 1.0, 0.0)
-        test = np.stack((polyline_image, settings['empty_image'], 1.0-fjord_boundary_final_f32), axis = 2)
+#        test = np.stack((polyline_image, settings['empty_image'], 1.0-fjord_boundary_final_f32), axis = 2)
 #        plt.figure(11000 + random.randint(1,500))
 #        plt.imshow(test)
 #        plt.show()
@@ -764,7 +785,6 @@ def retrace_polyline(settings, polylines_coords, polyline_image, bounding_box):
     
     padding = int(settings['full_size'] / 16)
     padding = 1
-        
     sub_x1 = max(bounding_box[0] - padding, 0)
     sub_x2 = min(bounding_box[0] + bounding_box[2] + padding, image.shape[0])
     sub_y1 = max(bounding_box[1] - padding, 0)
@@ -794,7 +814,7 @@ def retrace_polyline(settings, polylines_coords, polyline_image, bounding_box):
 def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, mask_pred, store_box=True):
     """Selects a single bounding box/polyline from the detected fronts, based on various metrics.
         Capable of prioritizing confident, long, centralized fronts that are far away from fronts that have already been detected, and close to original detections in the first processing pass."""
-#    print('\t\t' + 'mask_bounding_box')
+    print('\t\t' + 'mask_bounding_box')
     full_size = settings['full_size']
     image_settings = settings['image_settings']
     bounding_box = bounding_boxes[1]

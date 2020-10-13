@@ -42,7 +42,7 @@ def is_outlier(data, z_score_cutoff = 2.0):
     return is_outlier
 
 #disallow edges between points on boundary
-def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points, z_score_cutoff=2.0):
+def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_points, settings):
     """ Algorithm for extracting a single "correct" polyline from pixel edge probablity mask.
     """
 #    print('\t\t\t\t' + 'ordered_line_from_unordered_points_tree')
@@ -105,8 +105,8 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     #mst from being effectively found
     #zero point is when the distance weighting starts being negative.
     #power is the exponential penalty for longer distances.
-    zero_point = 5
-    power = 1.5
+    zero_point = 5 if 'polyline_zero_point' not in settings else settings['polyline_zero_point']
+    power = 1.5 if 'polyline_distance_power' not in settings else settings['polyline_distance_power']
     new_distances = np.power(zero_point, power) - np.power(np.power(np.e, mst[rows, cols]) - 1, power)
     mst[rows, cols] = new_distances
     

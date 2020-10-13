@@ -1,0 +1,51 @@
+don't downscale
+slide window over it
+rotate with reflect
+don't rescale beyond initial 1024 rescaling
+
+You can assume calving front is always visible in at least 1/4 of the thing
+This will also train
+
+
+for patches, weight with gaussian, divide by number of samples per pixel
+hardcode only 4, 9, or 16 patches
+try bce lnjaccard loss?
+Starting with 1024 training images,
+Increase dilation
+	
+	224x224 inputs (rescaled 0.25 (256x256, 0.875 length ratio, 0.765625 area ratio), take 4 patches with 32 strides)	(med-high priority-3)																						(low priority)
+	224x224 inputs (rescaled 0.25 (256x256, 0.875 length ratio, 0.765625 area ratio), take 9 patches with 16 strides)	(med-high priority-2)																						(low priority)
+	224x224 inputs (rescaled 0.3125 (288x288, 0.7 length ratio, 0.49 area ratio), take 9 patches with 16 strides)		(med-high priority-2)																						(low priority)
+	256x256 inputs (rescaled 0.25)																						(low priority)
+	320x320 inputs (rescaled 0.3125)																					(low priority)
+	320x320 inputs (rescaled 0.375 (384x384, 0.833 length ratio, 0.694 area ratio), take 4 patches with 64 strides)		(med-high priority-0)
+	384x384 inputs (rescaled 0.375)																						(low priority)
+	384x384 inputs (rescaled 0.5 (512x512, 0.75 length ratio, 0.5625 area ratio), take 4 patches with 128 strides)		(med-high priority-1)
+	384x384 inputs (rescaled 0.5 (512x512, 0.75 length ratio, 0.5625 area ratio), take 9 patches with 64 strides)		(high priority-1)
+	448x448 inputs (rescaled 0.5 (512x512, 0.875 length ratio, 0.765625 area ratio), take 4 patches with 64 strides)	(high priority-1)
+	448x448 inputs (rescaled 0.5 (512x512, 0.875 length ratio, 0.765625 area ratio), take 9 patches with 32 strides)	(high priority-1)
+	512x512 inputs (rescaled 0.5)																						(low priority)
+	512x512 inputs (rescaled 0.625 (640x640, 0.80 length ratio, 0.64 area ratio), take 4 patches with 128 strides)		(med-high priority-0)
+	512x512 inputs (rescaled 0.625 (640x640, 0.80 length ratio, 0.64 area ratio), take 9 patches with 64 strides)		(high priority-0)
+	512x512 inputs (rescaled 0.6875 (704x704, 0.727 length ratio, 0.53 area ratio), take 4 patches with 192 strides)	(med-low priority)
+	512x512 inputs (rescaled 0.6875 (704x704, 0.727 length ratio, 0.53 area ratio), take 9 patches with 96 strides)		(med-low priority)
+	512x512 inputs (rescaled 0.6875 (704x704, 0.727 length ratio, 0.53 area ratio), take 16 patches with 64 strides)	(med-low priority)
+	512x512 inputs (rescaled 0.75 (768x768, 0.66 length, 0.4356 area ratio), take 9 patches with 64 strides)			(low priority)
+	
+	
+
+Try 1024? use 13 width? or try 7/9?
+Try messing with end of network (FC layers?)
+get fjord boundaries/mask only fronts (ignore fjord boundaries) (average and retrieve automatically?)
+put adapt/original/HDR into network and preserve weights
+
+batch process images in photoshop, try clahe/ additional 4th/5th?
+
+Try generating shapefiles again and geotiff masks (netcdf)
+
+Try TIFF - 3 channel, (raw, AutoContrast + HDR CALFIN Default, Shadows/Highlights)
+Try 320 network with 340 resized (20 pixel stride)
+
+Need to rework network
+
+need some heuristic - when to use which interpolation?
