@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/yaramohajerani/FrontLearning/blob/master/LICENSE)
 [![DOI](https://zenodo.org/badge/185285507.svg)](https://zenodo.org/badge/latestdoi/185285507)
 
-Calving Front Machine. Automated detection of glacial positions, using neural networks.
+Calving Front Machine. Automated detection of glacial terminus positions, using neural networks.
 
 ## Introduction
 This is the official codebase for [Calving Front Machine (CALFIN): an Automated Deep Learning Glacial Terminus Extraction Method [1]](#References). 
