@@ -1,4 +1,8 @@
+
 # CALFIN
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/yaramohajerani/FrontLearning/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/185285507.svg)](https://zenodo.org/badge/latestdoi/185285507)
+
 Calving Front Machine. Automated detection of glacial positions, using neural networks.
 
 ## Introduction
