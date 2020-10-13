@@ -21,7 +21,7 @@ To continue, select the desired section(s) from the table of contents below.
 
 ### Installation
 1. Download the repository with `git clone https://github.com/daniel-cheng/CALFIN`.
-2. Install dependencies using [Anaconda package manager](https://www.anaconda.com/products/individual#Downloads) with `conda env create -f training/dependencies/environment_<os>_cfm.yaml`, selecting your OS, or `base` otherwise. If performing Shapefile postprocessing, also install `environment_<os>_rasterio.yaml` similarly in a second environment, to avoid package conflicts.
+2. Install dependencies using [Anaconda package manager](https://www.anaconda.com/products/individual#Downloads) with `conda env create -f training/dependencies/environment_<os>_cfm.yaml`, selecting your OS file from [training/dependencies](https://github.com/daniel-cheng/CALFIN/tree/master/training/dependencies), or `base` otherwise. If performing Shapefile postprocessing, also install `environment_<os>_rasterio.yaml` similarly in a second environment, to avoid package conflicts.
 4. Download the trained network weights from [DataDryad](https://doi.org/10.7280/D1FH5D) or the [v1.0.0 Release](https://github.com/daniel-cheng/CALFIN/releases/tag/v1.0.0) and extract them to `training/cfm_weights_patched_dual_wide_x65_224_e17_iou0.5236.h5`.
 3. Run CALFIN in a Python console such as Spyder, or on the command line by prepending `python ` before the path to each script. Modify script parameters as required.
 
