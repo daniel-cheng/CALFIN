@@ -1,12 +1,12 @@
 
 # CALFIN
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/yaramohajerani/FrontLearning/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/185285507.svg)](https://zenodo.org/badge/latestdoi/185285507)
 
 Calving Front Machine. Automated detection of glacial terminus positions, using neural networks.
 
 ## Introduction
-This is the official codebase for [Calving Front Machine (CALFIN): an Automated Deep Learning Glacial Terminus Extraction Method [1]](#References). 
+This is the official codebase for [Calving Front Machine (CALFIN): an Automated Deep Learning Glacial Terminus Extraction Method [1]](https://tc.copernicus.org/preprints/tc-2020-231/#discussion). 
 We provide an automated pipeline using a modified DeepLabV3+ with Xception neural network. 
 The mean distance error is 2.25 pixels (86.76 meters) from the true front on a diverse set of 162 validation images.
 
@@ -61,6 +61,8 @@ If you find this code helpful, please cite as below:
 	author={Daniel Cheng and Wayne Hayes and Eric Larour and Yara Mohajerani and 
 			Michael Wood and Isabella Velicogna and Eric Rignot},
 	journal={The Cryosphere Discussions},
+	url = {https://tc.copernicus.org/preprints/tc-2020-231/},
+	doi = {10.5194/tc-2020-231},
 	year={2020}
 }
 
@@ -68,16 +70,19 @@ If you find this code helpful, please cite as below:
 	title={CALFIN: Calving Front Dataset for East/West Greenland, 1972-2019},
 	author={Daniel Cheng and Wayne Hayes and Eric Larour},
 	journal={The Cryosphere Discussions},
-	url={https://doi.org/10.7280/D1FH5D}
+	url={https://datadryad.org/stash/dataset/doi:10.7280/D1FH5D},
+	doi={10.7280/D1FH5D},
 	year={2020}
 }
 ````
 
 ## References
-[1] Calving Front Machine (CALFIN): Glacial Termini Dataset and Automated Deep Learning Extraction Method for Greenland, 1972-2019. Daniel Cheng, Wayne Hayes, Eric Larour, Yara Mohajerani, 
-		   Michael Wood, Isabella Velicogna and Eric Rignot. Accepted for review in The Cryosphere Discussions.
+[1] Calving Front Machine (CALFIN): Glacial Termini Dataset and Automated Deep Learning Extraction Method for Greenland, 1972-2019. 
+	Daniel Cheng, Wayne Hayes, Eric Larour, Yara Mohajerani, Michael Wood, Isabella Velicogna and Eric Rignot. 
+	The Cryosphere Discussions, 2020, pp. 1–17, https://doi.org/10.5194/tc-2020-231.
 
 [2] CALFIN: Calving Front Dataset for East/West Greenland, 1972-2019. Daniel Cheng, Wayne Hayes, and Eric Larour. 
+	UC Irvine, 2020, https://doi.org/10.7280/D1FH5D.
 
 ## Acknowledgements
 This work was conducted as a collaboration between NASA’s Jet Propulsion Laboratory and the University of California, Irvine.
