@@ -70,7 +70,6 @@ If you find this code helpful, please cite as below:
 @dataset{ChengHL2020,
 	title={CALFIN: Calving Front Dataset for East/West Greenland, 1972-2019},
 	author={Daniel Cheng and Wayne Hayes and Eric Larour},
-	journal={The Cryosphere Discussions},
 	url={https://datadryad.org/stash/dataset/doi:10.7280/D1FH5D},
 	doi={10.7280/D1FH5D},
 	year={2020}
