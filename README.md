@@ -81,7 +81,7 @@ If you find this code helpful, please cite as below:
 	Calving Front Machine (CALFIN): Glacial Termini Dataset and Automated Deep Learning Extraction Method for Greenland, 1972-2019, 
 	The Cryosphere Discussions, 1–17, https://doi.org/10.5194/tc-2020-231, 2020.
 
-[2] Cheng, D., Hayes, W. and Larour, E.: CALFIN: Calving front dataset for East/West Greenland, 1972-2019, https://doi.org/10.7280/D1FH5D, 2020a.
+[2] Cheng, D., Hayes, W. and Larour, E.: CALFIN: Calving front dataset for East/West Greenland, 1972-2019, https://doi.org/10.7280/D1FH5D, 2020.
 
 ## Acknowledgements
 This work was conducted as a collaboration between NASA’s Jet Propulsion Laboratory and the University of California, Irvine.
