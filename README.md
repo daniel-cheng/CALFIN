@@ -13,7 +13,7 @@ The mean distance error is 2.25 pixels (86.76 meters) from the true front on a d
 The method is used to generate the CALFIN dataset, consisting of 22,678 total calving fronts spanning 66 Greenlandic basins, from Sept. 1972 - June 2019.
 [The CALFIN dataset can be downloaded at DataDryad [2]](https://doi.org/10.7280/D1FH5D).
 
-![Arch Final](paper/arch_final.png)
+![Arch Final](https://github.com/daniel-cheng/CALFIN/blob/master/paper/arch_final.png)
 
 ## Running CALFIN
 The CALFIN codebase allows for execution of the automated pipeline on new data, as well as the training of the CALFIN neural network on new data.
