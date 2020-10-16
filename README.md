@@ -46,7 +46,7 @@ To continue, select the desired section(s) from the table of contents below.
 
 ## Testing
 1. To reproduce the validation results in [our study [1]](#references), execute [`postprocessing/run_calfin_on_calfin.py`](https://github.com/daniel-cheng/CALFIN/blob/master/postprocessing/run_calfin_on_calfin.py), [`postprocessing/run_calfin_on_mohajerani.py`](https://github.com/daniel-cheng/CALFIN/blob/master/postprocessing/run_calfin_on_mohajerani.py), [`postprocessing/run_calfin_on_zhang.py`](https://github.com/daniel-cheng/CALFIN/blob/master/postprocessing/run_calfin_on_zhang.py), and [`postprocessing/run_calfin_on_baumhoer.py`](https://github.com/daniel-cheng/CALFIN/blob/master/postprocessing/run_calfin_on_baumhoer.py).
-![Validation CALFIN](paper/grid_validation_calfin_0a_cb.png)
+![Validation CALFIN](https://github.com/daniel-cheng/CALFIN/blob/master/paper/grid_validation_calfin_0a_cb.png)
 
 ## Running CALFIN on New Domains
 If you plan to use CALFIN on a domain outside of the existing set, be familiar with the training set and the set of conditions CALFIN can handle (see [[1]](#references)). CALFIN was trained using Landsat (optical) and Sentinel-1 (SAR) data. The training set includes 1600+ Greenlandic glaciers and 200+ Antarctic glaciers/ice shelves. CALFIN can handle ice tongues, branching, Landsat 7 Scanline Corrector Errors, sea ice, shadows, and light cloud cover. 
