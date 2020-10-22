@@ -55,7 +55,7 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
     else:
         raise ValueError('Unrecognized shp_type (should be "line" or "polygon"):', shp_type)
     output_all_shp_path = os.path.join(dest_all_path, 'termini_1972-2019_Greenland' + suffix)
-    domains = ['Nunatakassaap']
+    # domains = ['Nunatakassaap']
     with fiona.open(output_all_shp_path, 
             'w', 
             driver='ESRI Shapefile', 
@@ -65,8 +65,8 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, dest_domain_pat
         for domain in os.listdir(source_auto_qa_path):
             if '.' in domain:
                 continue
-            if domain not in domains:
-                continue
+            # if domain not in domains:
+            #     continue
             
             file_list, file_list_bad = get_file_lists(source_path_manual, source_path_auto, domain, shp_type)
             for file_path in file_list:
