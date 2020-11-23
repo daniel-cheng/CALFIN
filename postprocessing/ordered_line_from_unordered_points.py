@@ -49,7 +49,7 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     x = points_tuple[0]
     y = points_tuple[1]
     points = np.c_[x, y]
-    k = max(minimum_points - 1, int(np.floor(len(points) * .25)))
+    k = max(minimum_points - 1, int(np.floor(len(points) * .75)))
     distances = distance_matrix(points, points)
     adjacency_matrix = np.zeros((len(points), len(points)))
 #    distances -= 1.0
@@ -91,10 +91,10 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     
     
     #plot intermediate
-#    mst_nx = nx.from_scipy_sparse_matrix(mst)
-#    plt.figure(800 + random.randint(1,250))
-#    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
-#    plt.show()
+    # mst_nx = nx.from_scipy_sparse_matrix(mst)
+    # plt.figure(800 + random.randint(1,250))
+    # nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
+    # plt.show()
     
     
     rows, cols = mst.nonzero()
@@ -108,14 +108,14 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     zero_point = 5 if 'polyline_zero_point' not in settings else settings['polyline_zero_point']
     power = 1.5 if 'polyline_distance_power' not in settings else settings['polyline_distance_power']
     new_distances = np.power(zero_point, power) - np.power(np.power(np.e, mst[rows, cols]) - 1, power)
-    mst[rows, cols] = new_distances
+    mst[rows, cols] = np.ravel(new_distances)
     
 #    mst[rows, cols] = mst[rows, cols] - np.min([np.min(mst[rows, cols]), 0])
     
-#    mst_nx = nx.from_scipy_sparse_matrix(mst)
-#    plt.figure(1050 + random.randint(1,250))
-#    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
-#    plt.show()
+    mst_nx = nx.from_scipy_sparse_matrix(mst)
+    plt.figure(1050 + random.randint(1,250))
+    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
+    plt.show()
     
     #Symmetrize matrix to make undriected
     mst = mst + mst.T - np.diag(mst.diagonal())

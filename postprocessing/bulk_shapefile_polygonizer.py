@@ -90,37 +90,12 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
     source_auto_qa_path = os.path.join(source_path_auto, 'quality_assurance')
     
     counter = 0
-    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Akullikassaap',
-               'Upernavik-NE', 'Upernavik-NW', 'Upernavik-SE' 'Sermikassak-N', 'Sermikassak-S',
-               'Inngia', 'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 'Kangerdluarssup',
-               'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Alangorssup', 'Upernavik-NW',
-               'Sermikassak-N', 'Sermikassak-S', 'Kangerlussuup', 'Kangerdluarssup',
-               'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    domains = ['Qeqertarsuup', 'Kakiffaat', 'Nunatakavsaup', 'Upernavik-NW',
-               'Umiammakku', 'Rink-Isbrae', 'Kangerlussuup', 'Kangerdluarssup',
-                'Perlerfiup', 'Sermeq-Silarleq', 'Kangilleq', 'Sermilik', 'Lille', 'Store']
-    
-    
-    domains = ['Gade', 'Upernavik-NE', 'Morell', 'Kangerlussuaq' 'Kronborg', 'Midgård']
-    domains = ['Akullikassaap', 'Alanngorliup', 'Brückner', 'Christian-IV', 'Cornell', 'Courtauld', 'Upernavik-NE', 'Upernavik-SE']
-    domains = ['Dietrichson', 'Docker-Smith', 'Eqip', 'Fenris', 'Frederiksborg', 'Gade', 'Glacier-de-France', 'Hayes', 'Heim', 'Helheim', 'Hutchinson', 'Illullip']
-    domains = ['Issuusarsuit', 'Kælvegletscher', 'Kangiata-Nunaata', 'Kangilerngata', 'Kangilinnguata', 'Kjer', 'Kong-Oscar']
-    domains = ['Nansen', 'Narsap', 'Nordenskiold', 'Nordfjord', 'Nordre-Parallelgletsjer', 'Søndre-Parallelgletsjer', 'Nunatakassaap', 'Petermann', 'Polaric', 'Rink-Gletsjer', 'Rosenborg', 'Saqqarliup', 'Sermeq-Avannarleq-69']
-    domains = ['Kakiffaat', 'Brückner', 'Søndre-Parallelgletsjer', 'Kjer']
-    domains = ['Nordenskiold']
-    domains = ['Steenstrup']
-    # domains = ['Kjer']
-    sections = [[0, 17], [17, 35], [35, 52], [52, 69]]
-    section = sections[3]
-    # section = [37, 55]
-    # section = [0, 15]
-    # for domain in os.listdir(source_auto_qa_path)[section[0]:section[1]]:
+    # domains = ['Upernavik-NE']
     for domain in os.listdir(source_auto_qa_path):
         if '.' in domain:
             continue
-        if domain not in domains:
-            continue
+        # if domain not in domains:
+        #     continue
         counter = 0
         file_list_manual = glob.glob(os.path.join(source_manual_qa_path, domain, '*_pred.tif'))
         file_list_auto = glob.glob(os.path.join(source_auto_qa_path, domain, '*_pred.tif'))
@@ -155,8 +130,8 @@ def consolidate_shapefiles(source_path_manual, source_path_auto, fjord_boundary_
             dates, bad_file_name_list = get_file_lists(file_list, bad_file_list)
             #For each date, retrieve mask by projecting each calving front onto a single mask
             for date_key in dates.keys():
-                if date_key == '2019-04-23' or date_key == '2018-07-09':
-                # if True:
+                #if date_key >= '2015-07-09':
+                if True:
                     counter = process_date(counter, domain, dates, bad_file_name_list, date_key, original_mask, fjord_bounds, fjord_boundary_tif, fjord_boundary_file_path, original_mask_overrides, domain_exits)
                 # exit()
         print('Completed', counter, 'out of', len(dates.keys()))
@@ -192,8 +167,8 @@ def process_date(counter, domain, dates, bad_file_name_list, date_key, original_
     
     new_mask = np.ones(mask.shape) * 255
     
-    # plt.figure(str(counter) + '-combined_pred_mask_validity')
-    # plt.imshow(combined_pred_mask_validity)
+    # plt.figure(str(counter) + '-origianl-mask')
+    # plt.imshow(np.stack((np.zeros(mask.shape), np.zeros(mask.shape), 255-original_mask), axis=2))
     # plt.figure(str(counter) + '-combined_pred_mask')
     # plt.imshow(combined_pred_mask)
     # plt.figure(str(counter) + '-mask')
