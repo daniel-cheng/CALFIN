@@ -81,10 +81,14 @@ def graph_change(polygon_dict_list, dest_path, domain):
 
     #Initialize plots
 #    fig = plt.figure(1)
-    fig, ax = plt.subplots(1, 1, num=domain + ' Relative Area Change, 1972-2019')
+    fig1, ax1 = plt.subplots(1, 1, num=domain + ' Relative Area Change, 1972-2019')
     plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Relative Ice Area Change ($km^{2}$)')
+    fig2, ax2 = plt.subplots(1, 1, num=domain + ' Relative Area Change Rate, 1972-2019')
+    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Relative Ice Area Change ($km^{2}$)')
+    ax2.set_xlabel('Year')
+    ax2.set_ylabel('Relative Ice Area Change Rate ($km^{2}/yr$)')
 #    loc = MonthLocator(bymonth=[1, 6])
     loc = YearLocator(1)
     formatter = mdates.DateFormatter('%Y')
@@ -94,36 +98,82 @@ def graph_change(polygon_dict_list, dest_path, domain):
         polygon_dict = polygon_dict_list[i]
         dates = []
         changes = []
-        for date in sorted(polygon_dict.keys()):
+        annual_changes = defaultdict(list)
+        annual_changes_values = dict()
+        sorted_dates_keys = list(sorted(polygon_dict.keys()))
+        for i in range(len(sorted_dates_keys)):
+            date = sorted_dates_keys[i]
             polygon = polygon_dict[date]
             dates.append(datefunc(date))
-            changes.append(polygon['relative'] / 1000000) #Convert from m^2 to km^2
+            changes.append(-polygon['relative'] / 1000000) #Convert from m^2 to km^2
             max_relative_change = max(max_relative_change, changes[-1])
-        ax.plot_date(dates, changes, ls='-', marker='o', c='blue', label='CALFIN')
+            
+            #prep annual
+            year = date[0:4]
+            annual_changes[year].append(changes[-1])
+        annual_changes_values = []
+        annual_changes_dates = []
+        for year in sorted(annual_changes.keys()):
+            year_date = datefunc(year + '-07-01')
+            annual_changes_dates.append(year_date)
+            annual_changes_values.append(np.mean(annual_changes[year]))
+        annual_relative_change_rate = np.gradient(np.array(annual_changes_values), np.array(annual_changes_dates))                                    
+                                              
+        relative_change_rate = np.gradient(np.array(changes), np.array(dates) / 365)
+        relative_change_rate_masked = []
+        dates_gapped = []
+        for i in range(len(sorted_dates_keys)):
+            date = sorted_dates_keys[i]
+            rate = relative_change_rate[i]
+            #Checking for year match
+            if i > 0 and i < len(sorted_dates_keys) - 1:
+                date_prev = sorted_dates_keys[i - 1]
+                date_next = sorted_dates_keys[i + 1] 
+                if date[0:4] == date_prev[0:4] and date[0:4] == date_next[0:4]:
+                    dates_gapped.append(datefunc(date))
+                    relative_change_rate_masked.append(rate)
+                else:
+                    dates_gapped.append(datefunc(date) + 1)
+                    relative_change_rate_masked.append(np.nan)
+            else:
+                dates_gapped.append(datefunc(date) + 1)
+                relative_change_rate_masked.append(np.nan)
+                
+        average_relative_change_rate = np.mean(relative_change_rate)
+        ax1.plot_date(dates, changes, ls='-', marker='o', c='blue', label='Relative Change')
+        ax2.plot_date(dates_gapped, relative_change_rate_masked, ls='-', marker='x', c='red', label='Relative Area Change Rate')
+        # ax2.plot_date(annual_changes_dates, annual_relative_change_rate, ls='-', marker='o', c='blue', label='Annual Relative Area Change Rate')
         
-    print("domain", domain, "max_relative_change", max_relative_change)
+    print("domain", domain, "max_relative_change", max_relative_change, "average_relative_change_rate", average_relative_change_rate)
     calfin_dates = sorted(polygon_dict_list[0].keys())
     start = datefunc(calfin_dates[0]) - 100
     end = datefunc(calfin_dates[-1]) + 100
     plt.xlim(start, end)
     start_year = calfin_dates[0][0:4]
     end_year = calfin_dates[-1][0:4]
-    fig.suptitle(domain + ' Relative Ice Area Change, ' + start_year + '-' + end_year, fontsize=22)
+    fig1.suptitle(domain + ' Relative Ice Area Change, ' + start_year + '-' + end_year, fontsize=22)
+    fig2.suptitle(domain + ' Relative Ice Area Change, ' + start_year + '-' + end_year, fontsize=22)
     
-    ax.xaxis.set_major_locator(loc)
-    ax.xaxis.set_major_formatter(formatter)
-    ax.xaxis.set_tick_params(labelsize=14)
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax1.xaxis.set_major_locator(loc)
+    ax1.xaxis.set_major_formatter(formatter)
+    ax1.xaxis.set_tick_params(labelsize=14)
+    plt.setp(ax1.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax2.xaxis.set_major_locator(loc)
+    ax2.xaxis.set_major_formatter(formatter)
+    ax2.xaxis.set_tick_params(labelsize=14)
+    plt.setp(ax2.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
     
-    ax.grid(True)
-    ax.legend()
-    # plt.show()
-    fig.savefig(os.path.join(dest_path, domain + '_relative_area_change.png'), bbox_inches='tight', pad_inches=0, frameon=False)
+    ax1.grid(True)
+    ax1.legend()
+    ax2.grid(True)
+    ax2.legend()
+    fig1.savefig(os.path.join(dest_path, domain + '_relative_area_change.png'), bbox_inches='tight', pad_inches=0, frameon=False)
+    fig2.savefig(os.path.join(dest_path, domain + '_relative_area_change_rate.png'), bbox_inches='tight', pad_inches=0, frameon=False)
     
     return max_relative_change 
 
 
-def generate_centerline_graphs(calfin_path):
+def generate_graphs(calfin_path):
     dest_path = r"../paper/area_change/"
     polygons_calfin = calfin_read(calfin_path)
     
@@ -134,9 +184,14 @@ def generate_centerline_graphs(calfin_path):
     
     polygon_dict_list = [polylines_calfin]
     domain = os.path.basename(calfin_path).split('_')[2]
-    max_relative_change = graph_change(polygon_dict_list, dest_path, domain)
-    
-    return max_relative_change, domain
+    domains = ['Hayes-Gletsjer', 'Helheim-Gletsjer', 'Jakobshavn-Isbrae', 'Kangerlussuaq-Gletsjer', 
+               'Kangiata-Nunaata-Sermia', 'Kong-Oscar-Gletsjer', 'Petermann-Gletsjer', 'Rink-Isbrae', 
+               'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S']
+    if domain in domains and len(polygons_calfin) > 1:
+        max_relative_change = graph_change(polygon_dict_list, dest_path, domain)
+        return max_relative_change, domain
+    else:
+        return 0, domain
 
 
 if __name__ == "__main__":
@@ -147,11 +202,10 @@ if __name__ == "__main__":
     
     change_dict = dict()
     for path in glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_closed_v1.0.shp'):
-        max_relative_change, domain = generate_centerline_graphs(path)
+        max_relative_change, domain = generate_graphs(path)
         change_dict[domain] = max_relative_change
-    for key in sorted(change_dict, key=change_dict.get):
-        print(key, change_dict[key])
-    # generate_centerline_graphs("../outputs/upload_production/v1.0/level-1_shapefiles-greenland-termini/termini_1972-2019_Greenland_closed_v1.0.shp")
+    # for key in sorted(change_dict, key=change_dict.get):
+    #     print(key, change_dict[key])
     plt.show()
         
     
