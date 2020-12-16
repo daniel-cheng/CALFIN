@@ -267,7 +267,7 @@ def generate_centerline_graphs(path, mappings):
     domains = ['Hayes-Gletsjer', 'Helheim-Gletsjer', 'Jakobshavn-Isbrae', 'Kangerlussuaq-Gletsjer', 
                'Kangiata-Nunaata-Sermia', 'Kong-Oscar-Gletsjer', 'Petermann-Gletsjer', 'Rink-Isbrae', 
                'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S']
-    domains = ['Hayes-Gletsjer']
+    domains = ['Kong-Oscar-Gletsjer']
     if domain not in domains:
         return
         
@@ -333,7 +333,7 @@ if __name__ == "__main__":
               'Kangerlussuup-Sermia': 			{'esa':[], 											'promice':['Kangerdlugssup_Sermerssua'], 				'measures':[16]},
               'Kangiata-Nunaata-Sermia': 		{'esa':['Kangiata_Nunaata_Sermia_G310427E64274N'], 	'promice':['KNS'], 										'measures':[207]},
               'Kangilleq-Kangigdleq-Isbrae': 	{'esa':['Kangilleq_G309415E70752N'], 				'promice':['Kangigdleq'], 								'measures':[12]},
-              'Kong-Oscar-Gletsjer': 			{'esa':['Kong_Oscar_Gletsjer_G300347E76024N'], 		'promice':['Kong_Oscars'], 								'measures':[52, 53]},
+              'Kong-Oscar-Gletsjer': 			{'esa':['Kong_Oscar_Gletsjer_G300347E76024N'], 		'promice':['Kong_Oscars'], 								'measures':[51]},
               'Lille-Gletsjer': 				{'esa':[], 											'promice':['Lille'], 									'measures':[10]},
               'Midgard-Gletsjer': 				{'esa':[], 											'promice':['Midgaard'], 								'measures':[173]},
               'Alison-Gletsjer': 				{'esa':['Nunatakassaap_Sermia_G304089E74641N'], 	'promice':['Nunatakassaap'], 							'measures':[35]},
@@ -346,9 +346,9 @@ if __name__ == "__main__":
               'Sermilik-Isbrae': 				{'esa':['Sermilik_Brae_G313080E61025N'], 			'promice':['Sermilik'], 								'measures':[11]},
               'Steenstrup-Gletsjer': 			{'esa':['Steenstrup_Gletsjer_G302212E75326N'], 		'promice':['Steenstrup'], 								'measures':[44]},
               'Store-Gletsjer': 				{'esa':['Store_Gletsjer_G309511E70416N'], 			'promice':['Store'], 									'measures':[9]},
-              'Upernavik-Isstrom-S': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['UpernavikA', 'UpernavikB'], 				'measures':[20, 21]},
-              'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['UpernavikC', 'UpernavikD', 'UpernavikE'], 	'measures':[22, 23]},
-              'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['UpernavikF'], 								'measures':[24]}}
+              'Upernavik-Isstrom-S': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 			                   	'measures':[20, 21]},
+              'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
+              'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
     
     change_dict = dict()
     for path in glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp'):
