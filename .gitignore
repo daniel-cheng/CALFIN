@@ -8,7 +8,6 @@ testing
 *.h5
 /training/temp
 /processing/landsat_raw
-outputs
 /preprocessing/CalvingFronts
 /training/data/all
 CalvingFronts

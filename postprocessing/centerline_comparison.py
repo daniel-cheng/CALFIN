@@ -16,12 +16,16 @@ os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//shar
 from scipy.ndimage.morphology import distance_transform_edt
 from scipy.spatial import KDTree
 from scipy.ndimage import median_filter
+from scipy.signal import savgol_filter
+from scipy.interpolate import interp1d
 from skimage.io import imsave, imread
 from skimage import measure
 from skimage.transform import resize
 from skimage.morphology import skeletonize
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.patheffects as pe
 from matplotlib.dates import MonthLocator, YearLocator
 from pyproj import Proj, transform
 from shapely.geometry import mapping, Polygon, LineString, Point
@@ -121,12 +125,21 @@ def centerline_read(path, ref_name):
     """Reads centerline Shapefile."""
     result = []
     with fiona.open(path, 'r', encoding='utf-8') as shp:
-         for feature in shp:
-             if feature['properties']['RefName'] == ref_name:
-                 result.append({'coords':LineString(feature['geometry']['coordinates']), 
-                                'GlacierID':feature['properties']['GlacierID'],
-                                'BranchID':feature['properties']['BranchID'],
-                                'BranchName':feature['properties']['BranchName']})
+        for feature in shp:
+            if feature['properties']['RefName'] == ref_name:
+                result.append({'coords':LineString(feature['geometry']['coordinates']), 
+                               'GlacierID':feature['properties']['GlacierID'],
+                               'BranchID':feature['properties']['BranchID'],
+                               'BranchName':feature['properties']['BranchName']})
+    return result
+
+def region_read(path):
+    """Reads centerline Shapefile."""
+    result = []
+    with fiona.open(path, 'r', encoding='utf-8') as shp:
+        for feature in shp:
+            result.append({'coords':Polygon(feature['geometry']['coordinates'][0]), 
+                           'Name':feature['properties']['Name']})
     return result
 
 
@@ -179,108 +192,44 @@ def calculate_relative_change(line_dict, centerlines, reference_intersects):
         #Handle multiple centerlines
         for i in range(len(centerlines)):
             if 'arclength' in intersects[i]:
-            #if intersects[i]['arclength'] > 0:
-                intersects[i]['relative'] = -(intersects[i]['arclength'] - reference_intersects[i]['arclength']) / 1000
+            # if intersects[i]['arclength'] > 0:
+                try:
+                    intersects[i]['relative'] = -(reference_intersects[i]['arclength'] - intersects[i]['arclength']) / 1000
+                except:
+                    print(date, reference_intersects[i])
+                    error()
     return line_dict
 
-
-def graph_change(line_dict_list, centerlines, dest_path, domain):
-    """Takes in list of dicts and plots them."""
-    # Converter function
-    datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
-
-    #Initialize plots
-#    fig = plt.figure(1)
-    fig, ax = plt.subplots(1, 1, num=domain + ' Relative Length Change, 1972-2019')
-    fig.suptitle(domain + ' Relative Length Change, 1972-2019', fontsize=22)
-    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+def get_region(regions, mean_center):
+    center = Point(mean_center)
+    for region in regions:
+        if center.within(region['coords']):
+            return region['Name']
+    return 'ALL'
     
-    ax.set_title('CALFIN vs ESA-CCI vs MEaSUREs vs PROMICE', fontsize=18)
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Relative Length Retreat (km)')
-#    loc = MonthLocator(bymonth=[1, 6])
-    loc = YearLocator(1)
-    formatter = mdates.DateFormatter('%Y')
-    
-    calfin_colors = ['blue', 'lightskyblue', 'midnightblue']
-    esacci_colors = ['orangered', 'orange', 'firebrick']
-    measures_colors = ['magenta', 'pink', 'darkviolet']
-    promice_colors = ['limegreen', 'lightgreen', 'green']
-    #Handle multiple datasets
-    for i in range(len(line_dict_list)):
-        line_dict = line_dict_list[i]
-        #Handle multiple centerlines
-        for j in range(len(centerlines)):
-            centerline = centerlines[j]
-            if centerline['BranchName'] != None:
-                line_id = 'Branch ' + str(centerline['BranchName'])
-            else:
-                line_id = ''
-            dates = []
-            changes = []
-            line_export = []
-            #Handle time series
-            for date in sorted(line_dict.keys()):           
-                lines = line_dict[date]
-                line = lines[j]
-                if 'relative' in line:
-                    dates.append(datefunc(date))
-                    changes.append(line['relative'])
-                    line_export.append(line['center'])
-                    #Handle measures
-                    if 'end_date' in line:
-                        dates.append(datefunc(line['end_date']))
-                        changes.append(line['relative'])
-            if i == len(line_dict_list) - 1: #CALFIN
-                ax.plot_date(dates, changes, ls='-', marker='o', c=calfin_colors[j], label='CALFIN ' + line_id)
-                plt.figure(domain + str(j))
-                coords = np.squeeze(np.array(line_export))
-                plt.plot(coords[:,0], coords[:,1])
-                # error()
-            elif i == 0: #ESA-CCI
-                ax.plot_date(dates, changes, ls='', marker='*',  ms=16, c=esacci_colors[j], label='ESA-CCI ' + line_id)
-            elif i == 1: #MEaSUREs
-                ax.plot_date(dates, changes, ls='', marker='P',  ms=12, c=measures_colors[j], label='MEaSUREs ' + line_id)
-            elif i == 2: #PROMICE
-                ax.plot_date(dates, changes, ls='', marker='o',  ms=12, c=promice_colors[j], label='PROMICE ' + line_id)
-            else:
-                ax.plot_date(dates, changes, ls='', marker='o', ms=16)
-            
-    calfin_dates = sorted(line_dict_list[-1].keys())
-    start = datefunc(calfin_dates[0]) - 100
-    end = datefunc(calfin_dates[-1]) + 100
-    plt.xlim(start, end)
-    
-    ax.xaxis.set_major_locator(loc)
-    ax.xaxis.set_major_formatter(formatter)
-    ax.xaxis.set_tick_params(labelsize=14)
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-    
-    ax.grid(True)
-    ax.legend()
-    plt.show()
-    fig.savefig(os.path.join(dest_path, domain + '_relative_change.png'), bbox_inches='tight', pad_inches=0, frameon=False)
-
-def generate_centerline_graphs(path, mappings):
+def generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined):
     domain = os.path.basename(path).split('_')[2]
+    # if domain not in domains:
+    #     return
     
-    domains = ['Hayes-Gletsjer', 'Helheim-Gletsjer', 'Jakobshavn-Isbrae', 'Kangerlussuaq-Gletsjer', 
-               'Kangiata-Nunaata-Sermia', 'Kong-Oscar-Gletsjer', 'Petermann-Gletsjer', 'Rink-Isbrae', 
-               'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S']
-    domains = ['Kong-Oscar-Gletsjer']
-    if domain not in domains:
-        return
-        
     calfin_path = path
     centerline_path = r"../postprocessing/centerlines/Centerlines.shp"
-    dest_path = r"../paper/length_change"
+    dest_path = r"../paper/length_change2"
     
     #Read centerline and calfin
     centerlines = centerline_read(centerline_path, domain.replace('-', ' '))
     polylines_calfin = calfin_read(calfin_path)
     line_intersects_calfin = centerline_intersection(polylines_calfin, centerlines)
     calfin_dates = sorted(line_intersects_calfin.keys())
-    reference_point = line_intersects_calfin[calfin_dates[0]]
+    if len(calfin_dates) == 0:
+        return
+    
+    #Ensure there exists reference points for all centerlines
+    for i in range(len(calfin_dates)):
+        reference_point = line_intersects_calfin[calfin_dates[i]]
+        if {} not in reference_point:
+            break
+        
     line_intersects_calfin = calculate_relative_change(line_intersects_calfin, centerlines, reference_point)
     line_dict_list = []
     
@@ -310,7 +259,183 @@ def generate_centerline_graphs(path, mappings):
             line_dict_list.append(line_intersects)
     line_dict_list.append(line_intersects_calfin)
     
-    graph_change(line_dict_list, centerlines, dest_path, domain)
+    graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp_results_dotted, interp_results_lined)
+
+
+def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp_results_dotted, interp_results_lined):
+    """Takes in list of dicts and plots them."""
+    # Converter function
+    datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
+
+    #Initialize plots
+    fig, ax = plt.subplots(1, 1, num=domain + ' Relative Length Change, 1972-2019')
+    fig.suptitle(domain + ' Relative Length Change, 1972-2019', fontsize=34, fontweight='bold')
+    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    
+    # ax.set_title('CALFIN vs ESA-CCI vs MEaSUREs vs PROMICE', fontsize=18)
+    ax.set_xlabel('Year', fontsize=28, fontweight='bold')
+    ax.set_ylabel('Relative Length Retreat (km)', fontsize=28, fontweight='bold')
+    
+    calfin_colors = ['blue', 'lightskyblue', 'midnightblue', 'black']
+    esacci_colors = ['orangered', 'orange', 'firebrick', 'maroon']
+    measures_colors = ['magenta', 'pink', 'darkviolet', 'indigo']
+    promice_colors = ['limegreen', 'lightgreen', 'green', 'darkgreen']
+    cmap = matplotlib.cm.get_cmap('viridis')
+    
+    if len(centerlines) > 4:
+        raise Exception('Error: Define more colors for additional branches')
+    
+    start_year = 1972.75
+    middle_year = 1985.75
+    end_year = 2019.5
+    dotted_months = int((middle_year - start_year) * 12) #Start Sept. 1972, end June 2019
+    lined_months = int((end_year - middle_year) * 12) #Start Sept. 1972, end June 2019
+    start_time = datefunc('1972-09-01')
+    middle_time = datefunc('1985-01-01')
+    end_time = datefunc('2019-07-01')
+
+    interp_dates_dotted = np.linspace(start_time, middle_time, dotted_months)
+    interp_dates_lined = np.linspace(middle_time, end_time, lined_months)
+    
+    #Handle multiple datasets
+    for i in range(len(line_dict_list)):
+        line_dict = line_dict_list[i]
+        #Handle multiple centerlines
+        for j in range(len(centerlines)):
+            centerline = centerlines[j]
+            if centerline['BranchName'] != None:
+                line_id = 'Branch ' + str(centerline['BranchName'])
+            else:
+                line_id = ''
+            annual_dates = defaultdict(list)
+            annual_changes = defaultdict(list)
+            dates = []
+            changes = []
+            line_export = []
+            #Handle time series
+            for date in sorted(line_dict.keys()):           
+                lines = line_dict[date]
+                line = lines[j]
+                if 'relative' in line:
+                    dates.append(datefunc(date))
+                    changes.append(line['relative'])
+                    line_export.append(line['center'])
+                    #Handle measures
+                    if 'end_date' in line:
+                        dates.append(datefunc(line['end_date']))
+                        changes.append(line['relative'])
+            if i == len(line_dict_list) - 1: #CALFIN
+                # changes = savgol_filter(changes, 3, 2)
+                f = interp1d(dates, changes, bounds_error=False)
+                interp_changes_dotted = f(interp_dates_dotted)
+                interp_changes_lined = f(interp_dates_lined)
+                # derivative(f, 1.0, dx=1e-6)
+                middle_index = int(np.argwhere(np.array(dates) > middle_time)[0])
+                dotted_dates = dates[:middle_index+1]
+                lined_dates = dates[middle_index:]
+                dotted_changes = changes[:middle_index+1]
+                lined_changes = changes[middle_index:]
+                
+                ax.plot_date(dotted_dates, dotted_changes, ls='--', linewidth=3, marker='o', c=calfin_colors[j])
+                ax.plot_date(lined_dates, lined_changes, ls='-', linewidth=2, marker='o', c=calfin_colors[j], label='CALFIN ' + line_id)
+                
+                coords = np.squeeze(np.array(line_export))
+                mean_center = np.mean(coords,axis=0)
+                region = get_region(regions, mean_center)
+                interp_results_dotted[region].append(interp_changes_dotted)
+                interp_results_lined[region].append(interp_changes_lined)
+                interp_results_dotted['Greenland'].append(interp_changes_dotted)
+                interp_results_lined['Greenland'].append(interp_changes_lined)
+                
+                # plt.figure(domain + str(j))
+                # coords = np.squeeze(np.array(line_export))
+                # plt.plot(coords[:,0], coords[:,1])
+                # error()
+            elif i == 0: #ESA-CCI
+                ax.plot_date(dates, changes, ls='', marker='*',  ms=16, c=esacci_colors[j], label='ESA-CCI ' + line_id)
+            elif i == 1: #MEaSUREs
+                ax.plot_date(dates, changes, ls='', marker='P',  ms=12, c=measures_colors[j], label='MEaSUREs ' + line_id)
+            elif i == 2: #PROMICE
+                ax.plot_date(dates, changes, ls='', marker='o',  ms=12, c=promice_colors[j], label='PROMICE ' + line_id)
+            else:
+                ax.plot_date(dates, changes, ls='', marker='o', ms=16)
+            
+    plt.xlim(start_time, end_time)
+    min_loc = YearLocator(1)
+    maj_loc = YearLocator(5)
+    min_formatter = mdates.DateFormatter('')
+    maj_formatter = mdates.DateFormatter('%Y')
+    ax.xaxis.set_minor_locator(min_loc)
+    ax.xaxis.set_minor_formatter(min_formatter)
+    ax.xaxis.set_major_locator(maj_loc)
+    ax.xaxis.set_major_formatter(maj_formatter)
+    ax.xaxis.set_tick_params(labelsize=22)
+    plt.setp(ax.get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")   
+    ax.set_xticklabels([], minor=True)
+    ax.grid(True, which='both', linewidth=1.5)
+    ax.legend()
+    plt.show()
+    
+    centerline_path = r"../paper/centerline_" + domain + ".png"
+    plot_path = os.path.join(dest_path, domain + '_relative_change.png')
+    combined_path = os.path.join(dest_path, domain + '_combined.png')
+    fig.savefig(plot_path, bbox_inches='tight', pad_inches=0.05, frameon=False)
+
+    # plot_img = imread(plot_path)
+    # centerline_img = resize(imread(centerline_path), (plot_img.shape[0], plot_img.shape[0])) * 255
+    # buffer = np.ones((plot_img.shape[0], 5, 4))
+    # combined_img = np.concatenate((centerline_img, buffer, plot_img), axis=1).astype(np.uint8)
+    # imsave(combined_path, combined_img)
+    
+def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count):
+    # Converter function
+    datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
+    
+    fig, ax = plt.subplots(1, 1, num=region + ' Mean Relative Length Change (' +  str(count) + ' glaciers)')
+    fig.suptitle(region + ' Relative Length Change (' +  str(count) + ' glaciers)', fontsize=34, fontweight='bold')
+    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    
+    ax.set_xlabel('Year', fontsize=28, fontweight='bold')
+    ax.set_ylabel('Mean Relative Length Retreat (km)', fontsize=28, fontweight='bold')
+    
+    region_colors = {'NO':'limegreen', 'CE':'blue', 'NW':'firebrick', 'CW':'pink', 'SW':'darkgreen', 'SE':'gold', 'Gr':'black', 'NE':'purple'}
+    esacci_colors = ['orangered', 'orange', 'firebrick', 'maroon']
+    measures_colors = ['magenta', 'pink', 'darkviolet', 'indigo']
+    promice_colors = ['limegreen', 'lightgreen', 'green', 'darkgreen']
+    cmap = matplotlib.cm.get_cmap('viridis')
+    
+    start_year = 1972.75
+    middle_year = 1985.75
+    end_year = 2019.5
+    dotted_months = int((middle_year - start_year) * 12) #Start Sept. 1972, end June 2019
+    lined_months = int((end_year - middle_year) * 12) #Start Sept. 1972, end June 2019
+    start_time = datefunc('1972-09-01')
+    middle_time = datefunc('1985-01-01')
+    end_time = datefunc('2019-07-01')
+
+    interp_dates_dotted = np.linspace(start_time, middle_time, dotted_months)
+    interp_dates_lined = np.linspace(middle_time, end_time, lined_months)
+    ax.plot_date(interp_dates_dotted[:-2], interp_changes_dotted[:-2], ls='--', linewidth=4, marker='', c=region_colors[region[0:2]])
+    ax.plot_date(interp_dates_lined[:-2], interp_changes_lined[:-2], ls='-', linewidth=4, marker='', c=region_colors[region[0:2]])
+    
+    plt.xlim(start_time, end_time)
+    min_loc = YearLocator(1)
+    maj_loc = YearLocator(5)
+    min_formatter = mdates.DateFormatter('')
+    maj_formatter = mdates.DateFormatter('%Y')
+    ax.xaxis.set_minor_locator(min_loc)
+    ax.xaxis.set_minor_formatter(min_formatter)
+    ax.xaxis.set_major_locator(maj_loc)
+    ax.xaxis.set_major_formatter(maj_formatter)
+    ax.xaxis.set_tick_params(labelsize=22)
+    plt.setp(ax.get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")   
+    ax.set_xticklabels([], minor=True)
+    ax.grid(True, which='both', linewidth=1.5)
+    ax.legend()
+    plt.show()
+    
+    dest_path = r"../paper/length_change2"
+    fig.savefig(os.path.join(dest_path, region.replace(' ', '_') +'_mean_relative_change.png'), bbox_inches='tight', pad_inches=0, frameon=False)
     
 if __name__ == "__main__":
     #Graph results
@@ -318,9 +443,9 @@ if __name__ == "__main__":
     plt.close('all')
     plt.rcParams["figure.figsize"] = (22,9)
     plt.rcParams["font.size"] = "20"
-    # plt.subplots_adjust(top = 0.925, bottom = 0.05, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    plt.subplots_adjust(top = 0.925, bottom = 0.05, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
     
-    #['CALFIN', 'ESACCI', 'PROMICE', 'MEaSUREs GlacierID']
+    # #['CALFIN', 'ESACCI', 'PROMICE', 'MEaSUREs GlacierID']
     mappings = {'Akullersuup-Sermia': 			{'esa':[], 											'promice':['Akullersuup_Sermia'], 						'measures':[208]},
               'Docker-Smith-Gletsjer': 			{'esa':[], 											'promice':['Døcker_Smith'], 							'measures':[58, 59, 60]},
               'Fenris-Gletsjer':  				{'esa':[], 											'promice':['Fenris'], 									'measures':[174]},
@@ -350,11 +475,32 @@ if __name__ == "__main__":
               'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
               'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
     
+    path = r"D:\Daniel\Documents\Github\CALFIN Repo\paper\GreenlandRegions.shp"
+    regions = region_read(path)
+    
+    domains = ['Hayes-Gletsjer',  'Jakobshavn-Isbrae', 'Rink-Isbrae', 'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S', 
+               'Petermann-Gletsjer', 'Kong-Oscar-Gletsjer', 'Kangerlussuaq-Gletsjer', 'Helheim-Gletsjer', 'Kangiata-Nunaata-Sermia']
+    # domains = ['Kong-Oscar-Gletsjer']
+    
     change_dict = dict()
-    for path in glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp'):
+    glaciers = glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp')
+    interp_results_dotted = defaultdict(list)
+    interp_results_lined = defaultdict(list)
+    for i in range(0, len(glaciers)):
+        path = glaciers[i]
         if "_closed_v" not in path:
-            generate_centerline_graphs(path, mappings)
-            
+            generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined)
+    
+    for region in interp_results_dotted.keys():
+        if region != 'NO':
+            mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
+            mean_interp_results_lined = np.nanmean(np.array(interp_results_lined[region]), axis=0)
+            plot_mean_results(mean_interp_results_dotted, mean_interp_results_lined, region, len(interp_results_dotted[region]))
+            print(len(mean_interp_results_dotted))
+    for region in interp_results_dotted.keys():
+        if region != 'NO':
+            mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
+            print(region, len(interp_results_dotted[region]))
         # change_dict[domain] = max_relative_change
     # for key in sorted(change_dict, key=change_dict.get):
     #     print(key, change_dict[key])

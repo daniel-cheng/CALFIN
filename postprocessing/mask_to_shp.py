@@ -257,7 +257,7 @@ def mask_to_polygon_shp(image_name_base, id_str, front_lines, fjord_boundary_tif
     imsave(overlay_polygon_path, raw_image)
 
 
-def bernstein_poly(i, n, t):
+def bernstein_poly(i : int, n :int, t: int) -> list:
     """
      The Bernstein polynomial of n, i as a function of t
     """
