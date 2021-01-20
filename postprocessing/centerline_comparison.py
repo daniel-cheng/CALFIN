@@ -433,7 +433,7 @@ if __name__ == "__main__":
                   'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
                   'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
         
-    path = r"D:\Daniel\Documents\Github\CALFIN Repo\paper\GreenlandRegions.shp"
+    path = r"../postprocessing/centerlines/GreenlandRegions.shp"
     regions = region_read(path)
     
     domains = ['Hayes-Gletsjer',  'Jakobshavn-Isbrae', 'Rink-Isbrae', 'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S', 
