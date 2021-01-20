@@ -5,52 +5,28 @@ Created on Wed Jul  3 22:38:07 2019
 @author: Daniel
 """
 import numpy as np
-import cv2
-import os, shutil, glob, copy, sys
+import os, glob
 from datetime import datetime
-os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//share//gdal' #Ensure crs are exported correctly by gdal/osr/fiona
+# os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//share//gdal' #Ensure crs are exported correctly by gdal/osr/fiona
 
-#import rasterio
-#from rasterio import features
-#from rasterio.windows import from_bounds
-from scipy.ndimage.morphology import distance_transform_edt
-from scipy.spatial import KDTree
-from scipy.ndimage import median_filter
-from scipy.signal import savgol_filter
 from scipy.interpolate import interp1d
-from skimage.io import imsave, imread
-from skimage import measure
-from skimage.transform import resize
-from skimage.morphology import skeletonize
-import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import matplotlib.patheffects as pe
-from matplotlib.dates import MonthLocator, YearLocator
+from matplotlib.dates import YearLocator
 from pyproj import Proj, transform
-from shapely.geometry import mapping, Polygon, LineString, Point
+from shapely.geometry import Polygon, LineString, Point
 from collections import defaultdict
 import fiona
-from fiona.crs import from_epsg
-from ordered_line_from_unordered_points import ordered_line_from_unordered_points_tree
-#sys.path.insert(1, '../postprocessing'
 
-#level 0 should inlcude all subsets (preprocessed)
-#Make individual ones, domain ones, and all available
-#indivudal ones include QA, tif, and shapefile
-
-#have front line,
-#to use smoother, must have full mask
-#to get full mask, repeated polygonization using regular front line
     
 def calfin_read(path):
     """Reads calfin Shapefile into dictionary with date keys and polyline values."""
     result = defaultdict(list)
     with fiona.open(path, 'r', encoding='utf-8') as shp:
-         for feature in shp:
-             polyline_coords = feature['geometry']['coordinates']
-             date = feature['properties']['Date']
-             result[date].append({'coords': polyline_coords})
+        for feature in shp:
+            polyline_coords = feature['geometry']['coordinates']
+            date = feature['properties']['Date']
+            result[date].append({'coords': polyline_coords})
     return result
 
 def esacci_read(paths):
@@ -79,19 +55,19 @@ def measures_read(path, glacier_ids):
     result = defaultdict(list)
     file_paths = glob.glob(os.path.join(path, '*', '*.shp'))
     for file_path in file_paths:
-         with fiona.open(file_path, 'r', encoding='utf-8') as shp:
-             for feature in shp:
-                 if feature['properties']['GlacierID'] in glacier_ids:
-                     if 'DateRange' in feature['properties']:
-                         polyline_coords = feature['geometry']['coordinates']
-                         date_range = feature['properties']['DateRange'].split('-')
-                         date_time_objs = [datetime.strptime(date_range[0], '%d%b%Y'), datetime.strptime(date_range[1], '%d%b%Y')]
-                         date_time_objs = [datetime.strftime(date_time_objs[0], '%Y-%m-%d'), datetime.strftime(date_time_objs[1], '%Y-%m-%d')]
-                         result[date_time_objs[0]].append({'coords': polyline_coords, 'end_date':date_time_objs[1]})
-                     elif 'DATE' in feature['properties']:
-                         polyline_coords = feature['geometry']['coordinates']
-                         date = feature['properties']['DATE']
-                         result[date].append({'coords': polyline_coords})
+        with fiona.open(file_path, 'r', encoding='utf-8') as shp:
+            for feature in shp:
+                if feature['properties']['GlacierID'] in glacier_ids:
+                    if 'DateRange' in feature['properties']:
+                        polyline_coords = feature['geometry']['coordinates']
+                        date_range = feature['properties']['DateRange'].split('-')
+                        date_time_objs = [datetime.strptime(date_range[0], '%d%b%Y'), datetime.strptime(date_range[1], '%d%b%Y')]
+                        date_time_objs = [datetime.strftime(date_time_objs[0], '%Y-%m-%d'), datetime.strftime(date_time_objs[1], '%Y-%m-%d')]
+                        result[date_time_objs[0]].append({'coords': polyline_coords, 'end_date':date_time_objs[1]})
+                    elif 'DATE' in feature['properties']:
+                        polyline_coords = feature['geometry']['coordinates']
+                        date = feature['properties']['DATE']
+                        result[date].append({'coords': polyline_coords})
     return result
 
 def promice_read(paths):
@@ -144,8 +120,8 @@ def region_read(path):
 
 
 def centerline_intersection(line_dict, centerlines):
-    """Calculates intersection point between a list of lines and a centerline."""
-    """Takes in date-intersection dict and centerline to determine change relative to given reference point."""
+    """Calculates intersection point between a list of lines and a centerline.
+    Takes in date-intersection dict and centerline to determine change relative to given reference point."""
     results = defaultdict(list)
     #Handle time series
     for date, lines in line_dict.items():
@@ -185,8 +161,8 @@ def centerline_intersection(line_dict, centerlines):
     return results
 
 def calculate_relative_change(line_dict, centerlines, reference_intersects):
-    """Calculates intersection point between a list of lines and a centerline."""
-    """Takes in date-intersection dict and centerline to determine change relative to given reference point."""
+    """Calculates intersection point between a list of lines and a centerline.
+    Takes in date-intersection dict and centerline to determine change relative to given reference point."""
     #Handle time series
     for date, intersects in line_dict.items():
         #Handle multiple centerlines
@@ -196,8 +172,7 @@ def calculate_relative_change(line_dict, centerlines, reference_intersects):
                 try:
                     intersects[i]['relative'] = -(reference_intersects[i]['arclength'] - intersects[i]['arclength']) / 1000
                 except:
-                    print(date, reference_intersects[i])
-                    error()
+                    print("Error:", date, reference_intersects[i])
     return line_dict
 
 def get_region(regions, mean_center):
@@ -207,14 +182,13 @@ def get_region(regions, mean_center):
             return region['Name']
     return 'ALL'
     
-def generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined):
+def generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined, dest_path):
     domain = os.path.basename(path).split('_')[2]
     # if domain not in domains:
     #     return
     
     calfin_path = path
     centerline_path = r"../postprocessing/centerlines/Centerlines.shp"
-    dest_path = r"../paper/length_change2"
     
     #Read centerline and calfin
     centerlines = centerline_read(centerline_path, domain.replace('-', ' '))
@@ -270,7 +244,7 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
     #Initialize plots
     fig, ax = plt.subplots(1, 1, num=domain + ' Relative Length Change, 1972-2019')
     fig.suptitle(domain + ' Relative Length Change, 1972-2019', fontsize=34, fontweight='bold')
-    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    plt.subplots_adjust(top=0.900, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
     
     # ax.set_title('CALFIN vs ESA-CCI vs MEaSUREs vs PROMICE', fontsize=18)
     ax.set_xlabel('Year', fontsize=28, fontweight='bold')
@@ -280,7 +254,6 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
     esacci_colors = ['orangered', 'orange', 'firebrick', 'maroon']
     measures_colors = ['magenta', 'pink', 'darkviolet', 'indigo']
     promice_colors = ['limegreen', 'lightgreen', 'green', 'darkgreen']
-    cmap = matplotlib.cm.get_cmap('viridis')
     
     if len(centerlines) > 4:
         raise Exception('Error: Define more colors for additional branches')
@@ -307,8 +280,6 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
                 line_id = 'Branch ' + str(centerline['BranchName'])
             else:
                 line_id = ''
-            annual_dates = defaultdict(list)
-            annual_changes = defaultdict(list)
             dates = []
             changes = []
             line_export = []
@@ -375,34 +346,22 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
     ax.grid(True, which='both', linewidth=1.5)
     ax.legend()
     plt.show()
-    
-    centerline_path = r"../paper/centerline_" + domain + ".png"
+        
     plot_path = os.path.join(dest_path, domain + '_relative_change.png')
-    combined_path = os.path.join(dest_path, domain + '_combined.png')
     fig.savefig(plot_path, bbox_inches='tight', pad_inches=0.05, frameon=False)
-
-    # plot_img = imread(plot_path)
-    # centerline_img = resize(imread(centerline_path), (plot_img.shape[0], plot_img.shape[0])) * 255
-    # buffer = np.ones((plot_img.shape[0], 5, 4))
-    # combined_img = np.concatenate((centerline_img, buffer, plot_img), axis=1).astype(np.uint8)
-    # imsave(combined_path, combined_img)
     
-def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count):
+def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count, dest_path):
     # Converter function
     datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
     
     fig, ax = plt.subplots(1, 1, num=region + ' Mean Relative Length Change (' +  str(count) + ' glaciers)')
     fig.suptitle(region + ' Relative Length Change (' +  str(count) + ' glaciers)', fontsize=34, fontweight='bold')
-    plt.subplots_adjust(top = 0.900, bottom = 0.1, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    plt.subplots_adjust(top=0.900, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
     
     ax.set_xlabel('Year', fontsize=28, fontweight='bold')
     ax.set_ylabel('Mean Relative Length Retreat (km)', fontsize=28, fontweight='bold')
     
     region_colors = {'NO':'limegreen', 'CE':'blue', 'NW':'firebrick', 'CW':'pink', 'SW':'darkgreen', 'SE':'gold', 'Gr':'black', 'NE':'purple'}
-    esacci_colors = ['orangered', 'orange', 'firebrick', 'maroon']
-    measures_colors = ['magenta', 'pink', 'darkviolet', 'indigo']
-    promice_colors = ['limegreen', 'lightgreen', 'green', 'darkgreen']
-    cmap = matplotlib.cm.get_cmap('viridis')
     
     start_year = 1972.75
     middle_year = 1985.75
@@ -434,7 +393,6 @@ def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count
     ax.legend()
     plt.show()
     
-    dest_path = r"../paper/length_change2"
     fig.savefig(os.path.join(dest_path, region.replace(' ', '_') +'_mean_relative_change.png'), bbox_inches='tight', pad_inches=0, frameon=False)
     
 if __name__ == "__main__":
@@ -443,45 +401,51 @@ if __name__ == "__main__":
     plt.close('all')
     plt.rcParams["figure.figsize"] = (22,9)
     plt.rcParams["font.size"] = "20"
-    plt.subplots_adjust(top = 0.925, bottom = 0.05, right = 0.95, left = 0.05, hspace = 0.25, wspace = 0.25)
+    plt.subplots_adjust(top=0.925, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
     
     # #['CALFIN', 'ESACCI', 'PROMICE', 'MEaSUREs GlacierID']
     mappings = {'Akullersuup-Sermia': 			{'esa':[], 											'promice':['Akullersuup_Sermia'], 						'measures':[208]},
-              'Docker-Smith-Gletsjer': 			{'esa':[], 											'promice':['Døcker_Smith'], 							'measures':[58, 59, 60]},
-              'Fenris-Gletsjer':  				{'esa':[], 											'promice':['Fenris'], 									'measures':[174]},
-              'Hayes-Gletsjer': 				{'esa':[], 											'promice':['Hayes'], 									'measures':[40]},
-              'Helheim-Gletsjer': 				{'esa':['Helheim_Gletsjer_G321627E66422N'], 		'promice':['Helheim'], 									'measures':[175]},
-              'Inngia-Isbrae':					{'esa':['Inngia_Isbrae_G307495E72082N'], 			'promice':['Ingia'], 									'measures':[19]},
-              'Jakobshavn-Isbrae': 				{'esa':['Jakobshavn_Isbrae_G310846E69083N'], 		'promice':['Jakobshavn'], 								'measures':[3]},
-              'Kangerluarsuup-Sermia': 			{'esa':[], 											'promice':['Kangerdluarssup_Sermia'], 					'measures':[15]},
-              'Kangerlussuaq-Gletsjer': 		{'esa':['Kangerlussuaq_Gletsjer_G326914E68667N'], 	'promice':['Kangerdlugssuaq'], 							'measures':[153]},
-              'Kangerlussuup-Sermia': 			{'esa':[], 											'promice':['Kangerdlugssup_Sermerssua'], 				'measures':[16]},
-              'Kangiata-Nunaata-Sermia': 		{'esa':['Kangiata_Nunaata_Sermia_G310427E64274N'], 	'promice':['KNS'], 										'measures':[207]},
-              'Kangilleq-Kangigdleq-Isbrae': 	{'esa':['Kangilleq_G309415E70752N'], 				'promice':['Kangigdleq'], 								'measures':[12]},
-              'Kong-Oscar-Gletsjer': 			{'esa':['Kong_Oscar_Gletsjer_G300347E76024N'], 		'promice':['Kong_Oscars'], 								'measures':[51]},
-              'Lille-Gletsjer': 				{'esa':[], 											'promice':['Lille'], 									'measures':[10]},
-              'Midgard-Gletsjer': 				{'esa':[], 											'promice':['Midgaard'], 								'measures':[173]},
-              'Alison-Gletsjer': 				{'esa':['Nunatakassaap_Sermia_G304089E74641N'], 	'promice':['Nunatakassaap'], 							'measures':[35]},
-              'Naajarsuit-Sermiat': 			{'esa':[], 											'promice':['Nunatakavsaup'], 							'measures':[25]},
-              'Perlerfiup-Sermia': 				{'esa':['Perlerfiup_Sermia_G309225E70985N'], 		'promice':['Perdlerfiup'], 								'measures':[14]},
-              'Petermann-Gletsjer': 			{'esa':['Petermann_Gletsjer_G299936E80548N'], 		'promice':['Petermann'], 								'measures':[93]},
-              'Rink-Isbrae': 					{'esa':['Rink_Isbrae_G308503E71781N'], 				'promice':['Rink'], 									'measures':[17]},
-              'Sermeq-Avannarleq-69N': 			{'esa':['Sermeq_Avannarleq_G309720E69381N'], 		'promice':['Sermeq_Avannarleq'], 						'measures':[4]},
-              'Sermeq-Silarleq': 				{'esa':[], 											'promice':['Sermeq_Silardleq'], 						'measures':[13]},
-              'Sermilik-Isbrae': 				{'esa':['Sermilik_Brae_G313080E61025N'], 			'promice':['Sermilik'], 								'measures':[11]},
-              'Steenstrup-Gletsjer': 			{'esa':['Steenstrup_Gletsjer_G302212E75326N'], 		'promice':['Steenstrup'], 								'measures':[44]},
-              'Store-Gletsjer': 				{'esa':['Store_Gletsjer_G309511E70416N'], 			'promice':['Store'], 									'measures':[9]},
-              'Upernavik-Isstrom-S': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 			                   	'measures':[20, 21]},
-              'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
-              'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
-    
+                  'Docker-Smith-Gletsjer': 			{'esa':[], 											'promice':['Døcker_Smith'], 							'measures':[58, 59, 60]},
+                  'Fenris-Gletsjer':  				{'esa':[], 											'promice':['Fenris'], 									'measures':[174]},
+                  'Hayes-Gletsjer': 				{'esa':[], 											'promice':['Hayes'], 									'measures':[40]},
+                  'Helheim-Gletsjer': 				{'esa':['Helheim_Gletsjer_G321627E66422N'], 		'promice':['Helheim'], 									'measures':[175]},
+                  'Inngia-Isbrae':					{'esa':['Inngia_Isbrae_G307495E72082N'], 			'promice':['Ingia'], 									'measures':[19]},
+                  'Jakobshavn-Isbrae': 				{'esa':['Jakobshavn_Isbrae_G310846E69083N'], 		'promice':['Jakobshavn'], 								'measures':[3]},
+                  'Kangerluarsuup-Sermia': 			{'esa':[], 											'promice':['Kangerdluarssup_Sermia'], 					'measures':[15]},
+                  'Kangerlussuaq-Gletsjer': 		{'esa':['Kangerlussuaq_Gletsjer_G326914E68667N'], 	'promice':['Kangerdlugssuaq'], 							'measures':[153]},
+                  'Kangerlussuup-Sermia': 			{'esa':[], 											'promice':['Kangerdlugssup_Sermerssua'], 				'measures':[16]},
+                  'Kangiata-Nunaata-Sermia': 		{'esa':['Kangiata_Nunaata_Sermia_G310427E64274N'], 	'promice':['KNS'], 										'measures':[207]},
+                  'Kangilleq-Kangigdleq-Isbrae': 	{'esa':['Kangilleq_G309415E70752N'], 				'promice':['Kangigdleq'], 								'measures':[12]},
+                  'Kong-Oscar-Gletsjer': 			{'esa':['Kong_Oscar_Gletsjer_G300347E76024N'], 		'promice':['Kong_Oscars'], 								'measures':[51]},
+                  'Lille-Gletsjer': 				{'esa':[], 											'promice':['Lille'], 									'measures':[10]},
+                  'Midgard-Gletsjer': 				{'esa':[], 											'promice':['Midgaard'], 								'measures':[173]},
+                  'Alison-Gletsjer': 				{'esa':['Nunatakassaap_Sermia_G304089E74641N'], 	'promice':['Nunatakassaap'], 							'measures':[35]},
+                  'Naajarsuit-Sermiat': 			{'esa':[], 											'promice':['Nunatakavsaup'], 							'measures':[25]},
+                  'Perlerfiup-Sermia': 				{'esa':['Perlerfiup_Sermia_G309225E70985N'], 		'promice':['Perdlerfiup'], 								'measures':[14]},
+                  'Petermann-Gletsjer': 			{'esa':['Petermann_Gletsjer_G299936E80548N'], 		'promice':['Petermann'], 								'measures':[93]},
+                  'Rink-Isbrae': 					{'esa':['Rink_Isbrae_G308503E71781N'], 				'promice':['Rink'], 									'measures':[17]},
+                  'Sermeq-Avannarleq-69N': 			{'esa':['Sermeq_Avannarleq_G309720E69381N'], 		'promice':['Sermeq_Avannarleq'], 						'measures':[4]},
+                  'Sermeq-Silarleq': 				{'esa':[], 											'promice':['Sermeq_Silardleq'], 						'measures':[13]},
+                  'Sermilik-Isbrae': 				{'esa':['Sermilik_Brae_G313080E61025N'], 			'promice':['Sermilik'], 								'measures':[11]},
+                  'Steenstrup-Gletsjer': 			{'esa':['Steenstrup_Gletsjer_G302212E75326N'], 		'promice':['Steenstrup'], 								'measures':[44]},
+                  'Store-Gletsjer': 				{'esa':['Store_Gletsjer_G309511E70416N'], 			'promice':['Store'], 									'measures':[9]},
+                  'Upernavik-Isstrom-S': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 			                   	'measures':[20, 21]},
+                  'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
+                  'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
+        
     path = r"D:\Daniel\Documents\Github\CALFIN Repo\paper\GreenlandRegions.shp"
     regions = region_read(path)
     
     domains = ['Hayes-Gletsjer',  'Jakobshavn-Isbrae', 'Rink-Isbrae', 'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S', 
                'Petermann-Gletsjer', 'Kong-Oscar-Gletsjer', 'Kangerlussuaq-Gletsjer', 'Helheim-Gletsjer', 'Kangiata-Nunaata-Sermia']
     # domains = ['Kong-Oscar-Gletsjer']
-    
+    paper_path = r"../paper"
+    if not os.path.exists(paper_path):
+        os.mkdir(paper_path)
+    dest_path = r"../paper/length_change"
+    if not os.path.exists(dest_path):
+        os.mkdir(dest_path)
+        
     change_dict = dict()
     glaciers = glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp')
     interp_results_dotted = defaultdict(list)
@@ -489,21 +453,14 @@ if __name__ == "__main__":
     for i in range(0, len(glaciers)):
         path = glaciers[i]
         if "_closed_v" not in path:
-            generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined)
+            generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined, dest_path)
     
     for region in interp_results_dotted.keys():
         if region != 'NO':
             mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
             mean_interp_results_lined = np.nanmean(np.array(interp_results_lined[region]), axis=0)
-            plot_mean_results(mean_interp_results_dotted, mean_interp_results_lined, region, len(interp_results_dotted[region]))
+            plot_mean_results(mean_interp_results_dotted, mean_interp_results_lined, region, len(interp_results_dotted[region]), dest_path)
             print(len(mean_interp_results_dotted))
-    for region in interp_results_dotted.keys():
-        if region != 'NO':
-            mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
-            print(region, len(interp_results_dotted[region]))
-        # change_dict[domain] = max_relative_change
-    # for key in sorted(change_dict, key=change_dict.get):
-    #     print(key, change_dict[key])
     
 
 
