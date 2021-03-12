@@ -194,14 +194,14 @@ def reprocess_validated(settings, metrics):
     
     #mask_edge_buffered_unconfident indicates likely issues, but not definitive
     #(thus front is not discarded if no other condition fails)
-    if  mask_edge_buffered_unconfident:
-        print('\t' + "not confident (mask_edge_buffer unconfident), skipping")
-        metrics['confidence_skip_count'] += 1
-        return found_front, metrics
-    if edge_unconfident or edge_size_unconfident or mask_ratio_unconfident:
-        print('\t' + "not confident (edge, edge_size, or mask_ratio unconfident), skipping")
-        metrics['confidence_skip_count'] += 1
-        return found_front, metrics
+    #if  mask_edge_buffered_unconfident:
+    #    print('\t' + "not confident (mask_edge_buffer unconfident), skipping")
+    #    metrics['confidence_skip_count'] += 1
+    #    return found_front, metrics
+    #if edge_unconfident or edge_size_unconfident or mask_ratio_unconfident:
+    #    print('\t' + "not confident (edge, edge_size, or mask_ratio unconfident), skipping")
+    #    metrics['confidence_skip_count'] += 1
+    #    return found_front, metrics
 
     #recalculate scaling
     meters_per_subset_pixel = resolution_subset / resolution_256  * meters_per_1024_pixel
@@ -293,6 +293,8 @@ def postprocess_production(settings, metrics):
     #Dilate masks for easier visualization and IoU metric calculation.
     polyline_image_dilated = cv2.dilate(polyline_image.astype(np.float64), kernel, iterations=1).astype(np.float32) #np.float32 [0.0, 255.0]
     image_settings['polyline_image'] = polyline_image_dilated
+    plt.imshow(pred_image)
+    plt.show()
     
     #For each calving front, subset the image AGAIN and predict. This helps accuracy for inputs with large scaling/downsampling ratios
     box_counter = 0
@@ -395,14 +397,16 @@ def reprocess_production(settings, metrics):
     #mask_edge_buffered_unconfident indicates likely issues, but not definitive
     #(thus front is not discarded if no other condition fails)
     if  mask_edge_buffered_unconfident:
-        print('\t' + "not confident (mask_edge_buffer unconfident), skipping")
-        metrics['confidence_skip_count'] += 1
-        return found_front, metrics
+    #    print('\t' + "not confident (mask_edge_buffer unconfident), skipping")
+    #    metrics['confidence_skip_count'] += 1
+    #    return found_front, metrics
+        pass
     else:
-        if edge_unconfident or edge_size_unconfident or mask_ratio_unconfident:
-            print('\t' + "not confident (edge, edge_size, or mask_ratio unconfident), skipping")
-            metrics['confidence_skip_count'] += 1
-            return found_front, metrics
+        pass
+        #if edge_unconfident or edge_size_unconfident or mask_ratio_unconfident:
+        #    print('\t' + "not confident (edge, edge_size, or mask_ratio unconfident), skipping")
+        #    metrics['confidence_skip_count'] += 1
+        #    return found_front, metrics
     
     #recalculate scaling
     meters_per_subset_pixel = resolution_subset / resolution_256  * meters_per_1024_pixel

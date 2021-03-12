@@ -11,6 +11,7 @@ from numpy import genfromtxt
 from keras import backend as K
 from pyproj import Proj, transform
 from scipy.spatial import distance
+import matplotlib.pyplot as plt
 
 import os, cv2, glob, gdal, sys
 sys.path.insert(1, '../training/keras-deeplab-v3-plus')
@@ -19,14 +20,14 @@ sys.path.insert(3, '../training/FrontLearning')
 sys.path.insert(4, '../training/HRNet/model')
 sys.path.insert(5, '../training/HRNet')
 sys.path.insert(5, '../training/HRNet/utils')
-from seg_hrnet import seg_hrnet
-import unet_model
+#from seg_hrnet import seg_hrnet
+#import unet_model
 from model_cfm_dual_wide_x65 import Deeplabv3
 from AdamAccumulate import AdamAccumulate
 from segmentation_models.losses import bce_jaccard_loss, jaccard_loss, binary_crossentropy
 from segmentation_models.metrics import iou_score, jaccard_score
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0" #Only make first GPU visible on multi-gpu setups
+#os.environ["CUDA_VISIBLE_DEVICES"]="0" #Only make first GPU visible on multi-gpu setups
 K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 
 from aug_generators_dual import create_unaugmented_data_patches_from_rgb_image
@@ -91,15 +92,22 @@ def predict_calfin(settings, metrics):
     model = settings['model']
     pred_norm_image = settings['pred_norm_image']
     
+
     #Generate image patches (test time augmentation) to ensure confident predictions
     patches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, None, window_shape=(img_size, img_size, 3), stride=stride)
+
+    print(patches.shape, patches.max(), patches.min(),img_size)
+    plt.imshow(img_final_f32.astype(np.uint8))
+    plt.imshow(((patches[5,:,:,:]+1)*128).astype(np.uint8))
+    plt.show()
     
     #Predict results
-    results = model.predict(patches, batch_size=16, verbose=1)
+    results = model.predict(patches, batch_size=1, verbose=1)
     
     #Initilize outputs
     raw_image_final_f32 = img_final_f32 / 255.0
     pred_image = np.zeros((full_size, full_size, 3))
+
     
     #Reassemble original resolution image by each 3x3 set of overlapping windows.
     strides = int((full_size - img_size) / stride + 1) #(256-224 / 16 + 1) = 3
@@ -306,14 +314,14 @@ def compile_hrnet_model(img_size):
     img_shape = (img_size, img_size, in_channels)
     batch_size = 8
     
-    model = seg_hrnet(batch_size, img_size, img_size, in_channels, out_channels)
+    #model = seg_hrnet(batch_size, img_size, img_size, in_channels, out_channels)
     
     
     
-    model.summary()
-    model.load_weights('../training/cfm_weights_patched_dual_hrnet_224_e37_iou0.5158.h5')
+    #model.summary()
+    #model.load_weights('../training/cfm_weights_patched_dual_hrnet_224_e37_iou0.5158.h5')
     
-    return model
+    #return model
 
 
 def compile_unet_model(img_size):
@@ -327,12 +335,12 @@ def compile_unet_model(img_size):
     n_init = 32
     n_layers = 4
     drop = 0.2
-    model = unet_model.unet_model_double_dropout(height=height, width=width, channels=channels, n_init=n_init, n_layers=n_layers, drop=drop)
-    print('Importing unet_model_double_dropout...')
+    #model = unet_model.unet_model_double_dropout(height=height, width=width, channels=channels, n_init=n_init, n_layers=n_layers, drop=drop)
+    #print('Importing unet_model_double_dropout...')
     
 
-    model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, edge_iou_score, mask_iou_score, deviation])
-    model.summary()
-    model.load_weights('../training/mohajerani_224_3_32_4_e59_iou0.4981.h5')
+    #model.compile(optimizer=AdamAccumulate(lr=1e-4, accum_iters=2), loss=bce_ln_jaccard_loss, metrics=['binary_crossentropy', iou_score, edge_iou_score, mask_iou_score, deviation])
+    #model.summary()
+    #model.load_weights('../training/mohajerani_224_3_32_4_e59_iou0.4981.h5')
     
-    return model
+    #return model

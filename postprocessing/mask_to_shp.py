@@ -35,6 +35,7 @@ def mask_to_shp(settings):
     shp_name = image_name_base + '_' + index + '_cf.shp'
     tif_name = image_name_base + '.tif'
     source_tif_path = os.path.join(settings['tif_source_path'], domain, year, tif_name)
+    source_tif_path = os.path.join(settings['tif_source_path'], tif_name)
 
     #Collate all together
     dest_domain_root_folder = os.path.join(settings['dest_root_path'], 'domain')

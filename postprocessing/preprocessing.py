@@ -105,8 +105,8 @@ def read_image_calfin(i, settings, metrics):
     img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
     mask_uint8 = imread(mask_path) #np.uint8 [0, 255]
     fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
-    if img_3_uint8.shape[2] != 3:
-        img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+    if len(img_3_uint8.shape) != 3:
+        img_3_uint8 = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=-1)
         
     #Detect if this image is supposed to have a front or not by seeing if its standard deviation is below threshold epsilon
     epsilon = 1e-4
@@ -210,8 +210,8 @@ def read_image_calfin_shapefile_mask(i, settings, metrics):
     img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
     mask_uint8 = imread(mask_path) #np.uint8 [0, 255]
     fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
-    if img_3_uint8.shape[2] != 3:
-        img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+    if len(img_3_uint8.shape) != 3:
+        img_3_uint8 = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=-1)
         
     #Detect if this image is supposed to have a front or not by seeing if its standard deviation is below threshold epsilon
     epsilon = 1e-4
@@ -266,8 +266,8 @@ def read_image_mohajerani(i, settings, metrics):
     img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
     mask_uint8 = imread(mask_path) #np.uint8 [0, 255]
     fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
-    if img_3_uint8.shape[2] != 3:
-        img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+    if len(img_3_uint8.shape) != 3:
+        img_3_uint8 = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=-1)
     
     #Retrieve pixel to meter scaling ratio
     meters_per_1024_pixel = 96.3 / 1.97
@@ -346,17 +346,35 @@ def read_image_production(i, settings, metrics):
     year = date.split('-')[0]
     
     #initialize paths
-    tif_path = os.path.join(tif_source_path, domain, year, image_name_base + '.tif')
+    if '.tif' in image_path:
+        tif_path = image_path
+
+        #Read in raw/mask image pair
+        img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
+        img_max = img_3_uint8.max()
+        img_min = img_3_uint8.min()
+        img_range = img_max - img_min
+        print(img_range, img_max)
+        if (img_max != 0.0 and img_range > 255.0):
+            img_3_uint8 = np.round((img_3_uint8 - img_min) / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
+    elif '.png' in image_path: 
+        tif_path = image_path.replace('.png', '.tif')
+        
+        #Read in raw/mask image pair
+        img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
+    elif '.zip' in image_path: 
+        print('TODO')
+
     fjord_boundary_path = os.path.join(fjord_boundaries_path, domain + "_fjord_boundaries.png")
-    
-    #Read in raw/mask image pair
-    img_3_uint8 = imread(image_path) #np.uint8 [0, 255]
-    fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
-    if img_3_uint8.shape[2] != 3:
-        img_3_uint8 = np.concatenate((img_3_uint8, img_3_uint8, img_3_uint8))
+    if os.path.exists(fjord_boundary_path):
+        fjord_boundary = imread(fjord_boundary_path) #np.uint8 [0, 255]
+    else:
+        fjord_boundary = np.zeros((img_3_uint8.shape[0],img_3_uint8.shape[1])) #np.uint8 [0, 255] 
+    #fjord_boundary = np.zeros((img_3_uint8.shape[0],img_3_uint8.shape[1])) #np.uint8 [0, 255] 
+    if len(img_3_uint8.shape) != 3:
+        img_3_uint8 = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=-1)
     
     img_3_uint8 = resize(img_3_uint8, (fjord_boundary.shape[0], fjord_boundary.shape[1]), preserve_range=True).astype(np.uint8)  #np.float64 [0.0, 65535.0]
-    
     #Get bounds and transform vertices
     print(tif_path, img_3_uint8.max())
     geotiff = gdal.Open(tif_path)

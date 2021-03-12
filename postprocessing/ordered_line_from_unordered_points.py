@@ -112,10 +112,10 @@ def ordered_line_from_unordered_points_tree(points_tuple, dimensions, minimum_po
     
 #    mst[rows, cols] = mst[rows, cols] - np.min([np.min(mst[rows, cols]), 0])
     
-    mst_nx = nx.from_scipy_sparse_matrix(mst)
-    plt.figure(1050 + random.randint(1,250))
-    nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
-    plt.show()
+    #mst_nx = nx.from_scipy_sparse_matrix(mst)
+    #plt.figure(1050 + random.randint(1,250))
+    #nx.draw_networkx(mst_nx, pos=node_positions, with_labels=False, node_size = 15)
+    #plt.show()
     
     #Symmetrize matrix to make undriected
     mst = mst + mst.T - np.diag(mst.diagonal())

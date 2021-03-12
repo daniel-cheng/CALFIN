@@ -212,8 +212,9 @@ def plot_validation_results(settings, metrics):
                 plt.close()
         if rerun:
             if not os.path.exists(os.path.join(dest_path_qa_bad_domain, image_name_base + '_' + index + '_pred.png')):
-                tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
-                tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+                pass
+                #tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+                #jjjjjjjjjjjjtif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
         else:
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_large_processed_raw.png'), (unprocessed_original_raw).astype(np.uint8))
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_raw.png'), (original_raw_gray * 255).astype(np.uint8))
@@ -320,8 +321,8 @@ def plot_production_results(settings, metrics):
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.png'), (raw_image * 255).astype(np.uint8))
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.png'), (pred_image * 255).astype(np.uint8))
             imsave(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_overlay_front.png'), (extracted_front * 255).astype(np.uint8))
-            tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
-            tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
+            #tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_subset_raw.tif'), (raw_image * 255).astype(np.uint8))
+            #tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
 
 
 def plot_troubled_ones(settings, metrics):
