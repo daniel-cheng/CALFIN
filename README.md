@@ -58,10 +58,10 @@ CALFIN can be executed from the [Ice-Sheet and Sea-level System Model](http://is
 
 ### Preprocessing
 1. Download GeoTIFF images from EarthExplorer.gov
-1a. Select a location on the map
-1b. Select a time frame
-1c. Select DataSets and select collections such as Landsat > Landsat Collection 1 > Landsat Collection 1 Level-1 > Landsat 8
-1d. Viewing the results and download all relevant images via the download button and selecting the LandsatLook Images with Geographic Reference data product. Optionally, use the Bulk Download Assistant to download them automatically.
+1.1 Select a location on the map
+1.2 Select a time frame
+1.3 Select DataSets and select collections such as Landsat > Landsat Collection 1 > Landsat Collection 1 Level-1 > Landsat 8
+1.4 Viewing the results and download all relevant images via the download button and selecting the LandsatLook Images with Geographic Reference data product. Optionally, use the Bulk Download Assistant to download them automatically.
 2. Unzip the RGB .tif images and subset them using QGIS (TODO).
 3. Place output .tifs to process in `/home/ubuntu/Repos/CALFIN/processing/testing`
 
