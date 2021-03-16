@@ -17,8 +17,8 @@ K.set_image_data_format('channels_last')  # TF dimension ordering in this code
 from skimage.transform import resize
 from skimage.io import imread
 from skimage.morphology import skeletonize
-import fiona
 from aug_generators_dual import aug_validation
+from ShadowHighlightCorrection import correction
 
 
 def preprocess(i, settings, metrics):
@@ -242,7 +242,6 @@ def read_image_calfin_shapefile_mask(i, settings, metrics):
 def read_image_mohajerani(i, settings, metrics):
     """Reads Mohajerani style image inputs into memory. Uses static scaling for Helheim error analysis."""
     validation_files = settings['validation_files']
-    fjord_boundaries_path = settings['fjord_boundaries_path']
     image_settings = settings['image_settings']
     date_index = settings['date_index']
     
@@ -354,9 +353,22 @@ def read_image_production(i, settings, metrics):
         img_max = img_3_uint8.max()
         img_min = img_3_uint8.min()
         img_range = img_max - img_min
-        print(img_range, img_max)
+#        print(img_range, img_max)
         if (img_max != 0.0 and img_range > 255.0):
             img_3_uint8 = np.round((img_3_uint8 - img_min) / img_max * 255.0).astype(np.uint8) #np.float32 [0, 65535.0]
+           
+        if len(img_3_uint8.shape) == 3:
+            gray_image = np.mean(img_3_uint8, axis=2)
+            raw_image = np.stack((gray_image, gray_image, gray_image), axis=2).astype(np.uint8)
+        else:
+            raw_image = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=2).astype(np.uint8)
+        
+        clahe = cv2.createCLAHE(clipLimit=25.0, tileGridSize=(4, 4))
+        clahe_image = clahe.apply(raw_image[:,:,0])
+        sh_image = correction(raw_image, .35, .5, 30, 0.0, 0.5, 30, .2)
+        
+        img_3_uint8 = np.stack((raw_image[:,:,0], clahe_image, sh_image[:,:,0]), axis=2)
+    
     elif '.png' in image_path: 
         tif_path = image_path.replace('.png', '.tif')
         

@@ -293,8 +293,8 @@ def postprocess_production(settings, metrics):
     #Dilate masks for easier visualization and IoU metric calculation.
     polyline_image_dilated = cv2.dilate(polyline_image.astype(np.float64), kernel, iterations=1).astype(np.float32) #np.float32 [0.0, 255.0]
     image_settings['polyline_image'] = polyline_image_dilated
-    plt.imshow(pred_image)
-    plt.show()
+#    plt.imshow(pred_image)
+#    plt.show()
     
     #For each calving front, subset the image AGAIN and predict. This helps accuracy for inputs with large scaling/downsampling ratios
     box_counter = 0
@@ -755,13 +755,20 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
             peak_width = int(max(10.0, (num_points / 3)))
             peaks, properties = find_peaks(polyline_distances, distance=peak_width)
             triangular_distance_shape = np.sign(middle_start_diff) == np.sign(middle_end_diff) #check if the front is "shaped" like a normal one, heading away from fjord in the middle, and towards the fjord boundary at the ends.
-            if len(peaks) != 0 and triangular_distance_shape == True and middle_max_distances > num_points / (4 * len(peaks)):
+#            print(middle_start_diff, middle_end_diff)
+#            print(len(peaks) != 0,  triangular_distance_shape == True, middle_max_distances > num_points / (4 * len(peaks)))
+#            if len(peaks) != 0 and triangular_distance_shape == True and middle_max_distances > num_points / (4 * len(peaks)):
+            if len(peaks) != 0 and middle_max_distances > num_points / (4 * len(peaks)):
                 new_polylines_coords.append(polyline_coords)
                 polylines_distances.append(polyline_distances)
                 bounding_boxes_final.append(bounding_box)
             else:
 #                print(middle_start_diff, middle_end_diff, end_start_diff, start_min_distances, middle_max_distances,  end_min_distances)
                 print('\t\t' + 'removing unshapely front bounding_box:', bounding_box)
+#                new_polylines_coords.append(polyline_coords)
+#                polylines_distances.append(polyline_distances)
+#                bounding_boxes_final.append(bounding_box)
+#            error()
         polylines_coords = new_polylines_coords
         if len(polylines_coords) == 0:
             polylines_coords = None

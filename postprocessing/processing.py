@@ -96,10 +96,10 @@ def predict_calfin(settings, metrics):
     #Generate image patches (test time augmentation) to ensure confident predictions
     patches = create_unaugmented_data_patches_from_rgb_image(img_final_f32, None, window_shape=(img_size, img_size, 3), stride=stride)
 
-    print(patches.shape, patches.max(), patches.min(),img_size)
-    plt.imshow(img_final_f32.astype(np.uint8))
-    plt.imshow(((patches[5,:,:,:]+1)*128).astype(np.uint8))
-    plt.show()
+#    print(patches.shape, patches.max(), patches.min(),img_size)
+#    plt.imshow(img_final_f32.astype(np.uint8))
+#    plt.imshow(((patches[5,:,:,:]+1)*128).astype(np.uint8))
+#    plt.show()
     
     #Predict results
     results = model.predict(patches, batch_size=1, verbose=1)

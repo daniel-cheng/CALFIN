@@ -10,6 +10,8 @@ from datetime import datetime
 # os.environ['GDAL_DATA'] = r'D://ProgramData//Anaconda3//envs//cfm//Library//share//gdal' #Ensure crs are exported correctly by gdal/osr/fiona
 
 from scipy.interpolate import interp1d
+from skimage.io import imsave, imread
+from skimage.transform import resize
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.dates import YearLocator
@@ -242,13 +244,13 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
     datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
 
     #Initialize plots
-    fig, ax = plt.subplots(1, 1, num=domain + ' Relative Length Change, 1972-2019')
-    fig.suptitle(domain + ' Relative Length Change, 1972-2019', fontsize=34, fontweight='bold')
-    plt.subplots_adjust(top=0.900, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
+    fig, ax = plt.subplots(1, 1, num=domain)
+    fig.suptitle(domain, fontsize=54, fontweight='bold')
+    plt.subplots_adjust(top=0.89, bottom=0.125, right=0.99, left=0.08, hspace=0.25, wspace=0.25)
     
     # ax.set_title('CALFIN vs ESA-CCI vs MEaSUREs vs PROMICE', fontsize=18)
-    ax.set_xlabel('Year', fontsize=28, fontweight='bold')
-    ax.set_ylabel('Relative Length Retreat (km)', fontsize=28, fontweight='bold')
+    ax.set_xlabel('Year', fontsize=44, fontweight='bold')
+    ax.set_ylabel('Retreat (km)', fontsize=44, fontweight='bold')
     
     calfin_colors = ['blue', 'lightskyblue', 'midnightblue', 'black']
     esacci_colors = ['orangered', 'orange', 'firebrick', 'maroon']
@@ -277,7 +279,7 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
         for j in range(len(centerlines)):
             centerline = centerlines[j]
             if centerline['BranchName'] != None:
-                line_id = 'Branch ' + str(centerline['BranchName'])
+                line_id = str(centerline['BranchName'])
             else:
                 line_id = ''
             dates = []
@@ -340,26 +342,38 @@ def graph_change(line_dict_list, centerlines, dest_path, domain, regions, interp
     ax.xaxis.set_minor_formatter(min_formatter)
     ax.xaxis.set_major_locator(maj_loc)
     ax.xaxis.set_major_formatter(maj_formatter)
-    ax.xaxis.set_tick_params(labelsize=22)
+    ax.xaxis.set_tick_params(labelsize=36)
     plt.setp(ax.get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")   
     ax.set_xticklabels([], minor=True)
     ax.grid(True, which='both', linewidth=1.5)
-    ax.legend()
+    legend_properties = {'weight':'bold'}
+    if domain == 'Upernavik-Isstrom-N-C':
+        ax.legend(prop=legend_properties, ncol=2)
+    else: 
+        ax.legend(prop=legend_properties)
     plt.show()
-        
+    
+    centerline_path = r"../paper/centerline_" + domain + ".png"
     plot_path = os.path.join(dest_path, domain + '_relative_change.png')
-    fig.savefig(plot_path, bbox_inches='tight', pad_inches=0.05, frameon=False)
+    combined_path = os.path.join(dest_path, domain + '_combined.png')
+    # fig.savefig(plot_path, bbox_inches='tight', pad_inches=0.05, frameon=False)
+
+    # plot_img = imread(plot_path)
+    # centerline_img = resize(imread(centerline_path), (plot_img.shape[0], plot_img.shape[0])) * 255
+    # buffer = np.ones((plot_img.shape[0], 8, 4)) #x pixels with RGBA
+    # combined_img = np.concatenate((centerline_img, buffer, plot_img), axis=1).astype(np.uint8)
+    # imsave(combined_path, combined_img)
     
 def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count, dest_path):
     # Converter function
     datefunc = lambda x: mdates.date2num(datetime.strptime(x, '%Y-%m-%d'))
     
     fig, ax = plt.subplots(1, 1, num=region + ' Mean Relative Length Change (' +  str(count) + ' glaciers)')
-    fig.suptitle(region + ' Relative Length Change (' +  str(count) + ' glaciers)', fontsize=34, fontweight='bold')
-    plt.subplots_adjust(top=0.900, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
+    fig.suptitle(region + ' (' +  str(count) + ' glaciers)', fontsize=54, fontweight='bold')
+    plt.subplots_adjust(top=0.89, bottom=0.125, right=0.99, left=0.08, hspace=0.25, wspace=0.25)
     
-    ax.set_xlabel('Year', fontsize=28, fontweight='bold')
-    ax.set_ylabel('Mean Relative Length Retreat (km)', fontsize=28, fontweight='bold')
+    ax.set_xlabel('Year', fontsize=44, fontweight='bold')
+    ax.set_ylabel('Mean Retreat (km)', fontsize=44, fontweight='bold')
     
     region_colors = {'NO':'limegreen', 'CE':'blue', 'NW':'firebrick', 'CW':'pink', 'SW':'darkgreen', 'SE':'gold', 'Gr':'black', 'NE':'purple'}
     
@@ -374,10 +388,11 @@ def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count
 
     interp_dates_dotted = np.linspace(start_time, middle_time, dotted_months)
     interp_dates_lined = np.linspace(middle_time, end_time, lined_months)
-    ax.plot_date(interp_dates_dotted[:-2], interp_changes_dotted[:-2], ls='--', linewidth=4, marker='', c=region_colors[region[0:2]])
-    ax.plot_date(interp_dates_lined[:-2], interp_changes_lined[:-2], ls='-', linewidth=4, marker='', c=region_colors[region[0:2]])
+    ax.plot_date(interp_dates_dotted[:-2], interp_changes_dotted[:-2], ls='--', linewidth=8, marker='', c=region_colors[region[0:2]])
+    ax.plot_date(interp_dates_lined[:-2], interp_changes_lined[:-2], ls='-', linewidth=8, marker='', c=region_colors[region[0:2]])
     
     plt.xlim(start_time, end_time)
+    plt.ylim(-1, 6.5)
     min_loc = YearLocator(1)
     maj_loc = YearLocator(5)
     min_formatter = mdates.DateFormatter('')
@@ -386,7 +401,7 @@ def plot_mean_results(interp_changes_dotted, interp_changes_lined, region, count
     ax.xaxis.set_minor_formatter(min_formatter)
     ax.xaxis.set_major_locator(maj_loc)
     ax.xaxis.set_major_formatter(maj_formatter)
-    ax.xaxis.set_tick_params(labelsize=22)
+    ax.xaxis.set_tick_params(labelsize=36)
     plt.setp(ax.get_xticklabels(), rotation=0, ha="center", rotation_mode="anchor")   
     ax.set_xticklabels([], minor=True)
     ax.grid(True, which='both', linewidth=1.5)
@@ -400,8 +415,10 @@ if __name__ == "__main__":
     #Set figure size for 1600x900 resolution, tight layout
     plt.close('all')
     plt.rcParams["figure.figsize"] = (22,9)
-    plt.rcParams["font.size"] = "20"
-    plt.subplots_adjust(top=0.925, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
+    plt.rcParams["font.size"] = "32"
+    plt.rcParams["font.weight"] = "bold"
+    plt.rcParams["axes.labelweight"] = "bold"
+    # plt.subplots_adjust(top=0.925, bottom=0.1, right=0.95, left=0.05, hspace=0.25, wspace=0.25)
     
     # #['CALFIN', 'ESACCI', 'PROMICE', 'MEaSUREs GlacierID']
     mappings = {'Akullersuup-Sermia': 			{'esa':[], 											'promice':['Akullersuup_Sermia'], 						'measures':[208]},
@@ -433,7 +450,7 @@ if __name__ == "__main__":
                   'Upernavik-Isstrom-N-C': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'],                               'measures':[22, 23]},
                   'Upernavik-Isstrom-NW': 			{'esa':['Upernavik_Isstroem_G305731E72859N'], 		'promice':['Upernavik*'], 								'measures':[24]}}
         
-    path = r"../postprocessing/centerlines/GreenlandRegions.shp"
+    path = r"D:\Daniel\Documents\Github\CALFIN Repo\postprocessing\centerlines\GreenlandRegions.shp"
     regions = region_read(path)
     
     domains = ['Hayes-Gletsjer',  'Jakobshavn-Isbrae', 'Rink-Isbrae', 'Upernavik-Isstrom-N-C', 'Upernavik-Isstrom-S', 
@@ -446,21 +463,20 @@ if __name__ == "__main__":
     if not os.path.exists(dest_path):
         os.mkdir(dest_path)
         
-    change_dict = dict()
-    glaciers = glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp')
-    interp_results_dotted = defaultdict(list)
-    interp_results_lined = defaultdict(list)
-    for i in range(0, len(glaciers)):
-        path = glaciers[i]
-        if "_closed_v" not in path:
-            generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined, dest_path)
+    # change_dict = dict()
+    # glaciers = glob.glob('../outputs/upload_production/v1.0/level-1_shapefiles-domain-termini/*_v1.0.shp')
+    # interp_results_dotted = defaultdict(list)
+    # interp_results_lined = defaultdict(list)
+    # for i in range(0, len(glaciers)):
+    #     path = glaciers[i]
+    #     if "_closed_v" not in path:
+    #         generate_centerline_graphs(path, mappings, regions, domains, interp_results_dotted, interp_results_lined, dest_path)
     
     for region in interp_results_dotted.keys():
-        if region != 'NO':
-            mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
-            mean_interp_results_lined = np.nanmean(np.array(interp_results_lined[region]), axis=0)
-            plot_mean_results(mean_interp_results_dotted, mean_interp_results_lined, region, len(interp_results_dotted[region]), dest_path)
-            print(len(mean_interp_results_dotted))
+        mean_interp_results_dotted = np.nanmean(np.array(interp_results_dotted[region]), axis=0)
+        mean_interp_results_lined = np.nanmean(np.array(interp_results_lined[region]), axis=0)
+        plot_mean_results(mean_interp_results_dotted, mean_interp_results_lined, region, len(interp_results_dotted[region]), dest_path)
+        # print(len(mean_interp_results_dotted))
     
 
 

@@ -23,7 +23,7 @@ def main(settings, metrics):
     return settings, metrics
 
 
-def initialize(img_size, source_root_path=r"../processing/*B[0-9].tif", dest_root_path=r"../outputs/production"):
+def initialize(img_size, source_root_path=r"../processing/testing/*B[0-9].tif", dest_root_path=r"../outputs/testing"):
     #initialize settings and model if not already done
     plotting = True
     show_plots = True
@@ -72,7 +72,7 @@ def initialize(img_size, source_root_path=r"../processing/*B[0-9].tif", dest_roo
     settings['kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness'], settings['line_thickness']))
     settings['confidence_kernel'] = cv2.getStructuringElement(cv2.MORPH_RECT, (settings['line_thickness']*5, settings['line_thickness']*5))
     settings['fjord_boundaries_path'] = r"../training/data/fjord_boundaries"
-    settings['tif_source_path'] = r"../processing/"
+    settings['tif_source_path'] = r"../processing/testing/"
     settings['dest_path_qa'] = dest_path_qa
     settings['dest_root_path'] = dest_root_path
     settings['save_path'] = r"../processing/landsat_preds"
