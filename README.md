@@ -53,6 +53,24 @@ If you plan to use CALFIN on a domain outside of the existing set, be familiar w
 
 CALFIN requires a fjord boundaries mask in order to function - these must be created manually, then geolocated as a GeoTiff to enable Shapefile outputs. Optionally, create fjord boundary overrides to enforce static fronts not captured in the fjrod boundary mask or in CALFIN output. See also [`training/data/fjord_boundaries`](https://github.com/daniel-cheng/CALFIN/tree/master/training/data/fjord_boundaries), [`training/data/fjord_boundaries_tif`](https://github.com/daniel-cheng/CALFIN/tree/master/training/data/fjord_boundaries), and [`preprocessing/bulk_png_to_geotiff.py`](https://github.com/daniel-cheng/CALFIN/tree/master/preprocessing/bulk_png_to_geotiff.py).
 
+## ISSM integration (in development)
+CALFIN can be executed from the [http://issm.jpl.nasa.gov/](Ice-Sheet and Sea-level System Model).
+
+### Preprocessing
+1. Download GeoTIFF images from EarthExplorer.gov
+1a. Select a location on the map
+1b. Select a time frame
+1c. Select DataSets and select collections such as Landsat > Landsat Collection 1 > Landsat Collection 1 Level-1 > Landsat 8
+1d. Viewing the results and download all relevant images via the download button and selecting the LandsatLook Images with Geographic Reference data product. Optionally, use the Bulk Download Assistant to download them automatically.
+2. Unzip the RGB .tif images and subset them using QGIS (TODO).
+3. Place output .tifs to process in `/home/ubuntu/Repos/CALFIN/processing/testing`
+
+### Processing
+4. Open Matlab and add ISSM to the path by executing `addpath(genpath('/home/ubuntu/Repos/issm/issm/trunk-jpl-working/src/m'))`.
+5. Create a `calfin` object by executing `cf = calfin();`.
+6. Solve for calving fronts/coastlines using CALFIN by executing `cf.solve()`.
+7. View the results view the figures or via the folder `/home/ubuntu/Repos/CALFIN/outputs/testing/quality_assurance`.
+
 ## Citation
 If you find this code helpful, please cite as below:
 ````
