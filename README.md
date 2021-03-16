@@ -54,7 +54,7 @@ If you plan to use CALFIN on a domain outside of the existing set, be familiar w
 CALFIN requires a fjord boundaries mask in order to function - these must be created manually, then geolocated as a GeoTiff to enable Shapefile outputs. Optionally, create fjord boundary overrides to enforce static fronts not captured in the fjrod boundary mask or in CALFIN output. See also [`training/data/fjord_boundaries`](https://github.com/daniel-cheng/CALFIN/tree/master/training/data/fjord_boundaries), [`training/data/fjord_boundaries_tif`](https://github.com/daniel-cheng/CALFIN/tree/master/training/data/fjord_boundaries), and [`preprocessing/bulk_png_to_geotiff.py`](https://github.com/daniel-cheng/CALFIN/tree/master/preprocessing/bulk_png_to_geotiff.py).
 
 ## ISSM integration (in development)
-CALFIN can be executed from the [http://issm.jpl.nasa.gov/](Ice-Sheet and Sea-level System Model).
+CALFIN can be executed from the [Ice-Sheet and Sea-level System Model](http://issm.jpl.nasa.gov/).
 
 ### Preprocessing
 1. Download GeoTIFF images from EarthExplorer.gov
