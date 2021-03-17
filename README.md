@@ -57,6 +57,7 @@ CALFIN requires a fjord boundaries mask in order to function - these must be cre
 CALFIN can be executed from the [Ice-Sheet and Sea-level System Model](http://issm.jpl.nasa.gov/).
 
 ### Preprocessing
+First, we perform Subsetting, which is the finding of the tiles within a larger image that correspond to an area of interest. 
 1. Download GeoTIFF images from EarthExplorer.gov
 	1. Select a location on the map
 	2. Select a time frame
@@ -66,6 +67,7 @@ CALFIN can be executed from the [Ice-Sheet and Sea-level System Model](http://is
 3. Place output .tifs to process in `/home/ubuntu/Repos/CALFIN/processing/testing`
 
 ### Processing
+Then, we can run CALFIN to extract coastlines/calving fronts from the subsets.
 4. Open Matlab and add ISSM to the path by executing `addpath(genpath('/home/ubuntu/Repos/issm/issm/trunk-jpl-working/src/m'))`.
 5. Create a `calfin` object by executing `cf = calfin();`.
 6. Solve for calving fronts/coastlines using CALFIN by executing `cf.solve()`.
