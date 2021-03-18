@@ -757,8 +757,8 @@ def mask_polyline(pred_image, fjord_boundary_final_f32, settings, min_size_perce
             triangular_distance_shape = np.sign(middle_start_diff) == np.sign(middle_end_diff) #check if the front is "shaped" like a normal one, heading away from fjord in the middle, and towards the fjord boundary at the ends.
 #            print(middle_start_diff, middle_end_diff)
 #            print(len(peaks) != 0,  triangular_distance_shape == True, middle_max_distances > num_points / (4 * len(peaks)))
-#            if len(peaks) != 0 and triangular_distance_shape == True and middle_max_distances > num_points / (4 * len(peaks)):
-            if len(peaks) != 0 and middle_max_distances > num_points / (4 * len(peaks)):
+            if len(peaks) != 0 and triangular_distance_shape == True and middle_max_distances > num_points / (4 * len(peaks)):
+#            if len(peaks) != 0 and middle_max_distances > num_points / (4 * len(peaks)):
                 new_polylines_coords.append(polyline_coords)
                 polylines_distances.append(polyline_distances)
                 bounding_boxes_final.append(bounding_box)

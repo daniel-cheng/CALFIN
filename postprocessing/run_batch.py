@@ -148,7 +148,9 @@ if __name__ == '__main__':
         model
     except NameError:
         model = compile_model(img_size)
+#    model = compile_model(img_size)
 
+# add back in more upsampling 2d, find where it breaks
     if len(sys.argv) > 1:
         source_dir = sys.argv[1]
         dest_dir = sys.argv[2]

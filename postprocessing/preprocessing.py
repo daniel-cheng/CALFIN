@@ -363,7 +363,7 @@ def read_image_production(i, settings, metrics):
         else:
             raw_image = np.stack((img_3_uint8, img_3_uint8, img_3_uint8), axis=2).astype(np.uint8)
         
-        clahe = cv2.createCLAHE(clipLimit=25.0, tileGridSize=(4, 4))
+        clahe = cv2.createCLAHE(clipLimit=8.0, tileGridSize=(16, 16))
         clahe_image = clahe.apply(raw_image[:,:,0])
         sh_image = correction(raw_image, .35, .5, 30, 0.0, 0.5, 30, .2)
         
