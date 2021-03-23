@@ -872,10 +872,11 @@ def mask_bounding_box(bounding_boxes, image, settings, polylines_coords, mask_pr
     
     #Exit early if front is not within bounds of original bounding box
     original_bounding_box = image_settings['bounding_box']
-    if not (original_polyline_center[0] > original_bounding_box[0] and 
-        original_polyline_center[0] < original_bounding_box[0] + original_bounding_box[2] and
-        original_polyline_center[1] > original_bounding_box[1] and 
-        original_polyline_center[1] < original_bounding_box[1] + original_bounding_box[3]):
+    padding = full_size / 64
+    if not (original_polyline_center[0] > original_bounding_box[0] - padding and 
+        original_polyline_center[0] < original_bounding_box[0] + original_bounding_box[2] + padding and
+        original_polyline_center[1] > original_bounding_box[1] - padding and 
+        original_polyline_center[1] < original_bounding_box[1] + original_bounding_box[3] + padding):
         return None
     #Store used bounding box to prevent overlap in reprocessed fronts
     if store_box:
