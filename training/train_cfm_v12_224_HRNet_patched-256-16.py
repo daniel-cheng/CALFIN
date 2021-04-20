@@ -107,7 +107,7 @@ if __name__ == '__main__':
 	
 	model.compile(optimizer=optimizer, loss=bce_ln_jaccard_loss, metrics=[weighted_iou_score, edge_iou_score, mask_iou_score, deviation])
 	model.summary()
-	#model.load_weights('cfm_weights_patched_dual_wide_x65_224_e18_iou0.5238.h5')
+	model.load_weights('cfm_weights_patched_dual_wide_x65_448_e06_iou0.3772.h5')
 	
 	print('-'*30)
 	print('Fitting model...')

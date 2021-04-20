@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	print('-'*30)
 	validation_data, validation_targets = load_validation_data(full_size, img_size, stride) 
 	
-	batch_size = 2
+	batch_size = 1
 	in_channels = 3
 	out_channels = 2
 
@@ -106,7 +106,7 @@ if __name__ == '__main__':
 	
 	model.compile(optimizer=optimizer, loss=bce_ln_jaccard_loss, metrics=[weighted_iou_score, edge_iou_score, mask_iou_score, deviation])
 	model.summary()
-	#model.load_weights('cfm_weights_patched_dual_wide_x65_224_e18_iou0.5238.h5')
+	model.load_weights('cfm_weights_patched_dual_wide_x65_224_e18_iou0.5238.h5')
 	
 	print('-'*30)
 	print('Fitting model...')
@@ -115,7 +115,7 @@ if __name__ == '__main__':
 	train_generator = imgaug_generator_patched(batch_size, img_size=full_size, patch_size=img_size, patch_stride=stride, steps_per_epoch=steps_per_epoch)
 	history = model.fit_generator(train_generator,
 				steps_per_epoch=steps_per_epoch,
-				epochs=20,
+				epochs=80,
 				validation_data=(validation_data[0], validation_targets[0]),
 				verbose=1,
 #				max_queue_size=64,
