@@ -205,7 +205,9 @@ def plot_validation_results(settings, metrics):
         dest_path_qa_bad_domain = os.path.join(dest_path_qa + '_bad', domain)
         if not os.path.exists(dest_path_qa_domain):
             os.mkdir(dest_path_qa_domain)
-        
+        if not os.path.exists(dest_path_qa_bad_domain):
+            os.mkdir(dest_path_qa_bad_domain)
+            
         if plotting:
             plt.savefig(os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_validation.png'))
             if not show_plots:
@@ -229,7 +231,7 @@ def plot_validation_results(settings, metrics):
                 tif_save(settings, metrics, os.path.join(dest_path_qa_domain, image_name_base + '_' + index + '_pred.tif'), (pred_image * 255).astype(np.uint8))
             except AttributeError as e:
                 print(e)
-                print('No source tif found for', image_name_base)
+                print('No source tif found for', image_name_base, 'plotting.py')
             
 
 

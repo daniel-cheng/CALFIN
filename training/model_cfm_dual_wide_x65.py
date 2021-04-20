@@ -616,4 +616,3 @@ def preprocess_input(x):
         Input array scaled to [-1.,1.]
     """
     return imagenet_utils.preprocess_input(x, mode='tf')
-
