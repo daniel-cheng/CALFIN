@@ -76,16 +76,19 @@ Then, we can run CALFIN to extract coastlines/calving fronts from the subsets.
 ## Citation
 If you find this code helpful, please cite as below:
 ````
-@article{ChengHLMWVR2020,
-	title={Calving Front Machine (CALFIN): Glacial Termini Dataset and 
-			Automated Deep Learning Extraction Method for Greenland, 1972-2019},
-	author={Daniel Cheng and Wayne Hayes and Eric Larour and Yara Mohajerani and 
-			Michael Wood and Isabella Velicogna and Eric Rignot},
-	journal={The Cryosphere Discussions},
-	url = {https://tc.copernicus.org/preprints/tc-2020-231/},
-	doi = {10.5194/tc-2020-231},
-	year={2020}
-}
+@article{cheng_2021,
+  author    = {Daniel Cheng and Wayne Hayes and Eric Larour and Yara Mohajerani and Michael Wood and
+                  Isabella Velicogna and Eric Rignot},
+  title     = {Calving Front Machine ({CALFIN}): glacial termini dataset and automated deep learning
+                  extraction method for {G}reenland, 1972{\textendash}2019},
+  journal   = {The Cryosphere},
+  year 	    = 2021,
+  volume    = 15,
+  number    = 3,
+  pages     = {1663--1675},
+  month     = 4,
+  doi 	    = {10.5194/tc-15-1663-2021},
+  publisher = {Copernicus {GmbH}}}
 
 @dataset{ChengHL2020,
 	title={CALFIN: Calving Front Dataset for East/West Greenland, 1972-2019},
@@ -97,16 +100,14 @@ If you find this code helpful, please cite as below:
 ````
 
 ## References
-[1] Cheng, D., Hayes, W., Larour, E., Mohajerani, Y., Wood, M., Velicogna, I. and Rignot, E.: 
-	Calving Front Machine (CALFIN): Glacial Termini Dataset and Automated Deep Learning Extraction Method for Greenland, 1972-2019, 
-	The Cryosphere Discussions, 1–17, https://doi.org/10.5194/tc-2020-231, 2020.
+[1] Cheng, D., Hayes, W., Larour, E., Mohajerani, Y., Wood, M., Velicogna, I., and Rignot, E.: Calving Front Machine (CALFIN): glacial termini dataset and automated deep learning extraction method for Greenland, 1972–2019, The Cryosphere, 15, 1663–1675, https://doi.org/10.5194/tc-15-1663-2021, 2021. 
 
 [2] Cheng, D., Hayes, W. and Larour, E.: CALFIN: Calving front dataset for East/West Greenland, 1972-2019, https://doi.org/10.7280/D1FH5D, 2020.
 
 ## Acknowledgements
 This work was conducted as a collaboration between NASA’s Jet Propulsion Laboratory and the University of California, Irvine.
 
-The CALFIN neural network architecture implementation is derived from [Emil Zakirov’s Deeplabv3+ Xception codebase](github.com/bonlime/keras-deeplab-v3-plus). 
+The CALFIN neural network architecture implementation is derived from [Emil Zakirov’s Deeplabv3+ Xception codebase](https://github.com/bonlime/keras-deeplab-v3-plus). 
 
 We acknowledge the USGS for providing Landsat-1-8 images, the ESA for their Sentinel-1 images, as well as the ESA-CCI, PROMICE, and MEaSUREs programs for providing calving front data used in this study.
 
